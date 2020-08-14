@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: {{.namespace}}
+  labels:
+    app.kubernetes.io/name: {{.appName}}
+    app.kubernetes.io/instance: {{.runName}}
+  name: {{.name}}
+data:
+  config.json: |
+    {
+        "Description": "kube-bench plugin for CIS benchmarks",
+        "Filters": {
+            "LabelSelector": "",
+            "Namespaces": "[^\\w-.]+"
+        },
+        "PluginNamespace": "{{.namespace}}",
+        "Plugins": [
+            {
+                "name": "rancher-kube-bench"
+            }
+        ],
+        "PluginSearchPath": [
+          "/plugins.d"
+        ],
+        "Resources": [],
+        "ResultsDir": "/tmp/sonobuoy",
+        "Server": {
+            "advertiseaddress": "{{.advertiseAddress}}",
+            "bindaddress": "0.0.0.0",
+            "bindport": 443,
+            "timeoutseconds": 5400
+        },
+        "Namespace": "{{.namespace}}",
+        "WorkerImage": "{{.sonobuoyImage}}",
+        "Version": "{{.sonobuoyVersion}}"
+    }

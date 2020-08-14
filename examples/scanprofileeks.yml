@@ -1,0 +1,8 @@
+---
+apiVersion: clusterscan-operator.cattle.io/v1
+kind: ClusterScanProfile
+metadata:
+  name: eks-profile
+spec:
+  clusterProvider: eks
+  benchmarkVersion: eks-1.0

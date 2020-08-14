@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.name}}
+  namespace: {{.namespace}}
+  labels:
+    app.kubernetes.io/name: {{.appName}}
+    app.kubernetes.io/instance: {{.runName}}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 443
+      targetPort: 443
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{.appName}}
+    app.kubernetes.io/instance: {{.runName}}

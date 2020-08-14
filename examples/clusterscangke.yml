@@ -1,0 +1,10 @@
+---
+apiVersion: clusterscan-operator.cattle.io/v1
+kind: ClusterScan
+metadata:
+  name: run-gke-1.0
+spec:
+  clusterProvider: gke
+  runType: manual
+  scanConfig:
+    profileName: gke-1.0

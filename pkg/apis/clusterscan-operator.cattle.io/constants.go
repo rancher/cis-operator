@@ -1,0 +1,15 @@
+package clusterscanoperator
+
+
+const (
+	// LabelController is the name of the cis controller.
+	LabelController = GroupName + `/controller`
+
+	// LabelNode is the node being upgraded.
+	LabelProfile = GroupName + `/clusterscanprofile`
+
+	// LabelPlan is the plan being applied.
+	LabelClusterScan = GroupName + `/clusterscan`
+
+	SonobuoyCompletionAnnotation = "field.cattle.io/sonobuoyDone"
+)

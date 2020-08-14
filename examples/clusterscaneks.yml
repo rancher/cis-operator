@@ -1,0 +1,10 @@
+---
+apiVersion: clusterscan-operator.cattle.io/v1
+kind: ClusterScan
+metadata:
+  name: run-eks-1.0
+spec:
+  clusterProvider: eks
+  runType: manual
+  scanConfig:
+    profileName: eks-1.0
