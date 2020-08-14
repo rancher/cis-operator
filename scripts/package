@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+source $(dirname $0)/version
+
+cd $(dirname $0)/..
+
+mkdir -p dist/artifacts
+cp bin/clusterscan-operator dist/artifacts/clusterscan-operator${SUFFIX}
+
+IMAGE=${REPO}/clusterscan-operator:${TAG}
+DOCKERFILE=package/Dockerfile
+if [ -e ${DOCKERFILE}.${ARCH} ]; then
+    DOCKERFILE=${DOCKERFILE}.${ARCH}
+fi
+
+docker build -f ${DOCKERFILE} -t ${IMAGE} .
+echo Built ${IMAGE}
