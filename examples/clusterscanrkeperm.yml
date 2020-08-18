@@ -2,6 +2,6 @@
 apiVersion: clusterscan-operator.cattle.io/v1
 kind: ClusterScan
 metadata:
-  name: rke-custom
+  name: rke-cis-perm
 spec:
-  scanProfileName: "rke-profile-custom"
+  scanProfileName: ""

@@ -7,7 +7,7 @@ spec:
   names:
     kind: ClusterScan
     plural: clusterscans
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:
@@ -17,14 +17,6 @@ spec:
           properties:
             scanProfileName:
               type: string
-            scanSchedule:
-              nullable: true
-              properties:
-                cronSchedule:
-                  type: string
-                retention:
-                  type: integer
-              type: object
           type: object
         status:
           properties:
