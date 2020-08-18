@@ -1,9 +1,9 @@
 package clusterscan
 
 import (
+	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
 	"github.com/rancher/wrangler/pkg/crd"
 	"github.com/rancher/wrangler/pkg/schemas/openapi"
-	cisoperatorapiv1 "github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
 )
 
 func CRD() (*crd.CRD, error) {

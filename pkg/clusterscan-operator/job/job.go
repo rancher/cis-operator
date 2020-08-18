@@ -1,26 +1,26 @@
 package job
 
-
 import (
-	"strings"
 	"os"
 	"strconv"
-	batchv1 "k8s.io/api/batch/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	corev1 "k8s.io/api/core/v1"
+	"strings"
+
 	"github.com/sirupsen/logrus"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/rancher/wrangler/pkg/name"
 
-	"github.com/prachidamle/clusterscan-operator/pkg/condition"
-	cisoperatorapiv1 "github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
-	cisoperatorapi "github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io"
+	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io"
+	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	"github.com/rancher/clusterscan-operator/pkg/condition"
 )
 
 const (
-	defaultTerminationGracePeriodSeconds            = int64(0)
-	defaultBackoffLimit            = int32(0)
+	defaultTerminationGracePeriodSeconds = int64(0)
+	defaultBackoffLimit                  = int32(0)
 )
 
 var (
@@ -46,13 +46,13 @@ var (
 func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string) *batchv1.Job {
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name.SafeConcatName("security-scan-runner", clusterscan.Name),
-			Namespace: cisoperatorapiv1.ClusterScanNS,
+			Name:        name.SafeConcatName("security-scan-runner", clusterscan.Name),
+			Namespace:   cisoperatorapiv1.ClusterScanNS,
 			Annotations: labels.Set{},
 			Labels: labels.Set{
-				cisoperatorapi.LabelController: controllerName,
-				cisoperatorapi.LabelProfile:       clusterscan.Spec.ScanProfileName,
-				cisoperatorapi.LabelClusterScan:       clusterscan.Name,
+				cisoperatorapi.LabelController:  controllerName,
+				cisoperatorapi.LabelProfile:     clusterscan.Spec.ScanProfileName,
+				cisoperatorapi.LabelClusterScan: clusterscan.Name,
 			},
 		},
 		Spec: batchv1.JobSpec{
@@ -60,16 +60,16 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels.Set{
-						"app.kubernetes.io/name": "rancher-cis-benchmark",
-						"app.kubernetes.io/instance": name.SafeConcatName("security-scan-runner", clusterscan.Name),
-						"run": "sonobuoy-master",
-						cisoperatorapi.LabelController: controllerName,
-						cisoperatorapi.LabelProfile:       clusterscan.Spec.ScanProfileName,
-						cisoperatorapi.LabelClusterScan:       clusterscan.Name,
+						"app.kubernetes.io/name":        "rancher-cis-benchmark",
+						"app.kubernetes.io/instance":    name.SafeConcatName("security-scan-runner", clusterscan.Name),
+						"run":                           "sonobuoy-master",
+						cisoperatorapi.LabelController:  controllerName,
+						cisoperatorapi.LabelProfile:     clusterscan.Spec.ScanProfileName,
+						cisoperatorapi.LabelClusterScan: clusterscan.Name,
 					},
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: cisoperatorapiv1.ClusterScanSA,
+					ServiceAccountName:            cisoperatorapiv1.ClusterScanSA,
 					TerminationGracePeriodSeconds: &TerminationGracePeriodSeconds,
 					Tolerations: append([]corev1.Toleration{{
 						Operator: corev1.TolerationOpExists,
@@ -77,38 +77,37 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 					RestartPolicy: corev1.RestartPolicyNever,
 					Volumes: []corev1.Volume{{
 						Name: `s-config-volume`,
-						VolumeSource: corev1.VolumeSource {
-							ConfigMap: &corev1.ConfigMapVolumeSource {
-								LocalObjectReference: corev1.LocalObjectReference {
+						VolumeSource: corev1.VolumeSource{
+							ConfigMap: &corev1.ConfigMapVolumeSource{
+								LocalObjectReference: corev1.LocalObjectReference{
 									Name: cisoperatorapiv1.ClusterScanConfigMap,
 								},
 							},
 						},
 					}, {
 						Name: `s-plugins-volume`,
-						VolumeSource: corev1.VolumeSource {
-							ConfigMap: &corev1.ConfigMapVolumeSource {
-								LocalObjectReference: corev1.LocalObjectReference {
+						VolumeSource: corev1.VolumeSource{
+							ConfigMap: &corev1.ConfigMapVolumeSource{
+								LocalObjectReference: corev1.LocalObjectReference{
 									Name: cisoperatorapiv1.ClusterScanPluginsConfigMap,
 								},
 							},
 						},
 					}, {
 						Name: `output-volume`,
-						VolumeSource: corev1.VolumeSource {
-							EmptyDir: &corev1.EmptyDirVolumeSource {
-							},
+						VolumeSource: corev1.VolumeSource{
+							EmptyDir: &corev1.EmptyDirVolumeSource{},
 						},
 					}},
 					Containers: []corev1.Container{{
-						Name: `rancher-cis-benchmark`,
-						Image: `rancher/security-scan:v0.1.14`,
+						Name:            `rancher-cis-benchmark`,
+						Image:           `prachidamle/security-scan:v0.1.19`,
 						ImagePullPolicy: corev1.PullAlways,
 						Env: []corev1.EnvVar{{
-							Name: `OVERRIDE_BENCHMARK_VERSION`,
+							Name:  `OVERRIDE_BENCHMARK_VERSION`,
 							Value: clusterscanprofile.Spec.BenchmarkVersion,
 						}, {
-							Name: `SONOBUOY_NS`,
+							Name:  `SONOBUOY_NS`,
 							Value: cisoperatorapiv1.ClusterScanNS,
 						}, {
 							Name: `SONOBUOY_POD_NAME`,
@@ -118,31 +117,54 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 								},
 							},
 						}, {
-							Name: `SONOBUOY_ADVERTISE_IP`,
+							Name:  `SONOBUOY_ADVERTISE_IP`,
 							Value: `cisscan-rancher-cis-benchmark`,
 						}, {
-							Name: `OUTPUT_CONFIGMAPNAME`,
-							Value: strings.Join([]string{`cisscan-output-for`,clusterscan.Name},"-"),
+							Name:  `OUTPUT_CONFIGMAPNAME`,
+							Value: strings.Join([]string{`cisscan-output-for`, clusterscan.Name}, "-"),
 						}},
 						Ports: []corev1.ContainerPort{{
 							ContainerPort: 8080,
-							Protocol: corev1.ProtocolTCP,
+							Protocol:      corev1.ProtocolTCP,
 						}},
 						VolumeMounts: []corev1.VolumeMount{{
-							Name: `s-config-volume`,
+							Name:      `s-config-volume`,
 							MountPath: `/etc/sonobuoy`,
 						}, {
-							Name: `s-plugins-volume`,
+							Name:      `s-plugins-volume`,
 							MountPath: `/plugins.d`,
 						}, {
-							Name: `output-volume`,
+							Name:      `output-volume`,
 							MountPath: `/tmp/sonobuoy`,
 						}},
 					}},
-
 				},
 			},
 		},
 	}
+	//add userskip configmap if present
+	if clusterscanprofile.Spec.SkipTests != nil && len(clusterscanprofile.Spec.SkipTests) > 0 {
+		logrus.Infof("Adding skip volume %v ", clusterscanprofile.Spec.SkipTests)
+		skipVol := corev1.Volume{
+			Name: `user-skip-info-volume`,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: name.SafeConcatName(cisoperatorapiv1.ClusterScanUserSkipConfigMap, clusterscan.Name),
+					},
+				},
+			},
+		}
+		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, skipVol)
+
+		//volume mount
+		skipVolMnt := corev1.VolumeMount{
+			Name:      `user-skip-info-volume`,
+			MountPath: `/etc/kbs/userskip`,
+		}
+
+		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, skipVolMnt)
+	}
+
 	return job
 }

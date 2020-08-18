@@ -19,7 +19,7 @@ limitations under the License.
 package clusterscanoperator
 
 import (
-	v1 "github.com/prachidamle/clusterscan-operator/pkg/generated/controllers/clusterscan-operator.cattle.io/v1"
+	v1 "github.com/rancher/clusterscan-operator/pkg/generated/controllers/clusterscan-operator.cattle.io/v1"
 	"github.com/rancher/lasso/pkg/controller"
 )
 

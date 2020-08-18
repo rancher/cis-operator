@@ -21,7 +21,7 @@ limitations under the License.
 package v1
 
 import (
-	clusterscanoperator "github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io"
+	clusterscanoperator "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -30,6 +30,8 @@ import (
 var (
 	ClusterScanResourceName        = "clusterscans"
 	ClusterScanProfileResourceName = "clusterscanprofiles"
+	ClusterScanReportResourceName  = "clusterscanreports"
+	ScheduledScanResourceName      = "scheduledscans"
 )
 
 // SchemeGroupVersion is group version used to register these objects
@@ -57,6 +59,10 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&ClusterScanList{},
 		&ClusterScanProfile{},
 		&ClusterScanProfileList{},
+		&ClusterScanReport{},
+		&ClusterScanReportList{},
+		&ScheduledScan{},
+		&ScheduledScanList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

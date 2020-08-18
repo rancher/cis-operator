@@ -9,22 +9,23 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/rancher/wrangler/pkg/kubeconfig"
 	"github.com/rancher/wrangler/pkg/signals"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
-	"github.com/prachidamle/clusterscan-operator/pkg/clusterscan-operator"
-	cisoperatorapiv1 "github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
-	"time"
+
+	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	clusterscan_operator "github.com/rancher/clusterscan-operator/pkg/clusterscan-operator"
 )
 
 var (
 	Version    = "v0.0.0-dev"
 	GitCommit  = "HEAD"
 	KubeConfig string
-	threads int
-	name string
+	threads    int
+	name       string
 )
 
 func main() {

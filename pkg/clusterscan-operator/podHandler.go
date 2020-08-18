@@ -3,17 +3,18 @@ package clusterscan_operator
 import (
 	"context"
 	"fmt"
-	corev1 "k8s.io/api/core/v1"
+
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/labels"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/rancher/wrangler/pkg/name"
 	corectlv1 "github.com/rancher/wrangler/pkg/generated/controllers/core/v1"
+	"github.com/rancher/wrangler/pkg/name"
 
-	cisoperatorapi "github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io"
-	"github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io"
+	v1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
 )
 
 // pod events should update the job conditions after validating Done annotation and Output CM
@@ -44,24 +45,24 @@ func (c *Controller) handlePods(ctx context.Context) error {
 			return nil, nil
 		}
 		// get the scan being run
-		scan, err := scans.Get("default", scanName, metav1.GetOptions{})
+		scan, err := scans.Get(scanName, metav1.GetOptions{})
 		switch {
-			case errors.IsNotFound(err):
-				// scan is gone, delete
-				logrus.Infof("scan gone, just delete it and move on %v", scanName)
-				return nil, nil
-			case err != nil:
-				return obj, err
+		case errors.IsNotFound(err):
+			// scan is gone, delete
+			logrus.Infof("scan gone, just delete it and move on %v", scanName)
+			return nil, nil
+		case err != nil:
+			return obj, err
 		}
 
 		//find the job for this Pod and the clusterScan as well
 		jobName := name.SafeConcatName("security-scan-runner", scanName)
 		job, err := jobs.Cache().Get(obj.Namespace, jobName)
 		switch {
-			case errors.IsNotFound(err):
-				return nil, nil
-			case err != nil:
-				return obj, err
+		case errors.IsNotFound(err):
+			return nil, nil
+		case err != nil:
+			return obj, err
 		}
 
 		scanCopy := scan.DeepCopy()

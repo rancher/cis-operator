@@ -1,4 +1,4 @@
-module github.com/prachidamle/clusterscan-operator
+module github.com/rancher/clusterscan-operator
 
 go 1.13
 
@@ -8,6 +8,7 @@ require (
 	github.com/rancher/kubernetes-provider-detector v0.0.0-20200807181951-690274ab1fb3
 	github.com/rancher/lasso v0.0.0-20200515155337-a34e1e26ad91
 	github.com/rancher/security-scan v0.1.14
+	github.com/rancher/swarm v0.1.0
 	github.com/rancher/wrangler v0.6.2-0.20200802063637-28dae3c1fc1b
 	github.com/sirupsen/logrus v1.4.2
 	github.com/urfave/cli v1.22.2

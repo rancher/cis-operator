@@ -1,37 +1,37 @@
 package clusterscan_operator
 
-
 import (
 	"context"
-	"time"
 	"fmt"
+	"time"
+
 	"github.com/sirupsen/logrus"
+	kubeapiext "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	kubeapiext "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 
-	"github.com/rancher/wrangler/pkg/start"
-	"github.com/rancher/wrangler/pkg/crd"
+	detector "github.com/rancher/kubernetes-provider-detector"
 	"github.com/rancher/wrangler/pkg/apply"
+	"github.com/rancher/wrangler/pkg/crd"
 	batchctl "github.com/rancher/wrangler/pkg/generated/controllers/batch"
 	corectl "github.com/rancher/wrangler/pkg/generated/controllers/core"
-	detector "github.com/rancher/kubernetes-provider-detector"
+	"github.com/rancher/wrangler/pkg/start"
 
-	cisoperatorctl "github.com/prachidamle/clusterscan-operator/pkg/generated/controllers/clusterscan-operator.cattle.io"
-	"github.com/prachidamle/clusterscan-operator/pkg/clusterscan-operator/clusterscan"
+	"github.com/rancher/clusterscan-operator/pkg/clusterscan-operator/clusterscan"
+	cisoperatorctl "github.com/rancher/clusterscan-operator/pkg/generated/controllers/clusterscan-operator.cattle.io"
 )
 
 type Controller struct {
-	Namespace string
-	Name      string
+	Namespace       string
+	Name            string
 	ClusterProvider string
 
-	kcs *kubernetes.Clientset
-	xcs *kubeapiext.Clientset
-	coreFactory    *corectl.Factory
-	batchFactory   *batchctl.Factory
-	cisFactory *cisoperatorctl.Factory
-	apply apply.Apply
+	kcs          *kubernetes.Clientset
+	xcs          *kubeapiext.Clientset
+	coreFactory  *corectl.Factory
+	batchFactory *batchctl.Factory
+	cisFactory   *cisoperatorctl.Factory
+	apply        apply.Apply
 }
 
 func NewController(cfg *rest.Config, ctx context.Context, namespace, name string) (ctl *Controller, err error) {
@@ -41,9 +41,9 @@ func NewController(cfg *rest.Config, ctx context.Context, namespace, name string
 			return nil, err
 		}
 	}
-	ctl = &Controller {
+	ctl = &Controller{
 		Namespace: namespace,
-		Name: name,
+		Name:      name,
 	}
 
 	ctl.kcs, err = kubernetes.NewForConfig(cfg)
@@ -55,7 +55,6 @@ func NewController(cfg *rest.Config, ctx context.Context, namespace, name string
 	if err != nil {
 		return nil, err
 	}
-
 
 	clientset, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
@@ -88,7 +87,6 @@ func NewController(cfg *rest.Config, ctx context.Context, namespace, name string
 
 	return ctl, nil
 }
-
 
 func (c *Controller) Start(ctx context.Context, threads int, resync time.Duration) error {
 	// register our handlers
