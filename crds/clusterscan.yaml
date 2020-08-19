@@ -42,6 +42,8 @@ spec:
               type: boolean
             lastRunTimestamp:
               type: string
+            observedGeneration:
+              type: integer
             summary:
               nullable: true
               properties:

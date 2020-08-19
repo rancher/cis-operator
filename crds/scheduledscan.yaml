@@ -17,17 +17,39 @@ spec:
           properties:
             cronSchedule:
               type: string
-            retention:
+            retentionCount:
               type: integer
             scanProfileName:
               type: string
           type: object
         status:
           properties:
+            conditions:
+              items:
+                properties:
+                  lastTransitionTime:
+                    type: string
+                  lastUpdateTime:
+                    type: string
+                  message:
+                    type: string
+                  reason:
+                    type: string
+                  status:
+                    type: string
+                  type:
+                    type: string
+                type: object
+              nullable: true
+              type: array
             enabled:
               type: boolean
+            lastClusterScanName:
+              type: string
             lastRunTimestamp:
               type: string
+            observedGeneration:
+              type: integer
           type: object
       type: object
   version: v1

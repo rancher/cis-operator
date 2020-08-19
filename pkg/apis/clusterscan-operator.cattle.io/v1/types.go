@@ -124,12 +124,13 @@ type ScheduledScanSpec struct {
 	// Cron Expression for Schedule
 	CronSchedule string `yaml:"cron_schedule" json:"cronSchedule,omitempty"`
 	// Number of past scans to keep
-	Retention int `yaml:"retention" json:"retention,omitempty"`
+	RetentionCount int `yaml:"retentionCount" json:"retentionCount,omitempty"`
 }
 
 type ScheduledScanStatus struct {
-	Enabled            bool                                `yaml:"enabled" json:"enabled,omitempty"`
-	LastRunTimestamp   string                              `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
-	ObservedGeneration int64                               `json:"observedGeneration"`
-	Conditions         []genericcondition.GenericCondition `json:"conditions,omitempty"`
+	Enabled             bool                                `yaml:"enabled" json:"enabled,omitempty"`
+	LastRunTimestamp    string                              `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
+	LastClusterScanName string                              `yaml:"last_clusterscan_name" json:"lastClusterScanName"`
+	ObservedGeneration  int64                               `json:"observedGeneration"`
+	Conditions          []genericcondition.GenericCondition `json:"conditions,omitempty"`
 }

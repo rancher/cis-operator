@@ -111,12 +111,29 @@ func (c *Controller) getScanResults(scan *v1.ClusterScan) (*v1.ClusterScanSummar
 		return nil, nil, fmt.Errorf("cisScanHandler: Updated: error fetching configmap %v: %v", outputConfigName, err)
 	}
 	outputBytes := []byte(cm.Data[v1.DefaultScanOutputFileName])
-	r, err := report.Get(outputBytes)
+	cisScanSummary, err := c.getScanSummary(outputBytes)
 	if err != nil {
 		return nil, nil, fmt.Errorf("cisScanHandler: Updated: error getting report from configmap %v: %v", outputConfigName, err)
 	}
-	if r == nil {
+	if cisScanSummary == nil {
 		return nil, nil, fmt.Errorf("cisScanHandler: Updated: error: got empty report from configmap %v", outputConfigName)
+	}
+
+	scanReport, err := c.createClusterScanReport(outputBytes, scan)
+	if err != nil {
+		return nil, nil, fmt.Errorf("cisScanHandler: Updated: error getting report from configmap %v: %v", outputConfigName, err)
+	}
+
+	return cisScanSummary, scanReport, nil
+}
+
+func (c *Controller) getScanSummary(outputBytes []byte) (*v1.ClusterScanSummary, error) {
+	r, err := report.Get(outputBytes)
+	if err != nil {
+		return nil, err
+	}
+	if r == nil {
+		return nil, nil
 	}
 	cisScanSummary := &v1.ClusterScanSummary{
 		Total:         r.Total,
@@ -125,7 +142,10 @@ func (c *Controller) getScanResults(scan *v1.ClusterScan) (*v1.ClusterScanSummar
 		Skip:          r.Skip,
 		NotApplicable: r.NotApplicable,
 	}
+	return cisScanSummary, nil
+}
 
+func (c *Controller) createClusterScanReport(outputBytes []byte, scan *v1.ClusterScan) (*v1.ClusterScanReport, error) {
 	scanReport := &v1.ClusterScanReport{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name.SafeConcatName("clusterscan-report-", scan.Name),
@@ -133,15 +153,24 @@ func (c *Controller) getScanResults(scan *v1.ClusterScan) (*v1.ClusterScanSummar
 	}
 	profile, err := c.getClusterScanProfile(scan)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error %v loading v1.ClusterScanProfile for name %v", scan.Spec.ScanProfileName, err)
+		return nil, fmt.Errorf("Error %v loading v1.ClusterScanProfile for name %v", scan.Spec.ScanProfileName, err)
 	}
 	scanReport.Spec.BenchmarkVersion = profile.Spec.BenchmarkVersion
 	scanReport.Spec.LastRunTimestamp = time.Now().String()
+
 	data, err := reportLibrary.GetJSONBytes(outputBytes)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error %v loading clusterscan report json bytes", err)
+		return nil, fmt.Errorf("Error %v loading clusterscan report json bytes", err)
 	}
 	scanReport.Spec.ReportJSON = string(data[:])
 
-	return cisScanSummary, scanReport, nil
+	ownerRef := metav1.OwnerReference{
+		APIVersion: "clusterscan-operator.cattle.io/v1",
+		Kind:       "ClusterScan",
+		Name:       scan.Name,
+		UID:        scan.GetUID(),
+	}
+	scanReport.ObjectMeta.OwnerReferences = append(scanReport.ObjectMeta.OwnerReferences, ownerRef)
+
+	return scanReport, nil
 }
