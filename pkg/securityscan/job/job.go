@@ -13,8 +13,8 @@ import (
 
 	"github.com/rancher/wrangler/pkg/name"
 
-	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io"
-	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io"
+	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 	"github.com/rancher/clusterscan-operator/pkg/condition"
 )
 

@@ -1,4 +1,4 @@
-package clusterscan_operator
+package securityscan
 
 import (
 	"context"
@@ -12,11 +12,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	cisapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
-	v1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
-	ciscore "github.com/rancher/clusterscan-operator/pkg/clusterscan-operator/core"
-	cisjob "github.com/rancher/clusterscan-operator/pkg/clusterscan-operator/job"
-	cisctlv1 "github.com/rancher/clusterscan-operator/pkg/generated/controllers/clusterscan-operator.cattle.io/v1"
+	cisapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
+	v1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
+	cisctlv1 "github.com/rancher/clusterscan-operator/pkg/generated/controllers/securityscan.cattle.io/v1"
+	ciscore "github.com/rancher/clusterscan-operator/pkg/securityscan/core"
+	cisjob "github.com/rancher/clusterscan-operator/pkg/securityscan/job"
 )
 
 const (
@@ -26,7 +26,7 @@ const (
 )
 
 func (c *Controller) handleClusterScans(ctx context.Context) error {
-	scans := c.cisFactory.Clusterscanoperator().V1().ClusterScan()
+	scans := c.cisFactory.Securityscan().V1().ClusterScan()
 	jobs := c.batchFactory.Batch().V1().Job()
 	configmaps := c.coreFactory.Core().V1().ConfigMap()
 	services := c.coreFactory.Core().V1().Service()
@@ -72,7 +72,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 }
 func (c *Controller) getClusterScanProfile(scan *v1.ClusterScan) (*v1.ClusterScanProfile, error) {
 	var profileName string
-	clusterscanprofiles := c.cisFactory.Clusterscanoperator().V1().ClusterScanProfile()
+	clusterscanprofiles := c.cisFactory.Securityscan().V1().ClusterScanProfile()
 
 	if scan.Spec.ScanProfileName != "" {
 		profileName = scan.Spec.ScanProfileName
@@ -104,7 +104,7 @@ func (c Controller) getDefaultClusterScanProfile(clusterprovider string) string 
 // https://github.com/kubernetes-sigs/cli-utils/tree/master/pkg/kstatus
 // Reconciling and Stalled conditions are present and with a value of true whenever something unusual happens.
 func (c Controller) setReconcilingCondition(scan *v1.ClusterScan, originalErr error) (*v1.ClusterScan, error) {
-	scans := c.cisFactory.Clusterscanoperator().V1().ClusterScan()
+	scans := c.cisFactory.Securityscan().V1().ClusterScan()
 	v1.ClusterScanConditionReconciling.True(scan)
 	if updScan, err := scans.UpdateStatus(scan); err != nil {
 		return updScan, errors.New(originalErr.Error() + err.Error())

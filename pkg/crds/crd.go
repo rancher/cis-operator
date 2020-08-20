@@ -5,10 +5,9 @@ import (
 	"io/ioutil"
 	"strings"
 
-	cisoperator "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
-	//using blank import
+	cisoperator "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 	"github.com/rancher/wrangler/pkg/crd"
-	_ "github.com/rancher/wrangler/pkg/generated/controllers/apiextensions.k8s.io"
+	_ "github.com/rancher/wrangler/pkg/generated/controllers/apiextensions.k8s.io" //using init
 	"github.com/rancher/wrangler/pkg/yaml"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -53,7 +52,7 @@ func List() []crd.CRD {
 func newCRD(obj interface{}, customize func(crd.CRD) crd.CRD) crd.CRD {
 	crd := crd.CRD{
 		GVK: schema.GroupVersionKind{
-			Group:   "clusterscan-operator.cattle.io",
+			Group:   "securityscan.cattle.io",
 			Version: "v1",
 		},
 		NonNamespace: true,

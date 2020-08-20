@@ -1,4 +1,4 @@
-package clusterscan_operator
+package securityscan
 
 import (
 	"context"
@@ -17,15 +17,15 @@ import (
 
 	"time"
 
-	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io"
-	v1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io"
+	v1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 	"github.com/rancher/wrangler/pkg/name"
 )
 
 // job events (successful completions) should remove the job after validatinf Done annotation and Output CM
 func (c *Controller) handleJobs(ctx context.Context) error {
-	scans := c.cisFactory.Clusterscanoperator().V1().ClusterScan()
-	reports := c.cisFactory.Clusterscanoperator().V1().ClusterScanReport()
+	scans := c.cisFactory.Securityscan().V1().ClusterScan()
+	reports := c.cisFactory.Securityscan().V1().ClusterScanReport()
 	jobs := c.batchFactory.Batch().V1().Job()
 
 	jobs.OnChange(ctx, c.Name, func(key string, obj *batchv1.Job) (*batchv1.Job, error) {
@@ -39,7 +39,7 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 		if obj.Labels == nil || !jobSelector.Matches(labels.Set(obj.Labels)) {
 			return obj, nil
 		}
-		// identify the clusterscan object for this job
+		// identify the scan object for this job
 		scanName, ok := obj.Labels[cisoperatorapi.LabelClusterScan]
 		if !ok {
 			// malformed, just delete it and move on
@@ -61,7 +61,7 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 		if v1.ClusterScanConditionComplete.IsTrue(scan) {
 			v1.ClusterScanConditionAlerted.Unknown(scan)
 			scan.Status.ObservedGeneration = scan.Generation
-			logrus.Infof("Marking ClusterScanConditionAlerted for clusterscan: %v", scanName)
+			logrus.Infof("Marking ClusterScanConditionAlerted for scan: %v", scanName)
 			//update scan
 			_, err = scans.UpdateStatus(scan)
 			if err != nil {
@@ -88,9 +88,9 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 			/* update scan */
 			_, err = scans.UpdateStatus(scancopy)
 			if err != nil {
-				return nil, fmt.Errorf("error updating condition of clusterscan object: %v", scanName)
+				return nil, fmt.Errorf("error updating condition of scan object: %v", scanName)
 			}
-			logrus.Infof("Marking ClusterScanConditionComplete for clusterscan: %v", scanName)
+			logrus.Infof("Marking ClusterScanConditionComplete for scan: %v", scanName)
 			jobs.Enqueue(obj.Namespace, obj.Name)
 		}
 		return obj, nil
@@ -148,7 +148,7 @@ func (c *Controller) getScanSummary(outputBytes []byte) (*v1.ClusterScanSummary,
 func (c *Controller) createClusterScanReport(outputBytes []byte, scan *v1.ClusterScan) (*v1.ClusterScanReport, error) {
 	scanReport := &v1.ClusterScanReport{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name.SafeConcatName("clusterscan-report-", scan.Name),
+			Name: name.SafeConcatName("scan-report-", scan.Name),
 		},
 	}
 	profile, err := c.getClusterScanProfile(scan)
@@ -160,12 +160,12 @@ func (c *Controller) createClusterScanReport(outputBytes []byte, scan *v1.Cluste
 
 	data, err := reportLibrary.GetJSONBytes(outputBytes)
 	if err != nil {
-		return nil, fmt.Errorf("Error %v loading clusterscan report json bytes", err)
+		return nil, fmt.Errorf("Error %v loading scan report json bytes", err)
 	}
 	scanReport.Spec.ReportJSON = string(data[:])
 
 	ownerRef := metav1.OwnerReference{
-		APIVersion: "clusterscan-operator.cattle.io/v1",
+		APIVersion: "securityscan.cattle.io/v1",
 		Kind:       "ClusterScan",
 		Name:       scan.Name,
 		UID:        scan.GetUID(),

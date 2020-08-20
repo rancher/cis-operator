@@ -1,4 +1,4 @@
-package clusterscan_operator
+package securityscan
 
 import (
 	"context"
@@ -17,8 +17,8 @@ import (
 	corectl "github.com/rancher/wrangler/pkg/generated/controllers/core"
 	"github.com/rancher/wrangler/pkg/start"
 
-	"github.com/rancher/clusterscan-operator/pkg/clusterscan-operator/clusterscan"
-	cisoperatorctl "github.com/rancher/clusterscan-operator/pkg/generated/controllers/clusterscan-operator.cattle.io"
+	cisoperatorctl "github.com/rancher/clusterscan-operator/pkg/generated/controllers/securityscan.cattle.io"
+	"github.com/rancher/clusterscan-operator/pkg/securityscan/scan"
 )
 
 type Controller struct {
@@ -34,7 +34,7 @@ type Controller struct {
 	apply        apply.Apply
 }
 
-func NewController(cfg *rest.Config, ctx context.Context, namespace, name string) (ctl *Controller, err error) {
+func NewController(ctx context.Context, cfg *rest.Config, namespace, name string) (ctl *Controller, err error) {
 	if cfg == nil {
 		cfg, err = rest.InClusterConfig()
 		if err != nil {
@@ -72,7 +72,7 @@ func NewController(cfg *rest.Config, ctx context.Context, namespace, name string
 	}
 	ctl.cisFactory, err = cisoperatorctl.NewFactoryFromConfig(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("Error building clusterscan-operator NewFactoryFromConfig: %s", err.Error())
+		return nil, fmt.Errorf("Error building securityscan NewFactoryFromConfig: %s", err.Error())
 	}
 
 	ctl.batchFactory, err = batchctl.NewFactoryFromConfig(cfg)
@@ -108,7 +108,7 @@ func (c *Controller) registerCRD(ctx context.Context) error {
 
 	var crds []crd.CRD
 	for _, crdFn := range []func() (*crd.CRD, error){
-		clusterscan.CRD,
+		scan.ClusterScanCRD,
 	} {
 		crdef, err := crdFn()
 		if err != nil {

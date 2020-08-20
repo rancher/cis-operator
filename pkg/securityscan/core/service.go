@@ -4,7 +4,7 @@ import (
 	"github.com/rancher/wrangler/pkg/name"
 	corev1 "k8s.io/api/core/v1"
 
-	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 )
 
 func NewService(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string) (service *corev1.Service, err error) {
@@ -15,7 +15,7 @@ func NewService(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *c
 		"runName":   name.SafeConcatName("security-scan-runner", clusterscan.Name),
 		"appName":   "rancher-cis-benchmark",
 	}
-	service, err = generateService(clusterscan, "service.template", "./pkg/clusterscan-operator/core/templates/service.template", servicedata)
+	service, err = generateService(clusterscan, "service.template", "./pkg/securityscan/core/templates/service.template", servicedata)
 	if err != nil {
 		return nil, err
 	}

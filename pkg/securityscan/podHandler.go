@@ -1,4 +1,4 @@
-package clusterscan_operator
+package securityscan
 
 import (
 	"context"
@@ -13,13 +13,13 @@ import (
 	corectlv1 "github.com/rancher/wrangler/pkg/generated/controllers/core/v1"
 	"github.com/rancher/wrangler/pkg/name"
 
-	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io"
-	v1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io"
+	v1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 )
 
 // pod events should update the job conditions after validating Done annotation and Output CM
 func (c *Controller) handlePods(ctx context.Context) error {
-	scans := c.cisFactory.Clusterscanoperator().V1().ClusterScan()
+	scans := c.cisFactory.Securityscan().V1().ClusterScan()
 	jobs := c.batchFactory.Batch().V1().Job()
 	pods := c.coreFactory.Core().V1().Pod()
 	pods.OnChange(ctx, c.Name, func(key string, obj *corev1.Pod) (*corev1.Pod, error) {
@@ -29,7 +29,7 @@ func (c *Controller) handlePods(ctx context.Context) error {
 		podSelector := labels.SelectorFromSet(labels.Set{
 			cisoperatorapi.LabelController: c.Name,
 		})
-		// only handle pods launched by clusterscan-operator
+		// only handle pods launched by securityscan
 		if obj.Labels == nil || !podSelector.Matches(labels.Set(obj.Labels)) {
 			return obj, nil
 		}
@@ -73,14 +73,14 @@ func (c *Controller) handlePods(ctx context.Context) error {
 				if done != "error" {
 					v1.ClusterScanConditionFailed.Message(scanCopy, done)
 				}
-				logrus.Infof("Marking ClusterScanConditionFailed for clusterscan: %v, error %v", scanName, done)
+				logrus.Infof("Marking ClusterScanConditionFailed for scan: %v, error %v", scanName, done)
 			}
 			//update scan
 			_, err = scans.UpdateStatus(scanCopy)
 			if err != nil {
 				return nil, fmt.Errorf("error updating condition of cluster scan object: %v", scanName)
 			}
-			logrus.Infof("Marking ClusterScanConditionRunCompleted for clusterscan: %v", scanName)
+			logrus.Infof("Marking ClusterScanConditionRunCompleted for scan: %v", scanName)
 			jobs.Enqueue(job.Namespace, job.Name)
 		}
 		return obj, nil

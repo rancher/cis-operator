@@ -16,8 +16,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 
-	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
-	clusterscan_operator "github.com/rancher/clusterscan-operator/pkg/clusterscan-operator"
+	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
+	clusterscan_operator "github.com/rancher/clusterscan-operator/pkg/securityscan"
 )
 
 var (
@@ -70,7 +70,7 @@ func run(c *cli.Context) {
 		logrus.Fatalf("failed to find kubeconfig: %v", err)
 	}
 
-	ctl, err := clusterscan_operator.NewController(kubeConfig, ctx, cisoperatorapiv1.ClusterScanNS, name)
+	ctl, err := clusterscan_operator.NewController(ctx, kubeConfig, cisoperatorapiv1.ClusterScanNS, name)
 	if err != nil {
 		logrus.Fatalf("Error building controller: %s", err.Error())
 	}

@@ -1,12 +1,12 @@
-package clusterscan
+package scan
 
 import (
-	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 	"github.com/rancher/wrangler/pkg/crd"
 	"github.com/rancher/wrangler/pkg/schemas/openapi"
 )
 
-func CRD() (*crd.CRD, error) {
+func ClusterScanCRD() (*crd.CRD, error) {
 	prototype := cisoperatorapiv1.NewClusterScan("", "", cisoperatorapiv1.ClusterScan{})
 	schema, err := openapi.ToOpenAPIFromStruct(*prototype)
 	if err != nil {
@@ -17,6 +17,6 @@ func CRD() (*crd.CRD, error) {
 		PluralName: cisoperatorapiv1.ClusterScanResourceName,
 		Status:     true,
 		Schema:     schema,
-		Categories: []string{"clusterscan-operator"},
+		Categories: []string{"securityscan"},
 	}, nil
 }

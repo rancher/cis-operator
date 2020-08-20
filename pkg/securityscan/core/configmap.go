@@ -11,8 +11,7 @@ import (
 
 	"github.com/rancher/wrangler/pkg/name"
 
-	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
-	"github.com/rancher/swarm/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 )
 
 type OverrideSkipInfoData struct {
@@ -35,7 +34,7 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		"sonobuoyImage":    "rancher/sonobuoy-sonobuoy:v0.16.3",
 		"sonobuoyVersion":  "v0.16.3",
 	}
-	configcm, err := generateConfigMap(clusterscan, "cisscanConfig.template", "./pkg/clusterscan-operator/core/templates/cisscanConfig.template", configdata)
+	configcm, err := generateConfigMap(clusterscan, "cisscanConfig.template", "./pkg/securityscan/core/templates/cisscanConfig.template", configdata)
 	if err != nil {
 		return configmaps, err
 	}
@@ -48,7 +47,7 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		"securityScanImage": "prachidamle/security-scan:v0.1.19",
 		"benchmarkVersion":  clusterscanprofile.Spec.BenchmarkVersion,
 	}
-	plugincm, err := generateConfigMap(clusterscan, "pluginConfig.template", "./pkg/clusterscan-operator/core/templates/pluginConfig.template", plugindata)
+	plugincm, err := generateConfigMap(clusterscan, "pluginConfig.template", "./pkg/securityscan/core/templates/pluginConfig.template", plugindata)
 	if err != nil {
 		return configmaps, err
 	}
@@ -62,7 +61,6 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 			return configmaps, err
 		}
 		skipConfigcm = getConfigMapObject(getOverrideConfigMapName(clusterscan), string(skipDataBytes))
-		logrus.Info("User Skip configmap %v", skipConfigcm)
 	}
 
 	configmaps = append(configmaps, configcm, plugincm, skipConfigcm)
