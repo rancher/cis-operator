@@ -80,7 +80,7 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						VolumeSource: corev1.VolumeSource{
 							ConfigMap: &corev1.ConfigMapVolumeSource{
 								LocalObjectReference: corev1.LocalObjectReference{
-									Name: cisoperatorapiv1.ClusterScanConfigMap,
+									Name: name.SafeConcatName(cisoperatorapiv1.ClusterScanConfigMap, clusterscan.Name),
 								},
 							},
 						},
@@ -89,7 +89,7 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						VolumeSource: corev1.VolumeSource{
 							ConfigMap: &corev1.ConfigMapVolumeSource{
 								LocalObjectReference: corev1.LocalObjectReference{
-									Name: cisoperatorapiv1.ClusterScanPluginsConfigMap,
+									Name: name.SafeConcatName(cisoperatorapiv1.ClusterScanPluginsConfigMap, clusterscan.Name),
 								},
 							},
 						},
@@ -101,7 +101,7 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 					}},
 					Containers: []corev1.Container{{
 						Name:            `rancher-cis-benchmark`,
-						Image:           `prachidamle/security-scan:v0.1.19`,
+						Image:           `prachidamle/security-scan:v0.1.20`,
 						ImagePullPolicy: corev1.PullAlways,
 						Env: []corev1.EnvVar{{
 							Name:  `OVERRIDE_BENCHMARK_VERSION`,

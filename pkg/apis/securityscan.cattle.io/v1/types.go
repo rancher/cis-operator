@@ -11,11 +11,11 @@ const (
 	ClusterProviderEKS = "eks"
 	ClusterProviderGKE = "gke"
 
-	ClusterScanNS                = "scan-system"
-	ClusterScanSA                = "scan-serviceaccount"
-	ClusterScanConfigMap         = "scan-s-config-cm"
-	ClusterScanPluginsConfigMap  = "scan-s-plugins-cm"
-	ClusterScanUserSkipConfigMap = "scan-s-user-skip-cm"
+	ClusterScanNS                = "clusterscan-system"
+	ClusterScanSA                = "clusterscan-serviceaccount"
+	ClusterScanConfigMap         = "clusterscan-s-config-cm"
+	ClusterScanPluginsConfigMap  = "clusterscan-s-plugins-cm"
+	ClusterScanUserSkipConfigMap = "clusterscan-s-user-skip-cm"
 	ClusterScanService           = "service-rancher-cis-benchmark"
 	DefaultScanOutputFileName    = "output.json"
 

@@ -59,6 +59,7 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 
 		// if the scan has completed then delete the job
 		if v1.ClusterScanConditionComplete.IsTrue(scan) {
+			c.ensureCleanup(scan)
 			v1.ClusterScanConditionAlerted.Unknown(scan)
 			scan.Status.ObservedGeneration = scan.Generation
 			logrus.Infof("Marking ClusterScanConditionAlerted for scan: %v", scanName)
@@ -173,4 +174,26 @@ func (c *Controller) createClusterScanReport(outputBytes []byte, scan *v1.Cluste
 	scanReport.ObjectMeta.OwnerReferences = append(scanReport.ObjectMeta.OwnerReferences, ownerRef)
 
 	return scanReport, nil
+}
+
+func (c *Controller) ensureCleanup(scan *v1.ClusterScan) error {
+	var err error
+	configmaps := c.coreFactory.Core().V1().ConfigMap()
+	// Delete cms
+	cms, err := configmaps.List(v1.ClusterScanNS, metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("cis: ensureCleanup: error listing cm: %v", err)
+	} else {
+		for _, cm := range cms.Items {
+			if !strings.Contains(cm.Name, scan.Name) {
+				continue
+			}
+
+			if e := configmaps.Delete(v1.ClusterScanNS, cm.Name, &metav1.DeleteOptions{}); e != nil && !errors.IsNotFound(e) {
+				return fmt.Errorf("cis: ensureCleanup: error deleting cm %v: %v", cm.Name, e)
+			}
+		}
+	}
+
+	return err
 }
