@@ -44,7 +44,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					return objects, status, fmt.Errorf("Error %v loading v1.ClusterScanProfile for name %v", obj.Spec.ScanProfileName, err)
 				}
 				logrus.Infof("Launching a new on demand Job to run cis using profile %v", profile.Name)
-				configmaps, err := ciscore.NewConfigMaps(obj, profile, c.Name)
+				configmaps, err := ciscore.NewConfigMaps(obj, profile, c.Name, c.ImageConfig)
 				if err != nil {
 					return objects, status, fmt.Errorf("Error when creating ConfigMaps: %v", err)
 				}
@@ -53,7 +53,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					return objects, status, fmt.Errorf("Error when creating Service: %v", err)
 				}
 
-				objects = append(objects, cisjob.New(obj, profile, c.Name), configmaps[0], configmaps[1], configmaps[2], service)
+				objects = append(objects, cisjob.New(obj, profile, c.Name, c.ImageConfig), configmaps[0], configmaps[1], configmaps[2], service)
 
 				obj.Status.LastRunTimestamp = time.Now().String()
 				obj.Status.Enabled = true

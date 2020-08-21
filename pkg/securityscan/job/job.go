@@ -43,7 +43,7 @@ var (
 	}(defaultTerminationGracePeriodSeconds)
 )
 
-func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string) *batchv1.Job {
+func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig) *batchv1.Job {
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name.SafeConcatName("security-scan-runner", clusterscan.Name),
@@ -101,7 +101,7 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 					}},
 					Containers: []corev1.Container{{
 						Name:            `rancher-cis-benchmark`,
-						Image:           `prachidamle/security-scan:v0.1.20`,
+						Image:           imageConfig.SecurityScanImage + ":" + imageConfig.SecurityScanImageTag,
 						ImagePullPolicy: corev1.PullAlways,
 						Env: []corev1.EnvVar{{
 							Name:  `OVERRIDE_BENCHMARK_VERSION`,
@@ -144,7 +144,6 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 	}
 	//add userskip configmap if present
 	if clusterscanprofile.Spec.SkipTests != nil && len(clusterscanprofile.Spec.SkipTests) > 0 {
-		logrus.Infof("Adding skip volume %v ", clusterscanprofile.Spec.SkipTests)
 		skipVol := corev1.Volume{
 			Name: `user-skip-info-volume`,
 			VolumeSource: corev1.VolumeSource{

@@ -11,7 +11,7 @@ const (
 	ClusterProviderEKS = "eks"
 	ClusterProviderGKE = "gke"
 
-	ClusterScanNS                = "clusterscan-system"
+	ClusterScanNS                = "cattle-clusterscan-system"
 	ClusterScanSA                = "clusterscan-serviceaccount"
 	ClusterScanConfigMap         = "clusterscan-s-config-cm"
 	ClusterScanPluginsConfigMap  = "clusterscan-s-plugins-cm"
@@ -133,4 +133,11 @@ type ScheduledScanStatus struct {
 	LastClusterScanName string                              `yaml:"last_clusterscan_name" json:"lastClusterScanName"`
 	ObservedGeneration  int64                               `json:"observedGeneration"`
 	Conditions          []genericcondition.GenericCondition `json:"conditions,omitempty"`
+}
+
+type ScanImageConfig struct {
+	SecurityScanImage    string
+	SecurityScanImageTag string
+	SonobuoyImage        string
+	SonobuoyImageTag     string
 }

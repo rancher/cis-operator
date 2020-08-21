@@ -183,15 +183,14 @@ func (c *Controller) ensureCleanup(scan *v1.ClusterScan) error {
 	cms, err := configmaps.List(v1.ClusterScanNS, metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("cis: ensureCleanup: error listing cm: %v", err)
-	} else {
-		for _, cm := range cms.Items {
-			if !strings.Contains(cm.Name, scan.Name) {
-				continue
-			}
+	}
+	for _, cm := range cms.Items {
+		if !strings.Contains(cm.Name, scan.Name) {
+			continue
+		}
 
-			if e := configmaps.Delete(v1.ClusterScanNS, cm.Name, &metav1.DeleteOptions{}); e != nil && !errors.IsNotFound(e) {
-				return fmt.Errorf("cis: ensureCleanup: error deleting cm %v: %v", cm.Name, e)
-			}
+		if e := configmaps.Delete(v1.ClusterScanNS, cm.Name, &metav1.DeleteOptions{}); e != nil && !errors.IsNotFound(e) {
+			return fmt.Errorf("cis: ensureCleanup: error deleting cm %v: %v", cm.Name, e)
 		}
 	}
 

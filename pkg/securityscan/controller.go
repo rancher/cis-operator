@@ -17,6 +17,7 @@ import (
 	corectl "github.com/rancher/wrangler/pkg/generated/controllers/core"
 	"github.com/rancher/wrangler/pkg/start"
 
+	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 	cisoperatorctl "github.com/rancher/clusterscan-operator/pkg/generated/controllers/securityscan.cattle.io"
 	"github.com/rancher/clusterscan-operator/pkg/securityscan/scan"
 )
@@ -25,6 +26,7 @@ type Controller struct {
 	Namespace       string
 	Name            string
 	ClusterProvider string
+	ImageConfig     *cisoperatorapiv1.ScanImageConfig
 
 	kcs          *kubernetes.Clientset
 	xcs          *kubeapiext.Clientset
@@ -34,7 +36,7 @@ type Controller struct {
 	apply        apply.Apply
 }
 
-func NewController(ctx context.Context, cfg *rest.Config, namespace, name string) (ctl *Controller, err error) {
+func NewController(ctx context.Context, cfg *rest.Config, namespace, name string, imgConfig *cisoperatorapiv1.ScanImageConfig) (ctl *Controller, err error) {
 	if cfg == nil {
 		cfg, err = rest.InClusterConfig()
 		if err != nil {
@@ -42,8 +44,9 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 		}
 	}
 	ctl = &Controller{
-		Namespace: namespace,
-		Name:      name,
+		Namespace:   namespace,
+		Name:        name,
+		ImageConfig: imgConfig,
 	}
 
 	ctl.kcs, err = kubernetes.NewForConfig(cfg)

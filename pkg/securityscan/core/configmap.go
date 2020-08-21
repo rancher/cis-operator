@@ -23,7 +23,7 @@ var (
 	ConfigFileName      = "config.json"
 )
 
-func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string) (configmaps []*corev1.ConfigMap, err error) {
+func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig) (configmaps []*corev1.ConfigMap, err error) {
 
 	configdata := map[string]interface{}{
 		"namespace":        cisoperatorapiv1.ClusterScanNS,
@@ -31,9 +31,8 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		"runName":          name.SafeConcatName("security-scan-runner", clusterscan.Name),
 		"appName":          "rancher-cis-benchmark",
 		"advertiseAddress": cisoperatorapiv1.ClusterScanService,
-		"sonobuoyImage":    "rancher/sonobuoy-sonobuoy:v0.16.3",
-		"sonobuoyVersion":  "v0.16.3",
-		//"resultsDir":       name.SafeConcatName("/tmp/sonobuoy", clusterscan.Name),
+		"sonobuoyImage":    imageConfig.SonobuoyImage + ":" + imageConfig.SonobuoyImageTag,
+		"sonobuoyVersion":  imageConfig.SonobuoyImageTag,
 	}
 	configcm, err := generateConfigMap(clusterscan, "cisscanConfig.template", "./pkg/securityscan/core/templates/cisscanConfig.template", configdata)
 	if err != nil {
@@ -45,7 +44,7 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		"runName":           name.SafeConcatName("security-scan-runner", clusterscan.Name),
 		"appName":           "rancher-cis-benchmark",
 		"serviceaccount":    cisoperatorapiv1.ClusterScanSA,
-		"securityScanImage": "prachidamle/security-scan:v0.1.20",
+		"securityScanImage": imageConfig.SecurityScanImage + ":" + imageConfig.SecurityScanImageTag,
 		"benchmarkVersion":  clusterscanprofile.Spec.BenchmarkVersion,
 	}
 	plugincm, err := generateConfigMap(clusterscan, "pluginConfig.template", "./pkg/securityscan/core/templates/pluginConfig.template", plugindata)
