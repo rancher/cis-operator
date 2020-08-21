@@ -1,4 +1,4 @@
-module github.com/prachidamle/clusterscan-operator
+module github.com/rancher/clusterscan-operator
 
 go 1.13
 

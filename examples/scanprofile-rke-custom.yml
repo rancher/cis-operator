@@ -2,7 +2,11 @@
 apiVersion: securityscan.cattle.io/v1
 kind: ClusterScanProfile
 metadata:
-  name: rke-profile-permissive
+  name: rke-profile-custom
 spec:
   clusterProvider: rke
   benchmarkVersion: rke-cis-1.5-permissive
+  skipTests:
+    - "1.1.20"
+    - "1.1.21"
+

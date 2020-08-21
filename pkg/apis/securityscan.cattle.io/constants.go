@@ -1,5 +1,4 @@
-package clusterscanoperator
-
+package securityscan
 
 const (
 	// LabelController is the name of the cis controller.
@@ -9,7 +8,7 @@ const (
 	LabelProfile = GroupName + `/clusterscanprofile`
 
 	// LabelPlan is the plan being applied.
-	LabelClusterScan = GroupName + `/clusterscan`
+	LabelClusterScan = GroupName + `/scan`
 
 	SonobuoyCompletionAnnotation = "field.cattle.io/sonobuoyDone"
 )

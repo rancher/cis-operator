@@ -19,7 +19,7 @@ limitations under the License.
 package v1
 
 import (
-	v1 "github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	v1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 	"github.com/rancher/lasso/pkg/controller"
 	"github.com/rancher/wrangler/pkg/schemes"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,6 +32,8 @@ func init() {
 type Interface interface {
 	ClusterScan() ClusterScanController
 	ClusterScanProfile() ClusterScanProfileController
+	ClusterScanReport() ClusterScanReportController
+	ScheduledScan() ScheduledScanController
 }
 
 func New(controllerFactory controller.SharedControllerFactory) Interface {
@@ -45,8 +47,14 @@ type version struct {
 }
 
 func (c *version) ClusterScan() ClusterScanController {
-	return NewClusterScanController(schema.GroupVersionKind{Group: "clusterscan-operator.cattle.io", Version: "v1", Kind: "ClusterScan"}, "clusterscans", true, c.controllerFactory)
+	return NewClusterScanController(schema.GroupVersionKind{Group: "securityscan.cattle.io", Version: "v1", Kind: "ClusterScan"}, "clusterscans", false, c.controllerFactory)
 }
 func (c *version) ClusterScanProfile() ClusterScanProfileController {
-	return NewClusterScanProfileController(schema.GroupVersionKind{Group: "clusterscan-operator.cattle.io", Version: "v1", Kind: "ClusterScanProfile"}, "clusterscanprofiles", true, c.controllerFactory)
+	return NewClusterScanProfileController(schema.GroupVersionKind{Group: "securityscan.cattle.io", Version: "v1", Kind: "ClusterScanProfile"}, "clusterscanprofiles", false, c.controllerFactory)
+}
+func (c *version) ClusterScanReport() ClusterScanReportController {
+	return NewClusterScanReportController(schema.GroupVersionKind{Group: "securityscan.cattle.io", Version: "v1", Kind: "ClusterScanReport"}, "clusterscanreports", false, c.controllerFactory)
+}
+func (c *version) ScheduledScan() ScheduledScanController {
+	return NewScheduledScanController(schema.GroupVersionKind{Group: "securityscan.cattle.io", Version: "v1", Kind: "ScheduledScan"}, "scheduledscans", false, c.controllerFactory)
 }

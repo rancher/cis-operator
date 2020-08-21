@@ -6,25 +6,30 @@ package main
 
 import (
 	"context"
-	"flag"
+	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/rancher/wrangler/pkg/kubeconfig"
 	"github.com/rancher/wrangler/pkg/signals"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
-	"github.com/prachidamle/clusterscan-operator/pkg/clusterscan-operator"
-	cisoperatorapiv1 "github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
-	"time"
+
+	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
+	clusterscan_operator "github.com/rancher/clusterscan-operator/pkg/securityscan"
 )
 
 var (
-	Version    = "v0.0.0-dev"
-	GitCommit  = "HEAD"
-	KubeConfig string
-	threads int
-	name string
+	Version              = "v0.0.0-dev"
+	GitCommit            = "HEAD"
+	kubeConfig           string
+	threads              int
+	name                 string
+	securityScanImage    = "prachidamle/security-scan"
+	securityScanImageTag = "v0.1.20"
+	sonobuoyImage        = "rancher/sonobuoy-sonobuoy"
+	sonobuoyImageTag     = "v0.16.3"
 )
 
 func main() {
@@ -36,19 +41,43 @@ func main() {
 		cli.StringFlag{
 			Name:        "kubeconfig",
 			EnvVar:      "KUBECONFIG",
-			Destination: &KubeConfig,
+			Destination: &kubeConfig,
 		},
 		cli.IntFlag{
 			Name:        "threads",
-			EnvVar:      "CIS_OPERATOR_THREADS",
+			EnvVar:      "CLUSTER_SCAN_OPERATOR_THREADS",
 			Value:       2,
 			Destination: &threads,
 		},
 		cli.StringFlag{
 			Name:        "name",
-			EnvVar:      "CIS_OPERATOR_NAME",
+			EnvVar:      "CLUSTER_SCAN_OPERATOR_NAME",
 			Value:       "clusterscan-operator",
 			Destination: &name,
+		},
+		cli.StringFlag{
+			Name:        "security-scan-image",
+			EnvVar:      "SECURITY_SCAN_IMAGE",
+			Value:       "rancher/security-scan",
+			Destination: &securityScanImage,
+		},
+		cli.StringFlag{
+			Name:        "security-scan-image-tag",
+			EnvVar:      "SECURITY_SCAN_IMAGE_TAG",
+			Value:       "latest",
+			Destination: &securityScanImageTag,
+		},
+		cli.StringFlag{
+			Name:        "sonobuoy-image",
+			EnvVar:      "SONOBUOY_IMAGE",
+			Value:       "rancher/sonobuoy-sonobuoy",
+			Destination: &sonobuoyImage,
+		},
+		cli.StringFlag{
+			Name:        "sonobuoy-image-tag",
+			EnvVar:      "SONOBUOY_IMAGE_TAG",
+			Value:       "v0.16.3",
+			Destination: &sonobuoyImageTag,
 		},
 	}
 	app.Action = run
@@ -59,17 +88,35 @@ func main() {
 }
 
 func run(c *cli.Context) {
-	flag.Parse()
 
 	logrus.Info("Starting ClusterScan-Operator")
 	ctx := signals.SetupSignalHandler(context.Background())
 
-	kubeConfig, err := kubeconfig.GetNonInteractiveClientConfig(KubeConfig).ClientConfig()
+	kubeConfig = c.String("kubeconfig")
+	threads = c.Int("threads")
+	securityScanImage = c.String("security-scan-image")
+	securityScanImageTag = c.String("security-scan-image-tag")
+	sonobuoyImage = c.String("sonobuoy-image")
+	sonobuoyImageTag = c.String("sonobuoy-image-tag")
+	name = c.String("name")
+
+	kubeConfig, err := kubeconfig.GetNonInteractiveClientConfig(kubeConfig).ClientConfig()
 	if err != nil {
 		logrus.Fatalf("failed to find kubeconfig: %v", err)
 	}
 
-	ctl, err := clusterscan_operator.NewController(kubeConfig, ctx, cisoperatorapiv1.ClusterScanNS, name)
+	imgConfig := &cisoperatorapiv1.ScanImageConfig{
+		SecurityScanImage:    securityScanImage,
+		SecurityScanImageTag: securityScanImageTag,
+		SonobuoyImage:        sonobuoyImage,
+		SonobuoyImageTag:     sonobuoyImageTag,
+	}
+
+	if err := validateConfig(imgConfig); err != nil {
+		logrus.Fatalf("Error starting ClusterScan-Operator: %v", err)
+	}
+
+	ctl, err := clusterscan_operator.NewController(ctx, kubeConfig, cisoperatorapiv1.ClusterScanNS, name, imgConfig)
 	if err != nil {
 		logrus.Fatalf("Error building controller: %s", err.Error())
 	}
@@ -80,4 +127,16 @@ func run(c *cli.Context) {
 	}
 	<-ctx.Done()
 	logrus.Info("Registered ClusterScan controller")
+}
+
+func validateConfig(imgConfig *cisoperatorapiv1.ScanImageConfig) error {
+	if imgConfig.SecurityScanImage == "" {
+		return errors.New("No Security-Scan Image specified")
+	}
+
+	if imgConfig.SonobuoyImage == "" {
+		return errors.New("No Sonobuoy tool Image specified")
+	}
+
+	return nil
 }

@@ -3,11 +3,11 @@ package condition
 // adapted from rancher/wrangler
 
 import (
-"reflect"
-"time"
+	"reflect"
+	"time"
 
-"github.com/sirupsen/logrus"
-metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Cond string

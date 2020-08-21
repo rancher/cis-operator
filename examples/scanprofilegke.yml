@@ -1,5 +1,5 @@
 ---
-apiVersion: clusterscan-operator.cattle.io/v1
+apiVersion: securityscan.cattle.io/v1
 kind: ClusterScanProfile
 metadata:
   name: gke-profile

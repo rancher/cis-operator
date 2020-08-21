@@ -22,7 +22,7 @@ import (
 	"context"
 	"time"
 
-	v1 "github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	v1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 	"github.com/rancher/lasso/pkg/client"
 	"github.com/rancher/lasso/pkg/controller"
 	"github.com/rancher/wrangler/pkg/generic"
@@ -46,8 +46,8 @@ type ClusterScanProfileController interface {
 
 	OnChange(ctx context.Context, name string, sync ClusterScanProfileHandler)
 	OnRemove(ctx context.Context, name string, sync ClusterScanProfileHandler)
-	Enqueue(namespace, name string)
-	EnqueueAfter(namespace, name string, duration time.Duration)
+	Enqueue(name string)
+	EnqueueAfter(name string, duration time.Duration)
 
 	Cache() ClusterScanProfileCache
 }
@@ -56,16 +56,16 @@ type ClusterScanProfileClient interface {
 	Create(*v1.ClusterScanProfile) (*v1.ClusterScanProfile, error)
 	Update(*v1.ClusterScanProfile) (*v1.ClusterScanProfile, error)
 
-	Delete(namespace, name string, options *metav1.DeleteOptions) error
-	Get(namespace, name string, options metav1.GetOptions) (*v1.ClusterScanProfile, error)
-	List(namespace string, opts metav1.ListOptions) (*v1.ClusterScanProfileList, error)
-	Watch(namespace string, opts metav1.ListOptions) (watch.Interface, error)
-	Patch(namespace, name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.ClusterScanProfile, err error)
+	Delete(name string, options *metav1.DeleteOptions) error
+	Get(name string, options metav1.GetOptions) (*v1.ClusterScanProfile, error)
+	List(opts metav1.ListOptions) (*v1.ClusterScanProfileList, error)
+	Watch(opts metav1.ListOptions) (watch.Interface, error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.ClusterScanProfile, err error)
 }
 
 type ClusterScanProfileCache interface {
-	Get(namespace, name string) (*v1.ClusterScanProfile, error)
-	List(namespace string, selector labels.Selector) ([]*v1.ClusterScanProfile, error)
+	Get(name string) (*v1.ClusterScanProfile, error)
+	List(selector labels.Selector) ([]*v1.ClusterScanProfile, error)
 
 	AddIndexer(indexName string, indexer ClusterScanProfileIndexer)
 	GetByIndex(indexName, key string) ([]*v1.ClusterScanProfile, error)
@@ -151,12 +151,12 @@ func (c *clusterScanProfileController) OnRemove(ctx context.Context, name string
 	c.AddGenericHandler(ctx, name, generic.NewRemoveHandler(name, c.Updater(), FromClusterScanProfileHandlerToHandler(sync)))
 }
 
-func (c *clusterScanProfileController) Enqueue(namespace, name string) {
-	c.controller.Enqueue(namespace, name)
+func (c *clusterScanProfileController) Enqueue(name string) {
+	c.controller.Enqueue("", name)
 }
 
-func (c *clusterScanProfileController) EnqueueAfter(namespace, name string, duration time.Duration) {
-	c.controller.EnqueueAfter(namespace, name, duration)
+func (c *clusterScanProfileController) EnqueueAfter(name string, duration time.Duration) {
+	c.controller.EnqueueAfter("", name, duration)
 }
 
 func (c *clusterScanProfileController) Informer() cache.SharedIndexInformer {
@@ -176,38 +176,38 @@ func (c *clusterScanProfileController) Cache() ClusterScanProfileCache {
 
 func (c *clusterScanProfileController) Create(obj *v1.ClusterScanProfile) (*v1.ClusterScanProfile, error) {
 	result := &v1.ClusterScanProfile{}
-	return result, c.client.Create(context.TODO(), obj.Namespace, obj, result, metav1.CreateOptions{})
+	return result, c.client.Create(context.TODO(), "", obj, result, metav1.CreateOptions{})
 }
 
 func (c *clusterScanProfileController) Update(obj *v1.ClusterScanProfile) (*v1.ClusterScanProfile, error) {
 	result := &v1.ClusterScanProfile{}
-	return result, c.client.Update(context.TODO(), obj.Namespace, obj, result, metav1.UpdateOptions{})
+	return result, c.client.Update(context.TODO(), "", obj, result, metav1.UpdateOptions{})
 }
 
-func (c *clusterScanProfileController) Delete(namespace, name string, options *metav1.DeleteOptions) error {
+func (c *clusterScanProfileController) Delete(name string, options *metav1.DeleteOptions) error {
 	if options == nil {
 		options = &metav1.DeleteOptions{}
 	}
-	return c.client.Delete(context.TODO(), namespace, name, *options)
+	return c.client.Delete(context.TODO(), "", name, *options)
 }
 
-func (c *clusterScanProfileController) Get(namespace, name string, options metav1.GetOptions) (*v1.ClusterScanProfile, error) {
+func (c *clusterScanProfileController) Get(name string, options metav1.GetOptions) (*v1.ClusterScanProfile, error) {
 	result := &v1.ClusterScanProfile{}
-	return result, c.client.Get(context.TODO(), namespace, name, result, options)
+	return result, c.client.Get(context.TODO(), "", name, result, options)
 }
 
-func (c *clusterScanProfileController) List(namespace string, opts metav1.ListOptions) (*v1.ClusterScanProfileList, error) {
+func (c *clusterScanProfileController) List(opts metav1.ListOptions) (*v1.ClusterScanProfileList, error) {
 	result := &v1.ClusterScanProfileList{}
-	return result, c.client.List(context.TODO(), namespace, result, opts)
+	return result, c.client.List(context.TODO(), "", result, opts)
 }
 
-func (c *clusterScanProfileController) Watch(namespace string, opts metav1.ListOptions) (watch.Interface, error) {
-	return c.client.Watch(context.TODO(), namespace, opts)
+func (c *clusterScanProfileController) Watch(opts metav1.ListOptions) (watch.Interface, error) {
+	return c.client.Watch(context.TODO(), "", opts)
 }
 
-func (c *clusterScanProfileController) Patch(namespace, name string, pt types.PatchType, data []byte, subresources ...string) (*v1.ClusterScanProfile, error) {
+func (c *clusterScanProfileController) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (*v1.ClusterScanProfile, error) {
 	result := &v1.ClusterScanProfile{}
-	return result, c.client.Patch(context.TODO(), namespace, name, pt, data, result, metav1.PatchOptions{}, subresources...)
+	return result, c.client.Patch(context.TODO(), "", name, pt, data, result, metav1.PatchOptions{}, subresources...)
 }
 
 type clusterScanProfileCache struct {
@@ -215,8 +215,8 @@ type clusterScanProfileCache struct {
 	resource schema.GroupResource
 }
 
-func (c *clusterScanProfileCache) Get(namespace, name string) (*v1.ClusterScanProfile, error) {
-	obj, exists, err := c.indexer.GetByKey(namespace + "/" + name)
+func (c *clusterScanProfileCache) Get(name string) (*v1.ClusterScanProfile, error) {
+	obj, exists, err := c.indexer.GetByKey(name)
 	if err != nil {
 		return nil, err
 	}
@@ -226,9 +226,9 @@ func (c *clusterScanProfileCache) Get(namespace, name string) (*v1.ClusterScanPr
 	return obj.(*v1.ClusterScanProfile), nil
 }
 
-func (c *clusterScanProfileCache) List(namespace string, selector labels.Selector) (ret []*v1.ClusterScanProfile, err error) {
+func (c *clusterScanProfileCache) List(selector labels.Selector) (ret []*v1.ClusterScanProfile, err error) {
 
-	err = cache.ListAllByNamespace(c.indexer, namespace, selector, func(m interface{}) {
+	err = cache.ListAll(c.indexer, selector, func(m interface{}) {
 		ret = append(ret, m.(*v1.ClusterScanProfile))
 	})
 

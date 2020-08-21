@@ -1,24 +1,25 @@
-package clusterscan_operator
+package securityscan
 
 import (
 	"context"
 	"fmt"
-	corev1 "k8s.io/api/core/v1"
+
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/labels"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/rancher/wrangler/pkg/name"
 	corectlv1 "github.com/rancher/wrangler/pkg/generated/controllers/core/v1"
+	"github.com/rancher/wrangler/pkg/name"
 
-	cisoperatorapi "github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io"
-	"github.com/prachidamle/clusterscan-operator/pkg/apis/clusterscan-operator.cattle.io/v1"
+	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io"
+	v1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
 )
 
 // pod events should update the job conditions after validating Done annotation and Output CM
 func (c *Controller) handlePods(ctx context.Context) error {
-	scans := c.cisFactory.Clusterscanoperator().V1().ClusterScan()
+	scans := c.cisFactory.Securityscan().V1().ClusterScan()
 	jobs := c.batchFactory.Batch().V1().Job()
 	pods := c.coreFactory.Core().V1().Pod()
 	pods.OnChange(ctx, c.Name, func(key string, obj *corev1.Pod) (*corev1.Pod, error) {
@@ -28,7 +29,7 @@ func (c *Controller) handlePods(ctx context.Context) error {
 		podSelector := labels.SelectorFromSet(labels.Set{
 			cisoperatorapi.LabelController: c.Name,
 		})
-		// only handle pods launched by clusterscan-operator
+		// only handle pods launched by securityscan
 		if obj.Labels == nil || !podSelector.Matches(labels.Set(obj.Labels)) {
 			return obj, nil
 		}
@@ -44,24 +45,24 @@ func (c *Controller) handlePods(ctx context.Context) error {
 			return nil, nil
 		}
 		// get the scan being run
-		scan, err := scans.Get("default", scanName, metav1.GetOptions{})
+		scan, err := scans.Get(scanName, metav1.GetOptions{})
 		switch {
-			case errors.IsNotFound(err):
-				// scan is gone, delete
-				logrus.Infof("scan gone, just delete it and move on %v", scanName)
-				return nil, nil
-			case err != nil:
-				return obj, err
+		case errors.IsNotFound(err):
+			// scan is gone, delete
+			logrus.Infof("scan gone, just delete it and move on %v", scanName)
+			return nil, nil
+		case err != nil:
+			return obj, err
 		}
 
 		//find the job for this Pod and the clusterScan as well
 		jobName := name.SafeConcatName("security-scan-runner", scanName)
 		job, err := jobs.Cache().Get(obj.Namespace, jobName)
 		switch {
-			case errors.IsNotFound(err):
-				return nil, nil
-			case err != nil:
-				return obj, err
+		case errors.IsNotFound(err):
+			return nil, nil
+		case err != nil:
+			return obj, err
 		}
 
 		scanCopy := scan.DeepCopy()
@@ -72,14 +73,14 @@ func (c *Controller) handlePods(ctx context.Context) error {
 				if done != "error" {
 					v1.ClusterScanConditionFailed.Message(scanCopy, done)
 				}
-				logrus.Infof("Marking ClusterScanConditionFailed for clusterscan: %v, error %v", scanName, done)
+				logrus.Infof("Marking ClusterScanConditionFailed for scan: %v, error %v", scanName, done)
 			}
 			//update scan
 			_, err = scans.UpdateStatus(scanCopy)
 			if err != nil {
 				return nil, fmt.Errorf("error updating condition of cluster scan object: %v", scanName)
 			}
-			logrus.Infof("Marking ClusterScanConditionRunCompleted for clusterscan: %v", scanName)
+			logrus.Infof("Marking ClusterScanConditionRunCompleted for scan: %v", scanName)
 			jobs.Enqueue(job.Namespace, job.Name)
 		}
 		return obj, nil

@@ -1,8 +1,8 @@
 ---
-apiVersion: clusterscan-operator.cattle.io/v1
+apiVersion: securityscan.cattle.io/v1
 kind: ClusterScan
 metadata:
-  name: run-gke-1.0
+  name: run-gke-scan
 spec:
   clusterProvider: gke
   runType: manual
