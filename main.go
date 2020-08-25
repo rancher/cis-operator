@@ -16,8 +16,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 
-	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
-	clusterscan_operator "github.com/rancher/clusterscan-operator/pkg/securityscan"
+	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
+	cisoperator "github.com/rancher/cis-operator/pkg/securityscan"
 )
 
 var (
@@ -34,9 +34,9 @@ var (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "clusterscan-operator"
+	app.Name = "cis-operator"
 	app.Version = fmt.Sprintf("%s (%s)", Version, GitCommit)
-	app.Usage = "clusterscan-operator needs help!"
+	app.Usage = "cis-operator needs help!"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "kubeconfig",
@@ -45,14 +45,14 @@ func main() {
 		},
 		cli.IntFlag{
 			Name:        "threads",
-			EnvVar:      "CLUSTER_SCAN_OPERATOR_THREADS",
+			EnvVar:      "CIS_OPERATOR_THREADS",
 			Value:       2,
 			Destination: &threads,
 		},
 		cli.StringFlag{
 			Name:        "name",
-			EnvVar:      "CLUSTER_SCAN_OPERATOR_NAME",
-			Value:       "clusterscan-operator",
+			EnvVar:      "CIS_OPERATOR_NAME",
+			Value:       "cis-operator",
 			Destination: &name,
 		},
 		cli.StringFlag{
@@ -89,7 +89,7 @@ func main() {
 
 func run(c *cli.Context) {
 
-	logrus.Info("Starting ClusterScan-Operator")
+	logrus.Info("Starting CIS-Operator")
 	ctx := signals.SetupSignalHandler(context.Background())
 
 	kubeConfig = c.String("kubeconfig")
@@ -113,20 +113,19 @@ func run(c *cli.Context) {
 	}
 
 	if err := validateConfig(imgConfig); err != nil {
-		logrus.Fatalf("Error starting ClusterScan-Operator: %v", err)
+		logrus.Fatalf("Error starting CIS-Operator: %v", err)
 	}
 
-	ctl, err := clusterscan_operator.NewController(ctx, kubeConfig, cisoperatorapiv1.ClusterScanNS, name, imgConfig)
+	ctl, err := cisoperator.NewController(ctx, kubeConfig, cisoperatorapiv1.ClusterScanNS, name, imgConfig)
 	if err != nil {
 		logrus.Fatalf("Error building controller: %s", err.Error())
 	}
-	logrus.Info("Registering ClusterScan controller")
 
 	if err := ctl.Start(ctx, threads, 2*time.Hour); err != nil {
 		logrus.Fatalf("Error starting: %v", err)
 	}
 	<-ctx.Done()
-	logrus.Info("Registered ClusterScan controller")
+	logrus.Info("Registered CIS controller")
 }
 
 func validateConfig(imgConfig *cisoperatorapiv1.ScanImageConfig) error {

@@ -6,17 +6,17 @@ import (
 	controllergen "github.com/rancher/wrangler/pkg/controller-gen"
 	"github.com/rancher/wrangler/pkg/controller-gen/args"
 
-	v1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
-	"github.com/rancher/clusterscan-operator/pkg/crds"
+	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
+	"github.com/rancher/cis-operator/pkg/crds"
 )
 
 func main() {
 	os.Unsetenv("GOPATH")
 	controllergen.Run(args.Options{
-		OutputPackage: "github.com/rancher/clusterscan-operator/pkg/generated",
+		OutputPackage: "github.com/rancher/cis-operator/pkg/generated",
 		Boilerplate:   "scripts/boilerplate.go.txt",
 		Groups: map[string]args.Group{
-			"securityscan.cattle.io": {
+			"cis.cattle.io": {
 				Types: []interface{}{
 					v1.ClusterScan{},
 					v1.ClusterScanProfile{},

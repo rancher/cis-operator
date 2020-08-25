@@ -1,4 +1,4 @@
-module github.com/rancher/clusterscan-operator
+module github.com/rancher/cis-operator
 
 go 1.13
 

@@ -11,7 +11,7 @@ import (
 
 	"github.com/rancher/wrangler/pkg/name"
 
-	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
+	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 )
 
 type OverrideSkipInfoData struct {

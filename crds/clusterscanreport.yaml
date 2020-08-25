@@ -1,9 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: clusterscanreports.securityscan.cattle.io
+  name: clusterscanreports.cis.cattle.io
 spec:
-  group: securityscan.cattle.io
+  group: cis.cattle.io
   names:
     kind: ClusterScanReport
     plural: clusterscanreports

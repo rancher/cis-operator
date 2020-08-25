@@ -17,15 +17,15 @@ import (
 
 	"time"
 
-	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io"
-	v1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
+	cisoperatorapi "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io"
+	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	"github.com/rancher/wrangler/pkg/name"
 )
 
 // job events (successful completions) should remove the job after validatinf Done annotation and Output CM
 func (c *Controller) handleJobs(ctx context.Context) error {
-	scans := c.cisFactory.Securityscan().V1().ClusterScan()
-	reports := c.cisFactory.Securityscan().V1().ClusterScanReport()
+	scans := c.cisFactory.Cis().V1().ClusterScan()
+	reports := c.cisFactory.Cis().V1().ClusterScanReport()
 	jobs := c.batchFactory.Batch().V1().Job()
 
 	jobs.OnChange(ctx, c.Name, func(key string, obj *batchv1.Job) (*batchv1.Job, error) {
@@ -166,7 +166,7 @@ func (c *Controller) createClusterScanReport(outputBytes []byte, scan *v1.Cluste
 	scanReport.Spec.ReportJSON = string(data[:])
 
 	ownerRef := metav1.OwnerReference{
-		APIVersion: "securityscan.cattle.io/v1",
+		APIVersion: "cis.cattle.io/v1",
 		Kind:       "ClusterScan",
 		Name:       scan.Name,
 		UID:        scan.GetUID(),
