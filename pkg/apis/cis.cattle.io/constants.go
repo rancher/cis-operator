@@ -1,4 +1,4 @@
-package securityscan
+package cis
 
 const (
 	// LabelController is the name of the cis controller.

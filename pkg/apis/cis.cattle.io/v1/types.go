@@ -1,7 +1,7 @@
 package v1
 
 import (
-	condition "github.com/rancher/clusterscan-operator/pkg/condition"
+	condition "github.com/rancher/cis-operator/pkg/condition"
 	"github.com/rancher/wrangler/pkg/genericcondition"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -11,11 +11,11 @@ const (
 	ClusterProviderEKS = "eks"
 	ClusterProviderGKE = "gke"
 
-	ClusterScanNS                = "cattle-clusterscan-system"
-	ClusterScanSA                = "clusterscan-serviceaccount"
-	ClusterScanConfigMap         = "clusterscan-s-config-cm"
-	ClusterScanPluginsConfigMap  = "clusterscan-s-plugins-cm"
-	ClusterScanUserSkipConfigMap = "clusterscan-s-user-skip-cm"
+	ClusterScanNS                = "cis-operator-system"
+	ClusterScanSA                = "cis-serviceaccount"
+	ClusterScanConfigMap         = "cis-s-config-cm"
+	ClusterScanPluginsConfigMap  = "cis-s-plugins-cm"
+	ClusterScanUserSkipConfigMap = "cis-s-user-skip-cm"
 	ClusterScanService           = "service-rancher-cis-benchmark"
 	DefaultScanOutputFileName    = "output.json"
 
@@ -130,7 +130,7 @@ type ScheduledScanSpec struct {
 type ScheduledScanStatus struct {
 	Enabled             bool                                `yaml:"enabled" json:"enabled,omitempty"`
 	LastRunTimestamp    string                              `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
-	LastClusterScanName string                              `yaml:"last_clusterscan_name" json:"lastClusterScanName"`
+	LastClusterScanName string                              `yaml:"last_cis_name" json:"lastClusterScanName"`
 	ObservedGeneration  int64                               `json:"observedGeneration"`
 	Conditions          []genericcondition.GenericCondition `json:"conditions,omitempty"`
 }

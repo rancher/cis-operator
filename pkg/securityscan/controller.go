@@ -17,9 +17,9 @@ import (
 	corectl "github.com/rancher/wrangler/pkg/generated/controllers/core"
 	"github.com/rancher/wrangler/pkg/start"
 
-	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
-	cisoperatorctl "github.com/rancher/clusterscan-operator/pkg/generated/controllers/securityscan.cattle.io"
-	"github.com/rancher/clusterscan-operator/pkg/securityscan/scan"
+	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
+	cisoperatorctl "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io"
+	"github.com/rancher/cis-operator/pkg/securityscan/scan"
 )
 
 type Controller struct {

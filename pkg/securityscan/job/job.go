@@ -13,9 +13,9 @@ import (
 
 	"github.com/rancher/wrangler/pkg/name"
 
-	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io"
-	cisoperatorapiv1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
-	"github.com/rancher/clusterscan-operator/pkg/condition"
+	cisoperatorapi "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io"
+	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
+	"github.com/rancher/cis-operator/pkg/condition"
 )
 
 const (

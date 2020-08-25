@@ -13,13 +13,13 @@ import (
 	corectlv1 "github.com/rancher/wrangler/pkg/generated/controllers/core/v1"
 	"github.com/rancher/wrangler/pkg/name"
 
-	cisoperatorapi "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io"
-	v1 "github.com/rancher/clusterscan-operator/pkg/apis/securityscan.cattle.io/v1"
+	cisoperatorapi "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io"
+	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 )
 
 // pod events should update the job conditions after validating Done annotation and Output CM
 func (c *Controller) handlePods(ctx context.Context) error {
-	scans := c.cisFactory.Securityscan().V1().ClusterScan()
+	scans := c.cisFactory.Cis().V1().ClusterScan()
 	jobs := c.batchFactory.Batch().V1().Job()
 	pods := c.coreFactory.Core().V1().Pod()
 	pods.OnChange(ctx, c.Name, func(key string, obj *corev1.Pod) (*corev1.Pod, error) {

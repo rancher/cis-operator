@@ -9,10 +9,10 @@ mkdir -p bin
 if [ "$(uname)" = "Linux" ]; then
     OTHER_LINKFLAGS="-extldflags -static -s"
 fi
-LINKFLAGS="-X github.com/rancher/clusterscan-operator.Version=$VERSION"
-LINKFLAGS="-X github.com/rancher/clusterscan-operator.GitCommit=$COMMIT $LINKFLAGS"
-CGO_ENABLED=0 go build -ldflags "$LINKFLAGS $OTHER_LINKFLAGS" -o bin/clusterscan-operator
+LINKFLAGS="-X github.com/rancher/cis-operator.Version=$VERSION"
+LINKFLAGS="-X github.com/rancher/cis-operator.GitCommit=$COMMIT $LINKFLAGS"
+CGO_ENABLED=0 go build -ldflags "$LINKFLAGS $OTHER_LINKFLAGS" -o bin/cis-operator
 if [ "$CROSS" = "true" ] && [ "$ARCH" = "amd64" ]; then
-    GOOS=darwin go build -ldflags "$LINKFLAGS" -o bin/clusterscan-operator-darwin
-    GOOS=windows go build -ldflags "$LINKFLAGS" -o bin/clusterscan-operator-windows
+    GOOS=darwin go build -ldflags "$LINKFLAGS" -o bin/cis-operator-darwin
+    GOOS=windows go build -ldflags "$LINKFLAGS" -o bin/cis-operator-windows
 fi

@@ -1,4 +1,4 @@
-# clusterscan-operator
+# cis-operator
 
 This is an operator that can run on a given Kubernetes cluster and provide ability to run security scans
 as per the CIS benchmarks, on the cluster.
@@ -10,7 +10,7 @@ as per the CIS benchmarks, on the cluster.
 
 ## Running
 
-`./bin/clusterscan-operator`
+`./bin/cis-operator`
 
 ## License
 Copyright (c) 2019 [Rancher Labs, Inc.](http://rancher.com)
