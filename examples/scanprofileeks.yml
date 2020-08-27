@@ -3,6 +3,7 @@ apiVersion: cis.cattle.io/v1
 kind: ClusterScanProfile
 metadata:
   name: eks-profile
+  annotations:
+    clusterscanprofile.cis.cattle.io/builtin: "true"
 spec:
-  clusterProvider: eks
   benchmarkVersion: eks-1.0

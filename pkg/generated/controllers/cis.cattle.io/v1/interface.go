@@ -31,6 +31,7 @@ func init() {
 
 type Interface interface {
 	ClusterScan() ClusterScanController
+	ClusterScanBenchmark() ClusterScanBenchmarkController
 	ClusterScanProfile() ClusterScanProfileController
 	ClusterScanReport() ClusterScanReportController
 	ScheduledScan() ScheduledScanController
@@ -48,6 +49,9 @@ type version struct {
 
 func (c *version) ClusterScan() ClusterScanController {
 	return NewClusterScanController(schema.GroupVersionKind{Group: "cis.cattle.io", Version: "v1", Kind: "ClusterScan"}, "clusterscans", false, c.controllerFactory)
+}
+func (c *version) ClusterScanBenchmark() ClusterScanBenchmarkController {
+	return NewClusterScanBenchmarkController(schema.GroupVersionKind{Group: "cis.cattle.io", Version: "v1", Kind: "ClusterScanBenchmark"}, "clusterscanbenchmarks", false, c.controllerFactory)
 }
 func (c *version) ClusterScanProfile() ClusterScanProfileController {
 	return NewClusterScanProfileController(schema.GroupVersionKind{Group: "cis.cattle.io", Version: "v1", Kind: "ClusterScanProfile"}, "clusterscanprofiles", false, c.controllerFactory)

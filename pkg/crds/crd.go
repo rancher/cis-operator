@@ -46,6 +46,9 @@ func List() []crd.CRD {
 		newCRD(&cisoperator.ScheduledScan{}, func(c crd.CRD) crd.CRD {
 			return c
 		}),
+		newCRD(&cisoperator.ClusterScanBenchmark{}, func(c crd.CRD) crd.CRD {
+			return c
+		}),
 	}
 }
 

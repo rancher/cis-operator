@@ -17,16 +17,19 @@ import (
 	corectl "github.com/rancher/wrangler/pkg/generated/controllers/core"
 	"github.com/rancher/wrangler/pkg/start"
 
+	"sync"
+
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	cisoperatorctl "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io"
 	"github.com/rancher/cis-operator/pkg/securityscan/scan"
 )
 
 type Controller struct {
-	Namespace       string
-	Name            string
-	ClusterProvider string
-	ImageConfig     *cisoperatorapiv1.ScanImageConfig
+	Namespace         string
+	Name              string
+	ClusterProvider   string
+	KubernetesVersion string
+	ImageConfig       *cisoperatorapiv1.ScanImageConfig
 
 	kcs          *kubernetes.Clientset
 	xcs          *kubeapiext.Clientset
@@ -34,6 +37,8 @@ type Controller struct {
 	batchFactory *batchctl.Factory
 	cisFactory   *cisoperatorctl.Factory
 	apply        apply.Apply
+
+	mu *sync.Mutex
 }
 
 func NewController(ctx context.Context, cfg *rest.Config, namespace, name string, imgConfig *cisoperatorapiv1.ScanImageConfig) (ctl *Controller, err error) {
@@ -47,6 +52,7 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 		Namespace:   namespace,
 		Name:        name,
 		ImageConfig: imgConfig,
+		mu:          &sync.Mutex{},
 	}
 
 	ctl.kcs, err = kubernetes.NewForConfig(cfg)
@@ -68,6 +74,12 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 		return nil, err
 	}
 	logrus.Infof("ClusterProvider detected %v", ctl.ClusterProvider)
+
+	ctl.KubernetesVersion, err = detectKubernetesVersion(ctx, clientset)
+	if err != nil {
+		return nil, err
+	}
+	logrus.Infof("KubernetesVersion detected %v", ctl.KubernetesVersion)
 
 	ctl.apply, err = apply.NewForConfig(cfg)
 	if err != nil {
@@ -129,4 +141,12 @@ func detectClusterProvider(ctx context.Context, k8sClient kubernetes.Interface) 
 		return "", err
 	}
 	return provider, err
+}
+
+func detectKubernetesVersion(ctx context.Context, k8sClient kubernetes.Interface) (string, error) {
+	v, err := k8sClient.Discovery().ServerVersion()
+	if err != nil {
+		return "", err
+	}
+	return v.GitVersion, nil
 }

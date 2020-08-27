@@ -38,8 +38,6 @@ spec:
                 type: object
               nullable: true
               type: array
-            enabled:
-              type: boolean
             lastRunTimestamp:
               type: string
             observedGeneration:

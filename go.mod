@@ -5,6 +5,7 @@ go 1.13
 replace k8s.io/client-go => k8s.io/client-go v0.18.0
 
 require (
+	github.com/blang/semver v3.5.0+incompatible
 	github.com/rancher/kubernetes-provider-detector v0.0.0-20200807181951-690274ab1fb3
 	github.com/rancher/lasso v0.0.0-20200515155337-a34e1e26ad91
 	github.com/rancher/security-scan v0.1.14

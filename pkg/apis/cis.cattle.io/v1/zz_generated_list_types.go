@@ -77,6 +77,23 @@ func NewClusterScanReport(namespace, name string, obj ClusterScanReport) *Cluste
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// ClusterScanBenchmarkList is a list of ClusterScanBenchmark resources
+type ClusterScanBenchmarkList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+
+	Items []ClusterScanBenchmark `json:"items"`
+}
+
+func NewClusterScanBenchmark(namespace, name string, obj ClusterScanBenchmark) *ClusterScanBenchmark {
+	obj.APIVersion, obj.Kind = SchemeGroupVersion.WithKind("ClusterScanBenchmark").ToAPIVersionAndKind()
+	obj.Name = name
+	obj.Namespace = namespace
+	return &obj
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // ScheduledScanList is a list of ScheduledScan resources
 type ScheduledScanList struct {
 	metav1.TypeMeta `json:",inline"`

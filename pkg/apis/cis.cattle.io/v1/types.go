@@ -10,7 +10,10 @@ const (
 	ClusterProviderRKE = "rke"
 	ClusterProviderEKS = "eks"
 	ClusterProviderGKE = "gke"
+	ClusterProviderAKS = "aks"
+	ClusterProviderK3s = "k3s"
 
+	CISV1NS                      = "security-scan"
 	ClusterScanNS                = "cis-operator-system"
 	ClusterScanSA                = "cis-serviceaccount"
 	ClusterScanConfigMap         = "cis-s-config-cm"
@@ -46,7 +49,6 @@ type ClusterScanSpec struct {
 }
 
 type ClusterScanStatus struct {
-	Enabled            bool                                `yaml:"enabled" json:"enabled,omitempty"`
 	LastRunTimestamp   string                              `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
 	Summary            *ClusterScanSummary                 `json:"summary,omitempty"`
 	ObservedGeneration int64                               `json:"observedGeneration"`
@@ -65,6 +67,26 @@ type ClusterScanSummary struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+type ClusterScanBenchmark struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec ClusterScanBenchmarkSpec `json:"spec"`
+}
+
+type ClusterScanBenchmarkSpec struct {
+	ClusterProvider      string `json:"clusterProvider,omitempty"`
+	MinKubernetesVersion string `json:"minKubernetesVersion,omitempty"`
+	MaxKubernetesVersion string `json:"maxKubernetesVersion,omitempty"`
+
+	CustomBenchmarkConfigMapName      string `json:"customBenchmarkConfigMapName,omitempty"`
+	CustomBenchmarkConfigMapNameSpace string `json:"customBenchmarkConfigMapNameSpace,omitempty"`
+}
+
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 type ClusterScanProfile struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -73,20 +95,8 @@ type ClusterScanProfile struct {
 }
 
 type ClusterScanProfileSpec struct {
-	ClusterProvider string `json:"clusterProvider,omitempty"`
-
-	BenchmarkVersion string `json:"benchmarkVersion,omitempty"`
-
-	SkipTests []string `json:"skipTests,omitempty"`
-
-	MinKubernetesVersion string `json:"minKubernetesVersion,omitempty"`
-
-	MaxKubernetesVersion string `json:"maxKubernetesVersion,omitempty"`
-
-	//RENAME
-	ConfigMap string `json:"configMap,omitempty"`
-	//RENAME
-	ConfigMapNamespace string `json:"configMapNamespace,omitempty"`
+	BenchmarkVersion string   `json:"benchmarkVersion,omitempty"`
+	SkipTests        []string `json:"skipTests,omitempty"`
 }
 
 // +genclient
