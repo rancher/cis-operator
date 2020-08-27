@@ -4,7 +4,6 @@ kind: ClusterScanProfile
 metadata:
   name: rke-profile-custom
 spec:
-  clusterProvider: rke
   benchmarkVersion: rke-cis-1.5-permissive
   skipTests:
     - "1.1.20"

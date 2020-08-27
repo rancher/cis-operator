@@ -17,16 +17,6 @@ spec:
           properties:
             benchmarkVersion:
               type: string
-            clusterProvider:
-              type: string
-            configMap:
-              type: string
-            configMapNamespace:
-              type: string
-            maxKubernetesVersion:
-              type: string
-            minKubernetesVersion:
-              type: string
             skipTests:
               items:
                 type: string

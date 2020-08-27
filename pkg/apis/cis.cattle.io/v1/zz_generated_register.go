@@ -28,10 +28,11 @@ import (
 )
 
 var (
-	ClusterScanResourceName        = "clusterscans"
-	ClusterScanProfileResourceName = "clusterscanprofiles"
-	ClusterScanReportResourceName  = "clusterscanreports"
-	ScheduledScanResourceName      = "scheduledscans"
+	ClusterScanResourceName          = "clusterscans"
+	ClusterScanBenchmarkResourceName = "clusterscanbenchmarks"
+	ClusterScanProfileResourceName   = "clusterscanprofiles"
+	ClusterScanReportResourceName    = "clusterscanreports"
+	ScheduledScanResourceName        = "scheduledscans"
 )
 
 // SchemeGroupVersion is group version used to register these objects
@@ -57,6 +58,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&ClusterScan{},
 		&ClusterScanList{},
+		&ClusterScanBenchmark{},
+		&ClusterScanBenchmarkList{},
 		&ClusterScanProfile{},
 		&ClusterScanProfileList{},
 		&ClusterScanReport{},

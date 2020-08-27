@@ -3,6 +3,7 @@ apiVersion: cis.cattle.io/v1
 kind: ClusterScanProfile
 metadata:
   name: rke-profile-hardened
+  annotations:
+    clusterscanprofile.cis.cattle.io/builtin: "true"
 spec:
-  clusterProvider: rke
   benchmarkVersion: rke-cis-1.5

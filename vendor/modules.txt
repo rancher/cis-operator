@@ -1,5 +1,7 @@
 # github.com/aquasecurity/kube-bench v0.1.0
 github.com/aquasecurity/kube-bench/check
+# github.com/blang/semver v3.5.0+incompatible
+github.com/blang/semver
 # github.com/cpuguy83/go-md2man/v2 v2.0.0
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1

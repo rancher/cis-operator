@@ -4,7 +4,4 @@ kind: ClusterScan
 metadata:
   name: run-gke-scan
 spec:
-  clusterProvider: gke
-  runType: manual
-  scanConfig:
-    profileName: gke-1.0
+  scanProfileName: gke-profile
