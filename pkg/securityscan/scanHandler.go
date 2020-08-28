@@ -87,13 +87,17 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 }
 func (c *Controller) getClusterScanProfile(scan *v1.ClusterScan) (*v1.ClusterScanProfile, error) {
 	var profileName string
+	var err error
 	clusterscanprofiles := c.cisFactory.Cis().V1().ClusterScanProfile()
 
 	if scan.Spec.ScanProfileName != "" {
 		profileName = scan.Spec.ScanProfileName
 	} else {
 		//pick the default profile by checking the cluster provider
-		profileName = c.getDefaultClusterScanProfile(c.ClusterProvider)
+		profileName, err = c.getDefaultClusterScanProfile(c.ClusterProvider)
+		if err != nil {
+			return nil, err
+		}
 	}
 	profile, err := clusterscanprofiles.Get(profileName, metav1.GetOptions{})
 	if err != nil {
@@ -106,24 +110,21 @@ func (c *Controller) getClusterScanProfile(scan *v1.ClusterScan) (*v1.ClusterSca
 	return profile, nil
 }
 
-func (c Controller) getDefaultClusterScanProfile(clusterprovider string) string {
-	var profileName string
-	//load clusterScan
-	switch clusterprovider {
-	case v1.ClusterProviderRKE:
-		profileName = "rke-profile-permissive"
-	case v1.ClusterProviderEKS:
-		profileName = "eks-profile"
-	case v1.ClusterProviderGKE:
-		profileName = "gke-profile"
-	default:
-		profileName = "cis-1.5-profile"
+func (c *Controller) getDefaultClusterScanProfile(clusterprovider string) (string, error) {
+	var err error
+	configmaps := c.coreFactory.Core().V1().ConfigMap()
+	cm, err := configmaps.Cache().Get(v1.ClusterScanNS, v1.DefaultClusterScanProfileConfigMap)
+	if err != nil {
+		return "", fmt.Errorf("Configmap to load default ClusterScanProfiles not found: %v", err)
 	}
-	return profileName
+	profileName, ok := cm.Data[clusterprovider]
+	if !ok {
+		profileName = cm.Data["default"]
+	}
+	return profileName, nil
 }
 
 func (c Controller) validateClusterScanProfile(profile *v1.ClusterScanProfile) error {
-
 	// validate benchmarkVersion is valid and is applicable to this cluster
 	clusterscanbmks := c.cisFactory.Cis().V1().ClusterScanBenchmark()
 	benchmark, err := clusterscanbmks.Get(profile.Spec.BenchmarkVersion, metav1.GetOptions{})

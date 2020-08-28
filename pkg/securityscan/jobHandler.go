@@ -180,11 +180,11 @@ func (c *Controller) ensureCleanup(scan *v1.ClusterScan) error {
 	var err error
 	configmaps := c.coreFactory.Core().V1().ConfigMap()
 	// Delete cms
-	cms, err := configmaps.List(v1.ClusterScanNS, metav1.ListOptions{})
+	cms, err := configmaps.Cache().List(v1.ClusterScanNS, labels.NewSelector())
 	if err != nil {
 		return fmt.Errorf("cis: ensureCleanup: error listing cm: %v", err)
 	}
-	for _, cm := range cms.Items {
+	for _, cm := range cms {
 		if !strings.Contains(cm.Name, scan.Name) {
 			continue
 		}

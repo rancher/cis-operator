@@ -13,14 +13,15 @@ const (
 	ClusterProviderAKS = "aks"
 	ClusterProviderK3s = "k3s"
 
-	CISV1NS                      = "security-scan"
-	ClusterScanNS                = "cis-operator-system"
-	ClusterScanSA                = "cis-serviceaccount"
-	ClusterScanConfigMap         = "cis-s-config-cm"
-	ClusterScanPluginsConfigMap  = "cis-s-plugins-cm"
-	ClusterScanUserSkipConfigMap = "cis-s-user-skip-cm"
-	ClusterScanService           = "service-rancher-cis-benchmark"
-	DefaultScanOutputFileName    = "output.json"
+	CISV1NS                            = "security-scan"
+	ClusterScanNS                      = "cis-operator-system"
+	ClusterScanSA                      = "cis-serviceaccount"
+	ClusterScanConfigMap               = "cis-s-config-cm"
+	ClusterScanPluginsConfigMap        = "cis-s-plugins-cm"
+	ClusterScanUserSkipConfigMap       = "cis-s-user-skip-cm"
+	DefaultClusterScanProfileConfigMap = "default-clusterscanprofiles"
+	ClusterScanService                 = "service-rancher-cis-benchmark"
+	DefaultScanOutputFileName          = "output.json"
 
 	ClusterScanConditionCreated      = condition.Cond("Created")
 	ClusterScanConditionRunCompleted = condition.Cond("RunCompleted")
