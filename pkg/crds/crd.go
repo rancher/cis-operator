@@ -35,19 +35,30 @@ func WriteCRD() error {
 func List() []crd.CRD {
 	return []crd.CRD{
 		newCRD(&cisoperator.ClusterScan{}, func(c crd.CRD) crd.CRD {
-			return c
+			return c.
+				WithColumn("Status", ".status.display.state").
+				WithColumn("ClusterScanProfile", ".status.lastRunScanProfileName").
+				WithColumn("Total", ".status.summary.total").
+				WithColumn("Pass", ".status.summary.pass").
+				WithColumn("Fail", ".status.summary.fail").
+				WithColumn("Skip", ".status.summary.skip").
+				WithColumn("Not Applicable", ".status.summary.notApplicable").
+				WithColumn("LastRunTimestamp", ".status.lastRunTimestamp")
 		}),
 		newCRD(&cisoperator.ClusterScanProfile{}, func(c crd.CRD) crd.CRD {
-			return c
+			return c.
+				WithColumn("BenchmarkVersion", ".spec.benchmarkVersion")
 		}),
 		newCRD(&cisoperator.ClusterScanReport{}, func(c crd.CRD) crd.CRD {
-			return c
-		}),
-		newCRD(&cisoperator.ScheduledScan{}, func(c crd.CRD) crd.CRD {
-			return c
+			return c.
+				WithColumn("LastRunTimestamp", ".spec.lastRunTimestamp").
+				WithColumn("BenchmarkVersion", ".spec.benchmarkVersion")
 		}),
 		newCRD(&cisoperator.ClusterScanBenchmark{}, func(c crd.CRD) crd.CRD {
-			return c
+			return c.
+				WithColumn("ClusterProvider", ".spec.clusterProvider").
+				WithColumn("MinKubernetesVersion", ".spec.minKubernetesVersion").
+				WithColumn("MaxKubernetesVersion", ".spec.maxKubernetesVersion")
 		}),
 	}
 }

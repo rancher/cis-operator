@@ -3,6 +3,31 @@ kind: CustomResourceDefinition
 metadata:
   name: clusterscans.cis.cattle.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.display.state
+    name: Status
+    type: string
+  - JSONPath: .status.lastRunScanProfileName
+    name: ClusterScanProfile
+    type: string
+  - JSONPath: .status.summary.total
+    name: Total
+    type: string
+  - JSONPath: .status.summary.pass
+    name: Pass
+    type: string
+  - JSONPath: .status.summary.fail
+    name: Fail
+    type: string
+  - JSONPath: .status.summary.skip
+    name: Skip
+    type: string
+  - JSONPath: .status.summary.notApplicable
+    name: Not Applicable
+    type: string
+  - JSONPath: .status.lastRunTimestamp
+    name: LastRunTimestamp
+    type: string
   group: cis.cattle.io
   names:
     kind: ClusterScan
@@ -16,6 +41,7 @@ spec:
         spec:
           properties:
             scanProfileName:
+              nullable: true
               type: string
           type: object
         status:
@@ -24,21 +50,45 @@ spec:
               items:
                 properties:
                   lastTransitionTime:
+                    nullable: true
                     type: string
                   lastUpdateTime:
+                    nullable: true
                     type: string
                   message:
+                    nullable: true
                     type: string
                   reason:
+                    nullable: true
                     type: string
                   status:
+                    nullable: true
                     type: string
                   type:
+                    nullable: true
                     type: string
                 type: object
               nullable: true
               type: array
+            display:
+              nullable: true
+              properties:
+                error:
+                  type: boolean
+                message:
+                  nullable: true
+                  type: string
+                state:
+                  nullable: true
+                  type: string
+                transitioning:
+                  type: boolean
+              type: object
+            lastRunScanProfileName:
+              nullable: true
+              type: string
             lastRunTimestamp:
+              nullable: true
               type: string
             observedGeneration:
               type: integer

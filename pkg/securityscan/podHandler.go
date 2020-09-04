@@ -75,6 +75,7 @@ func (c *Controller) handlePods(ctx context.Context) error {
 				}
 				logrus.Infof("Marking ClusterScanConditionFailed for scan: %v, error %v", scanName, done)
 			}
+			c.setClusterScanStatusDisplay(scanCopy)
 			//update scan
 			_, err = scans.UpdateStatus(scanCopy)
 			if err != nil {

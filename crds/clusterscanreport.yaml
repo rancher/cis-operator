@@ -3,6 +3,13 @@ kind: CustomResourceDefinition
 metadata:
   name: clusterscanreports.cis.cattle.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.lastRunTimestamp
+    name: LastRunTimestamp
+    type: string
+  - JSONPath: .spec.benchmarkVersion
+    name: BenchmarkVersion
+    type: string
   group: cis.cattle.io
   names:
     kind: ClusterScanReport
@@ -16,10 +23,13 @@ spec:
         spec:
           properties:
             benchmarkVersion:
+              nullable: true
               type: string
             lastRunTimestamp:
+              nullable: true
               type: string
             reportJSON:
+              nullable: true
               type: string
           type: object
       type: object

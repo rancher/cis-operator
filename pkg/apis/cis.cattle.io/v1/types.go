@@ -13,14 +13,15 @@ const (
 	ClusterProviderAKS = "aks"
 	ClusterProviderK3s = "k3s"
 
-	CISV1NS                      = "security-scan"
-	ClusterScanNS                = "cis-operator-system"
-	ClusterScanSA                = "cis-serviceaccount"
-	ClusterScanConfigMap         = "cis-s-config-cm"
-	ClusterScanPluginsConfigMap  = "cis-s-plugins-cm"
-	ClusterScanUserSkipConfigMap = "cis-s-user-skip-cm"
-	ClusterScanService           = "service-rancher-cis-benchmark"
-	DefaultScanOutputFileName    = "output.json"
+	CISV1NS                            = "security-scan"
+	ClusterScanNS                      = "cis-operator-system"
+	ClusterScanSA                      = "cis-serviceaccount"
+	ClusterScanConfigMap               = "cis-s-config-cm"
+	ClusterScanPluginsConfigMap        = "cis-s-plugins-cm"
+	ClusterScanUserSkipConfigMap       = "cis-s-user-skip-cm"
+	DefaultClusterScanProfileConfigMap = "default-clusterscanprofiles"
+	ClusterScanService                 = "service-rancher-cis-benchmark"
+	DefaultScanOutputFileName          = "output.json"
 
 	ClusterScanConditionCreated      = condition.Cond("Created")
 	ClusterScanConditionRunCompleted = condition.Cond("RunCompleted")
@@ -49,10 +50,19 @@ type ClusterScanSpec struct {
 }
 
 type ClusterScanStatus struct {
-	LastRunTimestamp   string                              `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
-	Summary            *ClusterScanSummary                 `json:"summary,omitempty"`
-	ObservedGeneration int64                               `json:"observedGeneration"`
-	Conditions         []genericcondition.GenericCondition `json:"conditions,omitempty"`
+	Display                *ClusterScanStatusDisplay           `json:"display,omitempty"`
+	LastRunTimestamp       string                              `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
+	LastRunScanProfileName string                              `json:"lastRunScanProfileName,omitempty"`
+	Summary                *ClusterScanSummary                 `json:"summary,omitempty"`
+	ObservedGeneration     int64                               `json:"observedGeneration"`
+	Conditions             []genericcondition.GenericCondition `json:"conditions,omitempty"`
+}
+
+type ClusterScanStatusDisplay struct {
+	State         string `json:"state"`
+	Message       string `json:"message"`
+	Error         bool   `json:"error"`
+	Transitioning bool   `json:"transitioning"`
 }
 
 type ClusterScanSummary struct {
