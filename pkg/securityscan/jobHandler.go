@@ -63,6 +63,8 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 			v1.ClusterScanConditionAlerted.Unknown(scan)
 			scan.Status.ObservedGeneration = scan.Generation
 			logrus.Infof("Marking ClusterScanConditionAlerted for scan: %v", scanName)
+			c.setClusterScanStatusDisplay(scan)
+
 			//update scan
 			_, err = scans.UpdateStatus(scan)
 			if err != nil {
@@ -80,7 +82,7 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 					return nil, fmt.Errorf("error %v reading results of cluster scan object: %v", err, scanName)
 				}
 				scancopy.Status.Summary = summary
-				err = c.apply.WithCacheTypes(reports).ApplyObjects(report)
+				err = c.apply.WithSetID(report.Name).WithCacheTypes(reports).ApplyObjects(report)
 				if err != nil {
 					return nil, fmt.Errorf("error %v saving clusterscanreport object", err)
 				}

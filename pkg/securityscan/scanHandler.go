@@ -44,18 +44,17 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 
 			if obj.Status.LastRunTimestamp == "" && !v1.ClusterScanConditionCreated.IsTrue(obj) {
 				if err := c.isRunnerPodPresent(); err != nil {
-					v1.ClusterScanConditionReconciling.True(obj)
 					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
 				}
-
 				//launch new on demand scan
 				c.mu.Lock()
 				defer c.mu.Unlock()
 
 				profile, err := c.getClusterScanProfile(obj)
 				if err != nil {
-					v1.ClusterScanConditionStalled.True(obj)
+					v1.ClusterScanConditionFailed.True(obj)
 					logrus.Errorf("Error validating ClusterScanProfile %v, error: %v", obj.Spec.ScanProfileName, err)
+					c.setClusterScanStatusDisplay(obj)
 					return objects, obj.Status, nil
 				}
 				logrus.Infof("Launching a new on demand Job to run cis using profile %v", profile.Name)
@@ -71,7 +70,13 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				}
 
 				objects = append(objects, cisjob.New(obj, profile, c.Name, c.ImageConfig), configmaps[0], configmaps[1], configmaps[2], service)
-				obj.Status.LastRunTimestamp = time.Now().String()
+
+				if v1.ClusterScanConditionFailed.IsTrue(obj) {
+					//clear the earlier failed status
+					v1.ClusterScanConditionFailed.False(obj)
+				}
+				obj.Status.LastRunTimestamp = time.Now().Round(time.Second).Format(time.RFC3339)
+				obj.Status.LastRunScanProfileName = profile.Name
 				v1.ClusterScanConditionCreated.True(obj)
 				v1.ClusterScanConditionRunCompleted.Unknown(obj)
 
@@ -191,4 +196,49 @@ func (c Controller) listRunnerPods(namespace string) (int, error) {
 		return 0, fmt.Errorf("error listing pods: %v", err)
 	}
 	return len(podList), nil
+}
+
+func (c Controller) setClusterScanStatusDisplay(scan *v1.ClusterScan) {
+	errorState := "error"
+	failedState := "fail"
+	passedState := "pass"
+
+	failed := false
+	completed := false
+	runCompleted := false
+
+	if v1.ClusterScanConditionComplete.IsTrue(scan) {
+		completed = true
+	}
+	if v1.ClusterScanConditionFailed.IsTrue(scan) {
+		failed = true
+	}
+	if v1.ClusterScanConditionRunCompleted.IsTrue(scan) {
+		runCompleted = true
+	}
+
+	display := &v1.ClusterScanStatusDisplay{}
+	scan.Status.Display = display
+
+	if runCompleted {
+		display.State = "reporting"
+		display.Transitioning = true
+	}
+	if failed {
+		display.State = errorState
+		return
+	}
+	if completed {
+		summary := scan.Status.Summary
+		if summary == nil {
+			display.State = errorState
+			return
+		}
+		if summary.Fail > 0 {
+			display.State = failedState
+		} else {
+			display.State = passedState
+		}
+		display.Transitioning = false
+	}
 }

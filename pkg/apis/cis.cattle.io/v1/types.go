@@ -50,10 +50,19 @@ type ClusterScanSpec struct {
 }
 
 type ClusterScanStatus struct {
-	LastRunTimestamp   string                              `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
-	Summary            *ClusterScanSummary                 `json:"summary,omitempty"`
-	ObservedGeneration int64                               `json:"observedGeneration"`
-	Conditions         []genericcondition.GenericCondition `json:"conditions,omitempty"`
+	Display                *ClusterScanStatusDisplay           `json:"display,omitempty"`
+	LastRunTimestamp       string                              `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
+	LastRunScanProfileName string                              `json:"lastRunScanProfileName,omitempty"`
+	Summary                *ClusterScanSummary                 `json:"summary,omitempty"`
+	ObservedGeneration     int64                               `json:"observedGeneration"`
+	Conditions             []genericcondition.GenericCondition `json:"conditions,omitempty"`
+}
+
+type ClusterScanStatusDisplay struct {
+	State         string `json:"state"`
+	Message       string `json:"message"`
+	Error         bool   `json:"error"`
+	Transitioning bool   `json:"transitioning"`
 }
 
 type ClusterScanSummary struct {

@@ -3,6 +3,10 @@ kind: CustomResourceDefinition
 metadata:
   name: clusterscanprofiles.cis.cattle.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.benchmarkVersion
+    name: BenchmarkVersion
+    type: string
   group: cis.cattle.io
   names:
     kind: ClusterScanProfile
@@ -16,9 +20,11 @@ spec:
         spec:
           properties:
             benchmarkVersion:
+              nullable: true
               type: string
             skipTests:
               items:
+                nullable: true
                 type: string
               nullable: true
               type: array
