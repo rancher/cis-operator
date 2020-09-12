@@ -5,4 +5,4 @@ metadata:
   name: eks-1.0
 spec:
   clusterProvider: eks
-  minKubernetesVersion: "1.15"
+  minKubernetesVersion: "1.15.0"

@@ -24,6 +24,7 @@ const (
 	DefaultScanOutputFileName          = "output.json"
 
 	ClusterScanConditionCreated      = condition.Cond("Created")
+	ClusterScanConditionPending      = condition.Cond("Pending")
 	ClusterScanConditionRunCompleted = condition.Cond("RunCompleted")
 	ClusterScanConditionComplete     = condition.Cond("Complete")
 	ClusterScanConditionFailed       = condition.Cond("Failed")
