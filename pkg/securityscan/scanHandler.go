@@ -41,8 +41,16 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				return objects, status, nil
 			}
 			logrus.Infof("ClusterScan GENERATING HANDLER: scan=%s/%s@%s, %v, status=%+v", obj.Namespace, obj.Name, obj.Spec.ScanProfileName, obj.ResourceVersion, status.LastRunTimestamp)
-
 			if obj.Status.LastRunTimestamp == "" && !v1.ClusterScanConditionCreated.IsTrue(obj) {
+
+				if !v1.ClusterScanConditionPending.IsTrue(obj) {
+					v1.ClusterScanConditionPending.True(obj)
+					v1.ClusterScanConditionPending.Message(obj, "ClusterScan run pending")
+					c.setClusterScanStatusDisplay(obj)
+					scans.Enqueue(obj.Name)
+					return objects, obj.Status, nil
+				}
+
 				if err := c.isRunnerPodPresent(); err != nil {
 					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
 				}
@@ -53,7 +61,9 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				profile, err := c.getClusterScanProfile(obj)
 				if err != nil {
 					v1.ClusterScanConditionFailed.True(obj)
-					logrus.Errorf("Error validating ClusterScanProfile %v, error: %v", obj.Spec.ScanProfileName, err)
+					message := fmt.Sprintf("Error validating ClusterScanProfile %v, error: %v", obj.Spec.ScanProfileName, err)
+					v1.ClusterScanConditionFailed.Message(obj, message)
+					logrus.Errorf(message)
 					c.setClusterScanStatusDisplay(obj)
 					return objects, obj.Status, nil
 				}
@@ -79,6 +89,8 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				obj.Status.LastRunScanProfileName = profile.Name
 				v1.ClusterScanConditionCreated.True(obj)
 				v1.ClusterScanConditionRunCompleted.Unknown(obj)
+				v1.ClusterScanConditionRunCompleted.Message(obj, "Creating Job to run the CIS scan")
+				c.setClusterScanStatusDisplay(obj)
 
 				return objects, obj.Status, nil
 			}
@@ -140,7 +152,7 @@ func (c Controller) validateClusterScanProfile(profile *v1.ClusterScanProfile) e
 	// validate benchmark's provider matches the cluster
 	if benchmark.Spec.ClusterProvider != "" {
 		if !strings.EqualFold(benchmark.Spec.ClusterProvider, c.ClusterProvider) {
-			return fmt.Errorf("ClusterProvider mismatch, ClusterScanProfile %v is not valid for this cluster's provider %v", profile.Name, c.ClusterProvider)
+			return fmt.Errorf("ClusterScanProfile %v is not valid for this cluster's provider type %v", profile.Name, c.ClusterProvider)
 		}
 	}
 
@@ -202,42 +214,72 @@ func (c Controller) setClusterScanStatusDisplay(scan *v1.ClusterScan) {
 	errorState := "error"
 	failedState := "fail"
 	passedState := "pass"
+	message := ""
 
 	failed := false
 	completed := false
 	runCompleted := false
+	pending := false
+	running := false
 
-	if v1.ClusterScanConditionComplete.IsTrue(scan) {
-		completed = true
+	if v1.ClusterScanConditionPending.IsTrue(scan) {
+		pending = true
 	}
-	if v1.ClusterScanConditionFailed.IsTrue(scan) {
-		failed = true
+	if v1.ClusterScanConditionRunCompleted.IsUnknown(scan) {
+		running = true
 	}
 	if v1.ClusterScanConditionRunCompleted.IsTrue(scan) {
 		runCompleted = true
 	}
+	if v1.ClusterScanConditionFailed.IsTrue(scan) {
+		message = v1.ClusterScanConditionFailed.GetMessage(scan)
+		failed = true
+	}
+	if v1.ClusterScanConditionComplete.IsTrue(scan) {
+		completed = true
+	}
 
 	display := &v1.ClusterScanStatusDisplay{}
 	scan.Status.Display = display
-
+	if pending {
+		display.State = "pending"
+		display.Message = "Scan is Pending, Waiting for another scan to finish"
+		display.Transitioning = true
+		display.Error = false
+	}
+	if running {
+		display.State = "running"
+		display.Message = "Scan is now running"
+		display.Transitioning = true
+		display.Error = false
+	}
 	if runCompleted {
 		display.State = "reporting"
+		display.Message = "ClusterScan scan finished, reporting the results"
 		display.Transitioning = true
+		display.Error = false
 	}
 	if failed {
 		display.State = errorState
+		display.Message = message
+		display.Error = true
 		return
 	}
 	if completed {
 		summary := scan.Status.Summary
 		if summary == nil {
 			display.State = errorState
+			display.Error = true
+			display.Message = "ClusterScan complete, failed to generate report"
 			return
 		}
 		if summary.Fail > 0 {
 			display.State = failedState
+			display.Message = "ClusterScan complete, there are some test failures, please check the ClusterScanReport"
+			display.Error = true
 		} else {
 			display.State = passedState
+			display.Error = false
 		}
 		display.Transitioning = false
 	}

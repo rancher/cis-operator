@@ -5,4 +5,4 @@ metadata:
   name: gke-1.0
 spec:
   clusterProvider: gke
-  minKubernetesVersion: "1.15"
+  minKubernetesVersion: "1.15.0"

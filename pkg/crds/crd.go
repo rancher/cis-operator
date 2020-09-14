@@ -36,7 +36,6 @@ func List() []crd.CRD {
 	return []crd.CRD{
 		newCRD(&cisoperator.ClusterScan{}, func(c crd.CRD) crd.CRD {
 			return c.
-				WithColumn("Status", ".status.display.state").
 				WithColumn("ClusterScanProfile", ".status.lastRunScanProfileName").
 				WithColumn("Total", ".status.summary.total").
 				WithColumn("Pass", ".status.summary.pass").

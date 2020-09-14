@@ -5,4 +5,4 @@ metadata:
   name: cis-1.5
 spec:
   clusterProvider: ""
-  minKubernetesVersion: "1.15"
+  minKubernetesVersion: "1.15.0"
