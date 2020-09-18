@@ -18,6 +18,7 @@ import (
 	cisctlv1 "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io/v1"
 	ciscore "github.com/rancher/cis-operator/pkg/securityscan/core"
 	cisjob "github.com/rancher/cis-operator/pkg/securityscan/job"
+	"github.com/rancher/wrangler/pkg/genericcondition"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
@@ -50,6 +51,10 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					scans.Enqueue(obj.Name)
 					return objects, obj.Status, nil
 				}
+
+				obj.Status.Conditions = []genericcondition.GenericCondition{}
+				v1.ClusterScanConditionPending.True(obj)
+				v1.ClusterScanConditionPending.Message(obj, "ClusterScan run pending")
 
 				if err := c.isRunnerPodPresent(); err != nil {
 					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
