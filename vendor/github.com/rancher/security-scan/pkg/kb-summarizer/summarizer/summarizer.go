@@ -6,14 +6,14 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
-
-	"gopkg.in/yaml.v2"
 
 	kb "github.com/aquasecurity/kube-bench/check"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -76,16 +76,23 @@ const (
 )
 
 type CheckWrapper struct {
-	ID          string                       `yaml:"id" json:"id"`
-	Text        string                       `json:"d"`
-	Type        string                       `json:"-"`
-	Remediation string                       `json:"r"`
-	State       State                        `json:"s"`
-	Scored      bool                         `json:"-"`
-	Result      map[kb.State]map[string]bool `json:"-"`
-	NodeType    []NodeType                   `json:"t"`
-	NodesMap    map[string]bool              `json:"-"`
-	Nodes       []string                     `json:"n,omitempty"`
+	ID             string                       `yaml:"id" json:"id"`
+	Text           string                       `json:"d"`
+	Type           string                       `json:"-"`
+	Remediation    string                       `json:"r"`
+	State          State                        `json:"s"`
+	Scored         bool                         `json:"-"`
+	Result         map[kb.State]map[string]bool `json:"-"`
+	NodeType       []NodeType                   `json:"t"`
+	NodesMap       map[string]bool              `json:"-"`
+	Nodes          []string                     `json:"n,omitempty"`
+	Audit          string                       `json:"a"`
+	AuditConfig    string                       `json:"ac"`
+	TestInfo       []string                     `json:"ti"`
+	Commands       []*exec.Cmd                  `json:"c"`
+	ConfigCommands []*exec.Cmd                  `json:"cc"`
+	ActualValue    string                       `json:"av"`
+	ExpectedResult string                       `json:"er"`
 }
 
 type GroupWrapper struct {
@@ -249,6 +256,9 @@ func (s *Summarizer) processOneResultFileForHost(results *kb.Controls, hostname 
 				continue
 			}
 
+			if check.Type == CheckTypeSkip {
+				check.State = NA
+			}
 			if msg, ok := s.notApplicable[check.ID]; ok {
 				check.State = NA
 				check.Remediation = msg
@@ -440,6 +450,9 @@ func (s *Summarizer) loadControls() error {
 				if !check.Scored {
 					continue
 				}
+				if check.Type == CheckTypeSkip {
+					check.State = NA
+				}
 				if msg, ok := s.notApplicable[check.ID]; ok {
 					check.State = NA
 					check.Remediation = msg
@@ -486,7 +499,7 @@ func getMappedState(state kb.State) State {
 	case kb.WARN:
 		return Fail
 	case kb.INFO:
-		return Fail
+		return NotApplicable
 	case SKIP:
 		return Skip
 	case NA:
@@ -497,12 +510,19 @@ func getMappedState(state kb.State) State {
 
 func getCheckWrapper(check *kb.Check) *CheckWrapper {
 	return &CheckWrapper{
-		ID:          check.ID,
-		Text:        check.Text,
-		Type:        check.Type,
-		Remediation: check.Remediation,
-		Scored:      check.Scored,
-		Result:      map[kb.State]map[string]bool{},
+		ID:             check.ID,
+		Text:           check.Text,
+		Type:           check.Type,
+		Remediation:    check.Remediation,
+		Scored:         check.Scored,
+		Result:         map[kb.State]map[string]bool{},
+		Audit:          check.Audit,
+		AuditConfig:    check.AuditConfig,
+		TestInfo:       check.TestInfo,
+		Commands:       check.Commands,
+		ConfigCommands: check.ConfigCommands,
+		ActualValue:    check.ActualValue,
+		ExpectedResult: check.ExpectedResult,
 	}
 }
 
@@ -703,18 +723,8 @@ func (s *Summarizer) printReport() error {
 }
 
 func printCheck(check *kb.Check) {
-	logrus.Debugf("check: ")
-	logrus.Debugf("ID: %v", check.ID)
-	logrus.Debugf("State: %v", check.State)
-	logrus.Debugf("Text: %v", check.Text)
-	logrus.Debugf("Audit: %v", check.Audit)
-	logrus.Debugf("ActualValue: %v", check.ActualValue)
+	logrus.Debugf("KB check: %+v", check)
 }
 func printCheckWrapper(cw *CheckWrapper) {
-	logrus.Debugf("checkWrapper:")
-	logrus.Debugf("id: %v", cw.ID)
-	logrus.Debugf("state: %v", cw.State)
-	logrus.Debugf("node_type: %+v", cw.NodeType)
-	logrus.Debugf("nodes: %+v", cw.Nodes)
-	logrus.Debugf("result: %+v", cw.Result)
+	logrus.Debugf("checkWrapper: %+v", cw)
 }
