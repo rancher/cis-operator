@@ -22,6 +22,8 @@ const (
 	DefaultClusterScanProfileConfigMap = "default-clusterscanprofiles"
 	ClusterScanService                 = "service-rancher-cis-benchmark"
 	DefaultScanOutputFileName          = "output.json"
+	DefaultRetention                   = 3
+	DefaultCronSchedule                = "0 0 * * *"
 
 	ClusterScanConditionCreated      = condition.Cond("Created")
 	ClusterScanConditionPending      = condition.Cond("Pending")
@@ -149,9 +151,9 @@ type ScheduledScanSpec struct {
 }
 
 type ScheduledScanStatus struct {
-	Enabled             bool                                `yaml:"enabled" json:"enabled,omitempty"`
 	LastRunTimestamp    string                              `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
-	LastClusterScanName string                              `yaml:"last_cis_name" json:"lastClusterScanName"`
+	LastClusterScanName string                              `yaml:"last_cluster_scan_name" json:"lastClusterScanName"`
+	NextScanAt          string                              `json:"NextScanAt"`
 	ObservedGeneration  int64                               `json:"observedGeneration"`
 	Conditions          []genericcondition.GenericCondition `json:"conditions,omitempty"`
 }

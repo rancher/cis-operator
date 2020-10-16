@@ -59,6 +59,12 @@ func List() []crd.CRD {
 				WithColumn("MinKubernetesVersion", ".spec.minKubernetesVersion").
 				WithColumn("MaxKubernetesVersion", ".spec.maxKubernetesVersion")
 		}),
+		newCRD(&cisoperator.ScheduledScan{}, func(c crd.CRD) crd.CRD {
+			return c.
+				WithColumn("LastRunTimestamp", ".status.lastRunTimestamp").
+				WithColumn("LastClusterScanName", ".status.lastClusterScanName").
+				WithColumn("CronSchedule", ".spec.cronSchedule")
+		}),
 	}
 }
 

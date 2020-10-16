@@ -3,6 +3,16 @@ kind: CustomResourceDefinition
 metadata:
   name: scheduledscans.cis.cattle.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.lastRunTimestamp
+    name: LastRunTimestamp
+    type: string
+  - JSONPath: .status.lastClusterScanName
+    name: LastClusterScanName
+    type: string
+  - JSONPath: .spec.cronSchedule
+    name: CronSchedule
+    type: string
   group: cis.cattle.io
   names:
     kind: ScheduledScan
@@ -16,37 +26,48 @@ spec:
         spec:
           properties:
             cronSchedule:
+              nullable: true
               type: string
             retentionCount:
               type: integer
             scanProfileName:
+              nullable: true
               type: string
           type: object
         status:
           properties:
+            NextScanAt:
+              nullable: true
+              type: string
             conditions:
               items:
                 properties:
                   lastTransitionTime:
+                    nullable: true
                     type: string
                   lastUpdateTime:
+                    nullable: true
                     type: string
                   message:
+                    nullable: true
                     type: string
                   reason:
+                    nullable: true
                     type: string
                   status:
+                    nullable: true
                     type: string
                   type:
+                    nullable: true
                     type: string
                 type: object
               nullable: true
               type: array
-            enabled:
-              type: boolean
             lastClusterScanName:
+              nullable: true
               type: string
             lastRunTimestamp:
+              nullable: true
               type: string
             observedGeneration:
               type: integer

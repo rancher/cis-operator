@@ -114,6 +114,9 @@ func (c *Controller) Start(ctx context.Context, threads int, resync time.Duratio
 	if err := c.handleClusterScans(ctx); err != nil {
 		return err
 	}
+	if err := c.handleScheduledScans(ctx); err != nil {
+		return err
+	}
 
 	return start.All(ctx, threads, c.cisFactory, c.coreFactory, c.batchFactory)
 }

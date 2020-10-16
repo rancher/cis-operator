@@ -1,0 +1,9 @@
+---
+apiVersion: cis.cattle.io/v1
+kind: ScheduledScan
+metadata:
+  name: ss-rke-cis-hard
+spec:
+  scanProfileName: rke-profile-hardened
+  cronSchedule: "*/2 * * * *"
+  retentionCount: 3
