@@ -69,6 +69,8 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 					},
 				},
 				Spec: corev1.PodSpec{
+					HostPID:                       true,
+					HostIPC:                       true,
 					ServiceAccountName:            cisoperatorapiv1.ClusterScanSA,
 					TerminationGracePeriodSeconds: &TerminationGracePeriodSeconds,
 					Tolerations: append([]corev1.Toleration{{
@@ -95,6 +97,16 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						},
 					}, {
 						Name: `output-volume`,
+						VolumeSource: corev1.VolumeSource{
+							EmptyDir: &corev1.EmptyDirVolumeSource{},
+						},
+					}, {
+						Name: `rke2-root`,
+						VolumeSource: corev1.VolumeSource{
+							EmptyDir: &corev1.EmptyDirVolumeSource{},
+						},
+					}, {
+						Name: `rke2-cni`,
 						VolumeSource: corev1.VolumeSource{
 							EmptyDir: &corev1.EmptyDirVolumeSource{},
 						},
@@ -136,6 +148,14 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						}, {
 							Name:      `output-volume`,
 							MountPath: `/tmp/sonobuoy`,
+						}, {
+							Name:      `rke2-root`,
+							MountPath: `/var/lib/rancher`,
+							ReadOnly:  true,
+						}, {
+							Name:      `rke2-cni`,
+							MountPath: `/etc/cni/net.d`,
+							ReadOnly:  true,
 						}},
 					}},
 				},
