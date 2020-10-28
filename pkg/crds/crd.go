@@ -42,7 +42,8 @@ func List() []crd.CRD {
 				WithColumn("Fail", ".status.summary.fail").
 				WithColumn("Skip", ".status.summary.skip").
 				WithColumn("Not Applicable", ".status.summary.notApplicable").
-				WithColumn("LastRunTimestamp", ".status.lastRunTimestamp")
+				WithColumn("LastRunTimestamp", ".status.lastRunTimestamp").
+				WithColumn("CronSchedule", ".spec.cronSchedule")
 		}),
 		newCRD(&cisoperator.ClusterScanProfile{}, func(c crd.CRD) crd.CRD {
 			return c.
@@ -58,12 +59,6 @@ func List() []crd.CRD {
 				WithColumn("ClusterProvider", ".spec.clusterProvider").
 				WithColumn("MinKubernetesVersion", ".spec.minKubernetesVersion").
 				WithColumn("MaxKubernetesVersion", ".spec.maxKubernetesVersion")
-		}),
-		newCRD(&cisoperator.ScheduledScan{}, func(c crd.CRD) crd.CRD {
-			return c.
-				WithColumn("LastRunTimestamp", ".status.lastRunTimestamp").
-				WithColumn("LastClusterScanName", ".status.lastClusterScanName").
-				WithColumn("CronSchedule", ".spec.cronSchedule")
 		}),
 	}
 }
