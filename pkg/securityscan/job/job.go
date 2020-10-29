@@ -103,12 +103,16 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 					}, {
 						Name: `rke2-root`,
 						VolumeSource: corev1.VolumeSource{
-							EmptyDir: &corev1.EmptyDirVolumeSource{},
+							HostPath: &corev1.HostPathVolumeSource{
+								Path: `/var/lib/rancher`,
+							},
 						},
 					}, {
 						Name: `rke2-cni`,
 						VolumeSource: corev1.VolumeSource{
-							EmptyDir: &corev1.EmptyDirVolumeSource{},
+							HostPath: &corev1.HostPathVolumeSource{
+								Path: `/etc/cni/net.d`,
+							},
 						},
 					}},
 					Containers: []corev1.Container{{
