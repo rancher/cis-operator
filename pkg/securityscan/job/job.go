@@ -44,7 +44,6 @@ var (
 )
 
 func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig) *batchv1.Job {
-	var hpd = corev1.HostPathDirectory
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name.SafeConcatName("security-scan-runner", clusterscan.Name),
@@ -106,18 +105,23 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						VolumeSource: corev1.VolumeSource{
 							HostPath: &corev1.HostPathVolumeSource{
 								Path: `/var/lib/rancher`,
-								Type: &hpd,
 							},
 						},
 					}, {
-						Name: `rke2-cni`,
+						Name: `etc/passwd`,
 						VolumeSource: corev1.VolumeSource{
 							HostPath: &corev1.HostPathVolumeSource{
-								Path: `/etc/cni/net.d`,
-								Type: &hpd,
+								Path: `/etc/passwd`,
 							},
 						},
-					}},
+					}, {
+						Name: `etc/group`,
+						VolumeSource: corev1.VolumeSource{
+							HostPath: &corev1.HostPathVolumeSource{
+								Path: `/etc/group`,
+							},
+						}},
+					},
 					Containers: []corev1.Container{{
 						Name:            `rancher-cis-benchmark`,
 						Image:           imageConfig.SecurityScanImage + ":" + imageConfig.SecurityScanImageTag,
@@ -159,8 +163,11 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 							Name:      `rke2-root`,
 							MountPath: `/var/lib/rancher`,
 						}, {
-							Name:      `rke2-cni`,
-							MountPath: `/etc/cni/net.d`,
+							Name:      `etc-passwd`,
+							MountPath: `/etc/passwd`,
+						}, {
+							Name:      `etc-group`,
+							MountPath: `/etc/group`,
 						}},
 					}},
 				},
