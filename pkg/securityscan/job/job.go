@@ -155,11 +155,9 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						}, {
 							Name:      `rke2-root`,
 							MountPath: `/var/lib/rancher`,
-							ReadOnly:  true,
 						}, {
 							Name:      `rke2-cni`,
 							MountPath: `/etc/cni/net.d`,
-							ReadOnly:  true,
 						}},
 					}},
 				},
