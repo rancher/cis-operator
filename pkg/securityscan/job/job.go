@@ -44,6 +44,7 @@ var (
 )
 
 func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig) *batchv1.Job {
+	privileged := true
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name.SafeConcatName("security-scan-runner", clusterscan.Name),
@@ -108,14 +109,21 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 							},
 						},
 					}, {
-						Name: `etc/passwd`,
+						Name: `rke2-cni`,
+						VolumeSource: corev1.VolumeSource{
+							HostPath: &corev1.HostPathVolumeSource{
+								Path: `/etc/cni/net.d`,
+							},
+						},
+					}, {
+						Name: `etc-passwd`,
 						VolumeSource: corev1.VolumeSource{
 							HostPath: &corev1.HostPathVolumeSource{
 								Path: `/etc/passwd`,
 							},
 						},
 					}, {
-						Name: `etc/group`,
+						Name: `etc-group`,
 						VolumeSource: corev1.VolumeSource{
 							HostPath: &corev1.HostPathVolumeSource{
 								Path: `/etc/group`,
@@ -126,6 +134,9 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						Name:            `rancher-cis-benchmark`,
 						Image:           imageConfig.SecurityScanImage + ":" + imageConfig.SecurityScanImageTag,
 						ImagePullPolicy: corev1.PullAlways,
+						SecurityContext: &corev1.SecurityContext{
+							Privileged: &privileged,
+						},
 						Env: []corev1.EnvVar{{
 							Name:  `OVERRIDE_BENCHMARK_VERSION`,
 							Value: clusterscanprofile.Spec.BenchmarkVersion,
@@ -162,6 +173,9 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						}, {
 							Name:      `rke2-root`,
 							MountPath: `/var/lib/rancher`,
+						}, {
+							Name:      `rke2-cni`,
+							MountPath: `/etc/cni/net.d`,
 						}, {
 							Name:      `etc-passwd`,
 							MountPath: `/etc/passwd`,
