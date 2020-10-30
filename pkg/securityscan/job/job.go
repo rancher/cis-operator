@@ -101,35 +101,7 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						VolumeSource: corev1.VolumeSource{
 							EmptyDir: &corev1.EmptyDirVolumeSource{},
 						},
-					}, {
-						Name: `rke2-root`,
-						VolumeSource: corev1.VolumeSource{
-							HostPath: &corev1.HostPathVolumeSource{
-								Path: `/var/lib/rancher`,
-							},
-						},
-					}, {
-						Name: `rke2-cni`,
-						VolumeSource: corev1.VolumeSource{
-							HostPath: &corev1.HostPathVolumeSource{
-								Path: `/etc/cni/net.d`,
-							},
-						},
-					}, {
-						Name: `etc-passwd`,
-						VolumeSource: corev1.VolumeSource{
-							HostPath: &corev1.HostPathVolumeSource{
-								Path: `/etc/passwd`,
-							},
-						},
-					}, {
-						Name: `etc-group`,
-						VolumeSource: corev1.VolumeSource{
-							HostPath: &corev1.HostPathVolumeSource{
-								Path: `/etc/group`,
-							},
-						}},
-					},
+					}},
 					Containers: []corev1.Container{{
 						Name:            `rancher-cis-benchmark`,
 						Image:           imageConfig.SecurityScanImage + ":" + imageConfig.SecurityScanImageTag,
@@ -170,18 +142,6 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						}, {
 							Name:      `output-volume`,
 							MountPath: `/tmp/sonobuoy`,
-						}, {
-							Name:      `rke2-root`,
-							MountPath: `/var/lib/rancher`,
-						}, {
-							Name:      `rke2-cni`,
-							MountPath: `/etc/cni/net.d`,
-						}, {
-							Name:      `etc-passwd`,
-							MountPath: `/etc/passwd`,
-						}, {
-							Name:      `etc-group`,
-							MountPath: `/etc/group`,
 						}},
 					}},
 				},
