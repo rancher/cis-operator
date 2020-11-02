@@ -41,9 +41,10 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 			if obj == nil || obj.DeletionTimestamp != nil {
 				return objects, status, nil
 			}
-			logrus.Infof("ClusterScan GENERATING HANDLER: scan=%s/%s@%s, %v, status=%+v", obj.Namespace, obj.Name, obj.Spec.ScanProfileName, obj.ResourceVersion, status.LastRunTimestamp)
-			if obj.Status.LastRunTimestamp == "" && !v1.ClusterScanConditionCreated.IsTrue(obj) {
 
+			logrus.Infof("ClusterScan GENERATING HANDLER: scan=%s/%s@%s, %v, status=%+v", obj.Namespace, obj.Name, obj.Spec.ScanProfileName, obj.ResourceVersion, status.LastRunTimestamp)
+
+			if obj.Status.LastRunTimestamp == "" && !v1.ClusterScanConditionCreated.IsTrue(obj) {
 				if !v1.ClusterScanConditionPending.IsTrue(obj) {
 					v1.ClusterScanConditionPending.True(obj)
 					v1.ClusterScanConditionPending.Message(obj, "ClusterScan run pending")
@@ -51,7 +52,6 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					scans.Enqueue(obj.Name)
 					return objects, obj.Status, nil
 				}
-
 				obj.Status.Conditions = []genericcondition.GenericCondition{}
 				v1.ClusterScanConditionPending.True(obj)
 				v1.ClusterScanConditionPending.Message(obj, "ClusterScan run pending")
@@ -72,6 +72,16 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					c.setClusterScanStatusDisplay(obj)
 					return objects, obj.Status, nil
 				}
+
+				if err := c.validateScheduledScanSpec(obj); err != nil {
+					v1.ClusterScanConditionFailed.True(obj)
+					message := fmt.Sprintf("Error validating Schedule %v, error: %v", obj.Spec.CronSchedule, err)
+					v1.ClusterScanConditionFailed.Message(obj, message)
+					logrus.Errorf(message)
+					c.setClusterScanStatusDisplay(obj)
+					return objects, obj.Status, nil
+				}
+
 				logrus.Infof("Launching a new on demand Job to run cis using profile %v", profile.Name)
 				configmaps, err := ciscore.NewConfigMaps(obj, profile, c.Name, c.ImageConfig)
 				if err != nil {

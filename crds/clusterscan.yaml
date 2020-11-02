@@ -25,6 +25,9 @@ spec:
   - JSONPath: .status.lastRunTimestamp
     name: LastRunTimestamp
     type: string
+  - JSONPath: .spec.cronSchedule
+    name: CronSchedule
+    type: string
   group: cis.cattle.io
   names:
     kind: ClusterScan
@@ -37,12 +40,20 @@ spec:
       properties:
         spec:
           properties:
+            cronSchedule:
+              nullable: true
+              type: string
+            retentionCount:
+              type: integer
             scanProfileName:
               nullable: true
               type: string
           type: object
         status:
           properties:
+            NextScanAt:
+              nullable: true
+              type: string
             conditions:
               items:
                 properties:

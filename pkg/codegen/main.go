@@ -22,7 +22,6 @@ func main() {
 					v1.ClusterScanProfile{},
 					v1.ClusterScanReport{},
 					v1.ClusterScanBenchmark{},
-					v1.ScheduledScan{},
 				},
 				GenerateTypes: true,
 			},

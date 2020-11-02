@@ -34,7 +34,6 @@ type Interface interface {
 	ClusterScanBenchmark() ClusterScanBenchmarkController
 	ClusterScanProfile() ClusterScanProfileController
 	ClusterScanReport() ClusterScanReportController
-	ScheduledScan() ScheduledScanController
 }
 
 func New(controllerFactory controller.SharedControllerFactory) Interface {
@@ -58,7 +57,4 @@ func (c *version) ClusterScanProfile() ClusterScanProfileController {
 }
 func (c *version) ClusterScanReport() ClusterScanReportController {
 	return NewClusterScanReportController(schema.GroupVersionKind{Group: "cis.cattle.io", Version: "v1", Kind: "ClusterScanReport"}, "clusterscanreports", false, c.controllerFactory)
-}
-func (c *version) ScheduledScan() ScheduledScanController {
-	return NewScheduledScanController(schema.GroupVersionKind{Group: "cis.cattle.io", Version: "v1", Kind: "ScheduledScan"}, "scheduledscans", false, c.controllerFactory)
 }

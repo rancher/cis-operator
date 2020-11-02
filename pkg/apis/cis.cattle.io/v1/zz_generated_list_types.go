@@ -91,20 +91,3 @@ func NewClusterScanBenchmark(namespace, name string, obj ClusterScanBenchmark) *
 	obj.Namespace = namespace
 	return &obj
 }
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// ScheduledScanList is a list of ScheduledScan resources
-type ScheduledScanList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-
-	Items []ScheduledScan `json:"items"`
-}
-
-func NewScheduledScan(namespace, name string, obj ScheduledScan) *ScheduledScan {
-	obj.APIVersion, obj.Kind = SchemeGroupVersion.WithKind("ScheduledScan").ToAPIVersionAndKind()
-	obj.Name = name
-	obj.Namespace = namespace
-	return &obj
-}

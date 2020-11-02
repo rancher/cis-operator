@@ -13,33 +13,26 @@ import (
 	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/util/retry"
 )
 
-func (c *Controller) handleScheduledScans(ctx context.Context) error {
-	scheduledScans := c.cisFactory.Cis().V1().ScheduledScan()
-	scans := c.cisFactory.Cis().V1().ClusterScan()
+func (c *Controller) handleScheduledClusterScans(ctx context.Context) error {
+	scheduledScans := c.cisFactory.Cis().V1().ClusterScan()
 
-	scheduledScans.OnChange(ctx, c.Name, func(key string, obj *v1.ScheduledScan) (*v1.ScheduledScan, error) {
+	scheduledScans.OnChange(ctx, c.Name, func(key string, obj *v1.ClusterScan) (*v1.ClusterScan, error) {
 		if obj == nil || obj.DeletionTimestamp != nil {
 			return obj, nil
 		}
 
-		logrus.Infof("scheduledScanHandler: sync called for scheduledScan CR %v ", obj.Name)
-
-		if err := c.validateScheduledScanSpec(obj); err != nil {
-			v1.ClusterScanConditionFailed.True(obj)
-			message := fmt.Sprintf("Error validating Schedule %v, error: %v", obj.Spec.CronSchedule, err)
-			v1.ClusterScanConditionFailed.Message(obj, message)
-			logrus.Errorf(message)
-			return scheduledScans.UpdateStatus(obj)
+		if obj.Spec.CronSchedule == "" {
+			return obj, nil
 		}
 
 		//if nextScanAt is set then make sure we process only if the time is right
-		if obj.Status.LastRunTimestamp != "" && obj.Status.NextScanAt != "" {
+		if v1.ClusterScanConditionComplete.IsTrue(obj) && obj.Status.LastRunTimestamp != "" && obj.Status.NextScanAt != "" {
 			currTime := time.Now().Format(time.RFC3339)
-			logrus.Infof("scheduledScanHandler: next scan is scheduled for: %v, current time: %v", obj.Status.NextScanAt, currTime)
+			logrus.Infof("scheduledScanHandler: sync called for scheduled ClusterScan CR %v ", obj.Name)
+			logrus.Infof("scheduledScanHandler: next run is scheduled for: %v, current time: %v", obj.Status.NextScanAt, currTime)
 
 			nextScanTime, err := time.Parse(time.RFC3339, obj.Status.NextScanAt)
 			if err != nil {
@@ -55,51 +48,26 @@ func (c *Controller) handleScheduledScans(ctx context.Context) error {
 				}
 				return obj, nil
 			}
-		}
+			// can process this scan again
+			logrus.Infof("scheduledScanHandler: now processing scheduledScan CR %v ", obj.Name)
+			updateErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				var err error
+				scheduledScanObj, err := scheduledScans.Get(obj.Name, metav1.GetOptions{})
+				if err != nil {
+					return err
+				}
+				// reset conditions
+				scheduledScanObj.Status.Conditions = []genericcondition.GenericCondition{}
+				scheduledScanObj.Status.LastRunTimestamp = ""
+				scheduledScanObj.Status.NextScanAt = ""
 
-		logrus.Infof("scheduledScanHandler: processing scheduledScan CR %v ", obj.Name)
-
-		schedule := c.getCronSchedule(obj)
-		cronSchedule, err := cron.ParseStandard(schedule)
-		if err != nil {
-			return obj, fmt.Errorf("Error parsing invalid cron string for schedule: %v", err)
-		}
-
-		clusterScan := c.createClusterScan(obj)
-		logrus.Infof("scheduledScanHandler: creating new clusterScan CR %v ", clusterScan.GenerateName)
-		createdClusterScan, err := scans.Create(clusterScan)
-		if err != nil {
-			return nil, fmt.Errorf("Error %v saving clusterscan object", err)
-		}
-
-		updateErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			var err error
-			scheduledScanObj, err := scheduledScans.Get(obj.Name, metav1.GetOptions{})
-			if err != nil {
+				_, err = scheduledScans.UpdateStatus(scheduledScanObj)
 				return err
+			})
+
+			if updateErr != nil {
+				return obj, fmt.Errorf("Retrying, got error %v in updating status for scheduledScan: %v ", updateErr, obj.Name)
 			}
-			// reset conditions to remove the reconciling condition, because as per kstatus lib its presence is considered an error
-			scheduledScanObj.Status.Conditions = []genericcondition.GenericCondition{}
-			now := time.Now()
-			scheduledScanObj.Status.LastRunTimestamp = now.Format(time.RFC3339)
-			scheduledScanObj.Status.LastClusterScanName = createdClusterScan.Name
-
-			nextScanAt := cronSchedule.Next(now)
-			scheduledScanObj.Status.NextScanAt = nextScanAt.Format(time.RFC3339)
-			after := nextScanAt.Sub(now)
-			scheduledScans.EnqueueAfter(scheduledScanObj.Name, after)
-
-			scheduledScanObj.Status.ObservedGeneration = scheduledScanObj.Generation
-			_, err = scheduledScans.UpdateStatus(scheduledScanObj)
-			return err
-		})
-
-		if updateErr != nil {
-			return obj, fmt.Errorf("Retrying, got error %v in updating status for scheduledScan: %v ", err, obj.Name)
-		}
-
-		if err := c.purgeOldClusterScans(obj); err != nil {
-			return obj, err
 		}
 
 		return obj, nil
@@ -108,9 +76,9 @@ func (c *Controller) handleScheduledScans(ctx context.Context) error {
 	return nil
 }
 
-func (c *Controller) validateScheduledScanSpec(obj *v1.ScheduledScan) error {
-	if obj.Spec.CronSchedule != "" {
-		_, err := cron.ParseStandard(obj.Spec.CronSchedule)
+func (c *Controller) validateScheduledScanSpec(scan *v1.ClusterScan) error {
+	if scan.Spec.CronSchedule != "" {
+		_, err := cron.ParseStandard(scan.Spec.CronSchedule)
 		if err != nil {
 			return fmt.Errorf("error parsing invalid cron string for schedule: %v", err)
 		}
@@ -118,66 +86,65 @@ func (c *Controller) validateScheduledScanSpec(obj *v1.ScheduledScan) error {
 	return nil
 }
 
-func (c *Controller) getCronSchedule(obj *v1.ScheduledScan) string {
-	cronSchedule := v1.DefaultCronSchedule
-	if obj.Spec.CronSchedule != "" {
-		cronSchedule = obj.Spec.CronSchedule
+func (c *Controller) getCronSchedule(scan *v1.ClusterScan) (cron.Schedule, error) {
+	schedule := v1.DefaultCronSchedule
+	if scan.Spec.CronSchedule != "" {
+		schedule = scan.Spec.CronSchedule
 	}
-	return cronSchedule
+	cronSchedule, err := cron.ParseStandard(schedule)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing invalid cron string for schedule: %v", err)
+	}
+	return cronSchedule, nil
 }
 
-func (c *Controller) getRetentionCount(obj *v1.ScheduledScan) int {
+func (c *Controller) getRetentionCount(scan *v1.ClusterScan) int {
 	retentionCount := v1.DefaultRetention
-	if obj.Spec.RetentionCount != 0 {
-		retentionCount = obj.Spec.RetentionCount
+	if scan.Spec.RetentionCount != 0 {
+		retentionCount = scan.Spec.RetentionCount
 	}
 	return retentionCount
 }
 
-func (c *Controller) createClusterScan(scheduleScan *v1.ScheduledScan) *v1.ClusterScan {
-	clusterScan := &v1.ClusterScan{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: name.SafeConcatName("ss", scheduleScan.Name) + "-",
-		},
-		Spec: v1.ClusterScanSpec{
-			ScanProfileName: scheduleScan.Spec.ScanProfileName,
-		},
+func (c *Controller) rescheduleScan(scan *v1.ClusterScan) error {
+	scans := c.cisFactory.Cis().V1().ClusterScan()
+	cronSchedule, err := c.getCronSchedule(scan)
+	if err != nil {
+		return fmt.Errorf("Cannot reschedule, Error parsing invalid cron string for schedule: %v", err)
 	}
-	ownerRef := metav1.OwnerReference{
-		APIVersion: "cis.cattle.io/v1",
-		Kind:       "ScheduledScan",
-		Name:       scheduleScan.Name,
-		UID:        scheduleScan.GetUID(),
-	}
-	clusterScan.ObjectMeta.OwnerReferences = append(clusterScan.ObjectMeta.OwnerReferences, ownerRef)
-
-	return clusterScan
+	now := time.Now()
+	nextScanAt := cronSchedule.Next(now)
+	scan.Status.NextScanAt = nextScanAt.Format(time.RFC3339)
+	after := nextScanAt.Sub(now)
+	scans.EnqueueAfter(scan.Name, after)
+	return nil
 }
 
-func (c *Controller) purgeOldClusterScans(scheduleScan *v1.ScheduledScan) error {
-	scans := c.cisFactory.Cis().V1().ClusterScan()
-	retention := c.getRetentionCount(scheduleScan)
-	logrus.Infof("scheduledScanHandler: purgeOldScans for scheduledScan: %v ,retention: %v", scheduleScan.Name, retention)
-	allClusterScans, err := scans.Cache().List(labels.NewSelector())
+func (c *Controller) purgeOldClusterScanReports(obj *v1.ClusterScan) error {
+	reports := c.cisFactory.Cis().V1().ClusterScanReport()
+	retention := c.getRetentionCount(obj)
+	allClusterScanReportsList, err := reports.List(metav1.ListOptions{})
 	if err != nil {
-		return fmt.Errorf("error listing cluster scans for scheduledScan %v: %v", scheduleScan.Name, err)
+		return fmt.Errorf("error listing cluster scans for scheduledScan %v: %v", obj.Name, err)
 	}
-	var clusterScans []*v1.ClusterScan
-	for _, cs := range allClusterScans {
-		if !strings.HasPrefix(cs.Name, name.SafeConcatName("ss", scheduleScan.Name)+"-") {
+	allClusterScanReports := allClusterScanReportsList.Items
+	var clusterScanReports []v1.ClusterScanReport
+	for _, cs := range allClusterScanReports {
+		if !strings.HasPrefix(cs.Name, name.SafeConcatName("scan-report", obj.Name)+"-") {
 			continue
 		}
-		clusterScans = append(clusterScans, cs)
+		clusterScanReports = append(clusterScanReports, cs)
 	}
-	if len(clusterScans) <= retention {
+	if len(clusterScanReports) <= retention {
 		return nil
 	}
-	sort.Slice(clusterScans, func(i, j int) bool {
-		return !clusterScans[i].CreationTimestamp.Before(&clusterScans[j].CreationTimestamp)
+	sort.Slice(clusterScanReports, func(i, j int) bool {
+		return !clusterScanReports[i].CreationTimestamp.Before(&clusterScanReports[j].CreationTimestamp)
 	})
-	for _, cs := range clusterScans[retention:] {
+
+	for _, cs := range clusterScanReports[retention:] {
 		logrus.Infof("scheduledScanHandler: purgeOldScans: deleting cs: %v %v", cs.Name, cs.CreationTimestamp.String())
-		if err := c.deleteClusterScanWithRetry(cs.Name); err != nil {
+		if err := c.deleteClusterScanReportWithRetry(cs.Name); err != nil {
 			logrus.Errorf("scheduledScanHandler: purgeOldScans: error deleting cluster scan: %v: %v",
 				cs.Name, err)
 		}
@@ -185,11 +152,11 @@ func (c *Controller) purgeOldClusterScans(scheduleScan *v1.ScheduledScan) error 
 	return nil
 }
 
-func (c *Controller) deleteClusterScanWithRetry(name string) error {
-	scans := c.cisFactory.Cis().V1().ClusterScan()
+func (c *Controller) deleteClusterScanReportWithRetry(name string) error {
+	reports := c.cisFactory.Cis().V1().ClusterScanReport()
 	delErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		var err error
-		err = scans.Delete(name, &metav1.DeleteOptions{})
+		err = reports.Delete(name, &metav1.DeleteOptions{})
 		return err
 	})
 	return delErr

@@ -50,6 +50,10 @@ type ClusterScan struct {
 type ClusterScanSpec struct {
 	// scan profile to use
 	ScanProfileName string `json:"scanProfileName,omitempty"`
+	// Cron Expression for Schedule
+	CronSchedule string `yaml:"cron_schedule" json:"cronSchedule,omitempty"`
+	// Number of past scans to keep
+	RetentionCount int `yaml:"retentionCount" json:"retentionCount,omitempty"`
 }
 
 type ClusterScanStatus struct {
@@ -59,6 +63,7 @@ type ClusterScanStatus struct {
 	Summary                *ClusterScanSummary                 `json:"summary,omitempty"`
 	ObservedGeneration     int64                               `json:"observedGeneration"`
 	Conditions             []genericcondition.GenericCondition `json:"conditions,omitempty"`
+	NextScanAt             string                              `json:"NextScanAt"`
 }
 
 type ClusterScanStatusDisplay struct {
@@ -127,35 +132,6 @@ type ClusterScanReportSpec struct {
 	BenchmarkVersion string `json:"benchmarkVersion,omitempty"`
 	LastRunTimestamp string `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
 	ReportJSON       string `json:"reportJSON"`
-}
-
-// +genclient
-// +genclient:nonNamespaced
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type ScheduledScan struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   ScheduledScanSpec   `json:"spec"`
-	Status ScheduledScanStatus `yaml:"status" json:"status,omitempty"`
-}
-
-type ScheduledScanSpec struct {
-	// scan profile to use
-	ScanProfileName string `json:"scanProfileName,omitempty"`
-	// Cron Expression for Schedule
-	CronSchedule string `yaml:"cron_schedule" json:"cronSchedule,omitempty"`
-	// Number of past scans to keep
-	RetentionCount int `yaml:"retentionCount" json:"retentionCount,omitempty"`
-}
-
-type ScheduledScanStatus struct {
-	LastRunTimestamp    string                              `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
-	LastClusterScanName string                              `yaml:"last_cluster_scan_name" json:"lastClusterScanName"`
-	NextScanAt          string                              `json:"NextScanAt"`
-	ObservedGeneration  int64                               `json:"observedGeneration"`
-	Conditions          []genericcondition.GenericCondition `json:"conditions,omitempty"`
 }
 
 type ScanImageConfig struct {
