@@ -65,6 +65,10 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 			logrus.Infof("Marking ClusterScanConditionAlerted for scan: %v", scanName)
 			c.setClusterScanStatusDisplay(scan)
 
+			if scan.Spec.CronSchedule != "" {
+				c.rescheduleScan(scan)
+				c.purgeOldClusterScanReports(scan)
+			}
 			//update scan
 			_, err = scans.UpdateStatus(scan)
 			if err != nil {
@@ -82,7 +86,7 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 					return nil, fmt.Errorf("error %v reading results of cluster scan object: %v", err, scanName)
 				}
 				scancopy.Status.Summary = summary
-				err = c.apply.WithSetID(report.Name).WithCacheTypes(reports).ApplyObjects(report)
+				_, err = reports.Create(report)
 				if err != nil {
 					return nil, fmt.Errorf("error %v saving clusterscanreport object", err)
 				}
@@ -151,7 +155,7 @@ func (c *Controller) getScanSummary(outputBytes []byte) (*v1.ClusterScanSummary,
 func (c *Controller) createClusterScanReport(outputBytes []byte, scan *v1.ClusterScan) (*v1.ClusterScanReport, error) {
 	scanReport := &v1.ClusterScanReport{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name.SafeConcatName("scan-report", scan.Name),
+			GenerateName: name.SafeConcatName("scan-report", scan.Name) + "-",
 		},
 	}
 	profile, err := c.getClusterScanProfile(scan)

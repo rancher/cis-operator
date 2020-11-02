@@ -32,7 +32,6 @@ var (
 	ClusterScanBenchmarkResourceName = "clusterscanbenchmarks"
 	ClusterScanProfileResourceName   = "clusterscanprofiles"
 	ClusterScanReportResourceName    = "clusterscanreports"
-	ScheduledScanResourceName        = "scheduledscans"
 )
 
 // SchemeGroupVersion is group version used to register these objects
@@ -64,8 +63,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&ClusterScanProfileList{},
 		&ClusterScanReport{},
 		&ClusterScanReportList{},
-		&ScheduledScan{},
-		&ScheduledScanList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
