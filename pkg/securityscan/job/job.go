@@ -120,6 +120,12 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 							Name:  `SONOBUOY_ADVERTISE_IP`,
 							Value: `cisscan-rancher-cis-benchmark`,
 						}, {
+							Name:  `DEBUG`,
+							Value: "true",
+						}, {
+							Name:  `DEBUG_TIME_IN_SEC`,
+							Value: "infinity",
+						}, {
 							Name:  `OUTPUT_CONFIGMAPNAME`,
 							Value: strings.Join([]string{`cisscan-output-for`, clusterscan.Name}, "-"),
 						}},

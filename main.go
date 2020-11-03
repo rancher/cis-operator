@@ -26,7 +26,7 @@ var (
 	kubeConfig           string
 	threads              int
 	name                 string
-	securityScanImage    = "prachidamle/security-scan"
+	securityScanImage    = "rancher/security-scan"
 	securityScanImageTag = "v0.1.20"
 	sonobuoyImage        = "rancher/sonobuoy-sonobuoy"
 	sonobuoyImageTag     = "v0.16.3"
