@@ -82,4 +82,3 @@ data:
       - mountPath: /etc/cni/net.d
         name: rke2-cni
         readOnly: true
-       
