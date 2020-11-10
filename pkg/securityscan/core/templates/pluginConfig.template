@@ -32,6 +32,12 @@ data:
       - hostPath:
           path: /etc/group
         name: etc-group
+      - hostPath:
+          path: /var/lib/rancher
+        name: rke2-root
+      - hostPath:
+          path: /etc/cni/net.d
+        name: rke2-cni
     sonobuoy-config:
       driver: DaemonSet
       plugin-name: rancher-kube-bench
@@ -69,4 +75,10 @@ data:
         readOnly: true
       - mountPath: /etc/group
         name: etc-group
+        readOnly: true
+      - mountPath: /var/lib/rancher
+        name: rke2-root
+        readOnly: true 
+      - mountPath: /etc/cni/net.d
+        name: rke2-cni
         readOnly: true
