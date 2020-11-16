@@ -48,6 +48,13 @@ spec:
             scanProfileName:
               nullable: true
               type: string
+            scoreWarning:
+              default: pass
+              enum:
+              - pass
+              - fail
+              nullable: true
+              type: string
           type: object
         status:
           properties:
@@ -112,6 +119,8 @@ spec:
                 skip:
                   type: integer
                 total:
+                  type: integer
+                warn:
                   type: integer
               type: object
           type: object

@@ -1,6 +1,7 @@
 package crds
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"github.com/rancher/wrangler/pkg/crd"
 	_ "github.com/rancher/wrangler/pkg/generated/controllers/apiextensions.k8s.io" //using init
 	"github.com/rancher/wrangler/pkg/yaml"
+	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -17,6 +19,9 @@ func WriteCRD() error {
 		bCrd, err := crdDef.ToCustomResourceDefinition()
 		if err != nil {
 			return err
+		}
+		if bCrd.Name == "clusterscans.cis.cattle.io" {
+			customizeClusterScan(&bCrd)
 		}
 		yamlBytes, err := yaml.Export(&bCrd)
 		if err != nil {
@@ -77,4 +82,16 @@ func newCRD(obj interface{}, customize func(crd.CRD) crd.CRD) crd.CRD {
 		crd = customize(crd)
 	}
 	return crd
+}
+
+func customizeClusterScan(clusterScan *apiext.CustomResourceDefinition) {
+	properties := clusterScan.Spec.Validation.OpenAPIV3Schema.Properties
+	spec := properties["spec"]
+	scoreWarning := spec.Properties["scoreWarning"]
+	passRaw, _ := json.Marshal(cisoperator.ClusterScanPassOnWarning)
+	failRaw, _ := json.Marshal(cisoperator.ClusterScanFailOnWarning)
+	scoreWarning.Enum = []apiext.JSON{{Raw: passRaw}, {Raw: failRaw}}
+	scoreWarning.Default = &apiext.JSON{Raw: passRaw}
+	spec.Properties["scoreWarning"] = scoreWarning
+	properties["spec"] = spec
 }

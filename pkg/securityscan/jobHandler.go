@@ -147,6 +147,7 @@ func (c *Controller) getScanSummary(outputBytes []byte) (*v1.ClusterScanSummary,
 		Pass:          r.Pass,
 		Fail:          r.Fail,
 		Skip:          r.Skip,
+		Warn:          r.Warn,
 		NotApplicable: r.NotApplicable,
 	}
 	return cisScanSummary, nil
