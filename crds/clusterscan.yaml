@@ -48,6 +48,14 @@ spec:
               type: string
             retentionCount:
               type: integer
+            scanAlertRule:
+              nullable: true
+              properties:
+                alertOnComplete:
+                  type: boolean
+                alertOnFailure:
+                  type: boolean
+              type: object
             scanProfileName:
               nullable: true
               type: string

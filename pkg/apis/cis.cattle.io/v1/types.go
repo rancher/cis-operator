@@ -59,6 +59,8 @@ type ClusterScanSpec struct {
 	RetentionCount int `yaml:"retentionCount" json:"retentionCount,omitempty"`
 	// Specify if tests with "warn" output should be counted towards scan failure
 	ScoreWarning string `yaml:"score_warning" json:"scoreWarning,omitempty"`
+	//configure the alerts to be sent out
+	ScanAlertRule *ClusterScanAlertRule `json:"scanAlertRule,omitempty"`
 }
 
 type ClusterScanStatus struct {
@@ -85,6 +87,11 @@ type ClusterScanSummary struct {
 	Skip          int `json:"skip"`
 	Warn          int `json:"warn"`
 	NotApplicable int `json:"notApplicable"`
+}
+
+type ClusterScanAlertRule struct {
+	AlertOnComplete bool `json:"alertOnComplete,omitempty"`
+	AlertOnFailure  bool `json:"alertOnFailure,omitempty"`
 }
 
 // +genclient

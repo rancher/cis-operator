@@ -16,6 +16,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 
+	"log"
+	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	cisoperator "github.com/rancher/cis-operator/pkg/securityscan"
 )
@@ -26,6 +31,7 @@ var (
 	kubeConfig           string
 	threads              int
 	name                 string
+	metricPort           = ":8080"
 	securityScanImage    = "prachidamle/security-scan"
 	securityScanImageTag = "v0.1.20"
 	sonobuoyImage        = "rancher/sonobuoy-sonobuoy"
@@ -79,6 +85,12 @@ func main() {
 			Value:       "v0.16.3",
 			Destination: &sonobuoyImageTag,
 		},
+		cli.StringFlag{
+			Name:        "cis_metrics_port",
+			EnvVar:      "CIS_METRICS_PORT",
+			Value:       ":8080",
+			Destination: &metricPort,
+		},
 	}
 	app.Action = run
 
@@ -124,6 +136,10 @@ func run(c *cli.Context) {
 	if err := ctl.Start(ctx, threads, 2*time.Hour); err != nil {
 		logrus.Fatalf("Error starting: %v", err)
 	}
+
+	http.Handle("/metrics", promhttp.Handler())
+	log.Fatal(http.ListenAndServe(metricPort, nil))
+
 	<-ctx.Done()
 	logrus.Info("Registered CIS controller")
 }

@@ -19,6 +19,8 @@ import (
 
 	"sync"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	cisoperatorctl "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io"
 	"github.com/rancher/cis-operator/pkg/securityscan/scan"
@@ -39,6 +41,9 @@ type Controller struct {
 	apply        apply.Apply
 
 	mu *sync.Mutex
+
+	numTestsFailed   *prometheus.GaugeVec
+	numScansComplete *prometheus.CounterVec
 }
 
 func NewController(ctx context.Context, cfg *rest.Config, namespace, name string, imgConfig *cisoperatorapiv1.ScanImageConfig) (ctl *Controller, err error) {
@@ -100,6 +105,11 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 		return nil, fmt.Errorf("Error building core NewFactoryFromConfig: %s", err.Error())
 	}
 
+	err = initializeMetrics(ctl)
+	if err != nil {
+		return nil, fmt.Errorf("Error registering CIS Metrics: %s", err.Error())
+	}
+
 	return ctl, nil
 }
 
@@ -117,7 +127,9 @@ func (c *Controller) Start(ctx context.Context, threads int, resync time.Duratio
 	if err := c.handleScheduledClusterScans(ctx); err != nil {
 		return err
 	}
-
+	if err := c.handleClusterScanMetrics(ctx); err != nil {
+		return err
+	}
 	return start.All(ctx, threads, c.cisFactory, c.coreFactory, c.batchFactory)
 }
 
@@ -152,4 +164,50 @@ func detectKubernetesVersion(ctx context.Context, k8sClient kubernetes.Interface
 		return "", err
 	}
 	return v.GitVersion, nil
+}
+
+func initializeMetrics(ctl *Controller) error {
+	ctl.numTestsFailed = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_fail",
+			Help: "Number of test failed in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+			"num_tests_total",
+			"num_tests_skip",
+			"num_tests_na",
+		},
+	)
+
+	if err := prometheus.Register(ctl.numTestsFailed); err != nil {
+		return err
+	}
+
+	ctl.numScansComplete = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cis_scan_num_scans_complete",
+			Help: "Number of CIS clusterscans completed, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+			"num_tests_total",
+			"num_tests_skip",
+			"num_tests_na",
+			"num_tests_pass",
+			"num_tests_fail",
+		},
+	)
+
+	if err := prometheus.Register(ctl.numScansComplete); err != nil {
+		return err
+	}
+
+	return nil
 }
