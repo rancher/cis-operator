@@ -25,6 +25,7 @@ const (
 	Fail          State = "fail"
 	Skip          State = "skip"
 	Mixed         State = "mixed"
+	Warn          State = "warn"
 	NotApplicable State = "notApplicable"
 )
 
@@ -42,6 +43,8 @@ type Check struct {
 	ConfigCommands []*exec.Cmd `json:"config_commands"`
 	ActualValue    string      `json:"actual_value"`
 	ExpectedResult string      `json:"expected_result"`
+	TestType       string      `json:"test_type"`
+	Scored         bool        `json:"scored"`
 }
 
 type Group struct {
@@ -56,6 +59,7 @@ type Report struct {
 	Pass          int                   `json:"pass"`
 	Fail          int                   `json:"fail"`
 	Skip          int                   `json:"skip"`
+	Warn          int                   `json:"warn"`
 	NotApplicable int                   `json:"notApplicable"`
 	Nodes         map[NodeType][]string `json:"nodes"`
 	Results       []*Group              `json:"results"`
@@ -83,6 +87,8 @@ func mapState(state summarizer.State) State {
 		return Skip
 	case summarizer.Mixed:
 		return Mixed
+	case summarizer.Warn:
+		return Warn
 	case summarizer.NotApplicable:
 		return NotApplicable
 	}
@@ -112,6 +118,8 @@ func mapCheck(intCheck *summarizer.CheckWrapper) *Check {
 		ConfigCommands: intCheck.ConfigCommands,
 		ActualValue:    intCheck.ActualValue,
 		ExpectedResult: intCheck.ExpectedResult,
+		TestType:       intCheck.Type,
+		Scored:         intCheck.Scored,
 	}
 }
 
@@ -152,6 +160,7 @@ func mapReport(internalReport *summarizer.SummarizedReport) (*Report, error) {
 	externalReport.Pass = internalReport.Pass
 	externalReport.Fail = internalReport.Fail
 	externalReport.Skip = internalReport.Skip
+	externalReport.Warn = internalReport.Warn
 	externalReport.NotApplicable = internalReport.NotApplicable
 	externalReport.Nodes = mapNodes(internalReport.Nodes)
 
