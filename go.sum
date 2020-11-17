@@ -288,6 +288,16 @@ github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lN
 github.com/modern-go/reflect2 v1.0.1 h1:9f412s+6RmYXLWZSEzVVgPGK7C2PphHj5RJrvfx9AWI=
 github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826/go.mod h1:TaXosZuwdSHYgviHp1DAtfrULt5eUgsSMsZf+YrPgl8=
+github.com/mrajashree/security-scan v0.2.2-0.20201106064848-df8f2f40ba8c h1:7hmgS6YfuBRgN1dFISH/zZx1LMvX2rd7B8jL+ogfPVk=
+github.com/mrajashree/security-scan v0.2.2-0.20201106064848-df8f2f40ba8c/go.mod h1:WlLAocVyVQs5J8r0IiQXsp0ajVZO6hYi/Vo6zxjo73s=
+github.com/mrajashree/security-scan v0.2.2-0.20201106082447-673bdedd250a h1:oCqalz9WQ31bZCjNbg4Q5UBhNA/Ns0wxrcGTP5bbdus=
+github.com/mrajashree/security-scan v0.2.2-0.20201106082447-673bdedd250a/go.mod h1:WlLAocVyVQs5J8r0IiQXsp0ajVZO6hYi/Vo6zxjo73s=
+github.com/mrajashree/security-scan v0.2.2-0.20201112204547-23af55d6f787 h1:Qt6jQFd7ZN87dO3W3aAJstMjLPSCFVs8yVulJPAK2T0=
+github.com/mrajashree/security-scan v0.2.2-0.20201112204547-23af55d6f787/go.mod h1:WlLAocVyVQs5J8r0IiQXsp0ajVZO6hYi/Vo6zxjo73s=
+github.com/mrajashree/security-scan v0.2.2-0.20201112220304-685356dc5593 h1:dHrHg04kWZEENyfwjOpJ9MNh/jGBj1PgBftxQC9/3r4=
+github.com/mrajashree/security-scan v0.2.2-0.20201112220304-685356dc5593/go.mod h1:WlLAocVyVQs5J8r0IiQXsp0ajVZO6hYi/Vo6zxjo73s=
+github.com/mrajashree/security-scan v0.2.2-0.20201113181320-aa5b96850045 h1:w4z9S6rkesAFPrxeGdoE02jB4ycEDaPwGLhKapTHAKI=
+github.com/mrajashree/security-scan v0.2.2-0.20201113181320-aa5b96850045/go.mod h1:WlLAocVyVQs5J8r0IiQXsp0ajVZO6hYi/Vo6zxjo73s=
 github.com/munnerz/goautoneg v0.0.0-20120707110453-a547fc61f48d/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=

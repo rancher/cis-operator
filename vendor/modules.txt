@@ -77,7 +77,7 @@ github.com/rancher/lasso/pkg/controller
 github.com/rancher/lasso/pkg/log
 github.com/rancher/lasso/pkg/mapper
 github.com/rancher/lasso/pkg/scheme
-# github.com/rancher/security-scan v0.2.1
+# github.com/rancher/security-scan v0.2.1 => github.com/mrajashree/security-scan v0.2.2-0.20201113181320-aa5b96850045
 github.com/rancher/security-scan/pkg/kb-summarizer/report
 github.com/rancher/security-scan/pkg/kb-summarizer/summarizer
 # github.com/rancher/wrangler v0.6.2-0.20200829053106-7e1dd4260224

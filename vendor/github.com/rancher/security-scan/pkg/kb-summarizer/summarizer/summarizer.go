@@ -59,6 +59,7 @@ const (
 	Skip          State = "S"
 	Mixed         State = "M"
 	NotApplicable State = "N"
+	Warn          State = "W"
 
 	SKIP kb.State = "SKIP"
 	NA   kb.State = "NA"
@@ -78,10 +79,10 @@ const (
 type CheckWrapper struct {
 	ID             string                       `yaml:"id" json:"id"`
 	Text           string                       `json:"d"`
-	Type           string                       `json:"-"`
+	Type           string                       `json:"tt"`
 	Remediation    string                       `json:"r"`
 	State          State                        `json:"s"`
-	Scored         bool                         `json:"-"`
+	Scored         bool                         `json:"sc"`
 	Result         map[kb.State]map[string]bool `json:"-"`
 	NodeType       []NodeType                   `json:"t"`
 	NodesMap       map[string]bool              `json:"-"`
@@ -106,6 +107,7 @@ type SummarizedReport struct {
 	Total         int                   `json:"t"`
 	Fail          int                   `json:"f"`
 	Pass          int                   `json:"p"`
+	Warn          int                   `json:"w"`
 	Skip          int                   `json:"s"`
 	NotApplicable int                   `json:"na"`
 	Nodes         map[NodeType][]string `json:"n"`
@@ -245,9 +247,9 @@ func (s *Summarizer) getBenchmarkFor(k8sVersion string) (string, error) {
 func (s *Summarizer) processOneResultFileForHost(results *kb.Controls, hostname string) {
 	for _, group := range results.Groups {
 		for _, check := range group.Checks {
-			if !check.Scored {
-				continue
-			}
+			//if !check.Scored {
+			//	continue
+			//}
 			logrus.Infof("host:%v id: %v %v", hostname, check.ID, check.State)
 			printCheck(check)
 			cw := s.checkWrappersMaps[check.ID]
@@ -447,9 +449,9 @@ func (s *Summarizer) loadControls() error {
 				s.groupWrappersMap[g.ID] = gw
 			}
 			for _, check := range g.Checks {
-				if !check.Scored {
-					continue
-				}
+				//if !check.Scored {
+				//	continue
+				//}
 				if check.Type == CheckTypeSkip {
 					check.State = NA
 				}
@@ -497,7 +499,7 @@ func getMappedState(state kb.State) State {
 	case kb.FAIL:
 		return Fail
 	case kb.WARN:
-		return Fail
+		return Warn
 	case kb.INFO:
 		return NotApplicable
 	case SKIP:
@@ -608,6 +610,17 @@ func (s *Summarizer) runFinalPassOnCheckWrapper(cw *CheckWrapper) {
 				cw.State = Mixed
 				s.fullReport.Fail++
 				cw.Nodes = s.getMissingNodesMapOfCheckWrapper(cw, cw.Result[SKIP])
+			}
+			return
+		}
+		if _, ok := cw.Result[kb.WARN]; ok {
+			if len(cw.Result[kb.WARN]) == nodeCount {
+				cw.State = Warn
+				s.fullReport.Warn++
+			} else {
+				cw.State = Mixed
+				s.fullReport.Warn++
+				cw.Nodes = s.getMissingNodesMapOfCheckWrapper(cw, cw.Result[kb.WARN])
 			}
 			return
 		}

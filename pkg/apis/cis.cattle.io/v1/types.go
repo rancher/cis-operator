@@ -33,6 +33,7 @@ const (
 	ClusterScanConditionAlerted      = condition.Cond("Alerted")
 	ClusterScanConditionReconciling  = condition.Cond("Reconciling")
 	ClusterScanConditionStalled      = condition.Cond("Stalled")
+	ClusterScanFailOnScoreWarning    = "fail"
 )
 
 // +genclient
@@ -54,6 +55,8 @@ type ClusterScanSpec struct {
 	CronSchedule string `yaml:"cron_schedule" json:"cronSchedule,omitempty"`
 	// Number of past scans to keep
 	RetentionCount int `yaml:"retentionCount" json:"retentionCount,omitempty"`
+	// Specify if tests with "warn" output should be counted towards scan failure
+	ScoreWarning string `yaml:"score_warning" json:"scoreWarning,omitempty"`
 }
 
 type ClusterScanStatus struct {
@@ -78,6 +81,7 @@ type ClusterScanSummary struct {
 	Pass          int `json:"pass"`
 	Fail          int `json:"fail"`
 	Skip          int `json:"skip"`
+	Warn          int `json:"warn"`
 	NotApplicable int `json:"notApplicable"`
 }
 

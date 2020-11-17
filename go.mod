@@ -2,7 +2,10 @@ module github.com/rancher/cis-operator
 
 go 1.13
 
-replace k8s.io/client-go => k8s.io/client-go v0.18.0
+replace (
+	k8s.io/client-go => k8s.io/client-go v0.18.0
+	github.com/rancher/security-scan => github.com/mrajashree/security-scan v0.2.2-0.20201113181320-aa5b96850045
+)
 
 require (
 	github.com/blang/semver v3.5.0+incompatible

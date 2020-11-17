@@ -293,8 +293,14 @@ func (c Controller) setClusterScanStatusDisplay(scan *v1.ClusterScan) {
 			display.Message = "ClusterScan complete, there are some test failures, please check the ClusterScanReport"
 			display.Error = true
 		} else {
-			display.State = passedState
-			display.Error = false
+			if summary.Warn > 0 && scan.Spec.ScoreWarning == v1.ClusterScanFailOnScoreWarning {
+				display.State = failedState
+				display.Message = "ClusterScan complete, warnings have been generated for some manual tests, please check the ClusterScanReport"
+				display.Error = true
+			} else {
+				display.State = passedState
+				display.Error = false
+			}
 		}
 		display.Transitioning = false
 	}
