@@ -31,7 +31,7 @@ var (
 	kubeConfig           string
 	threads              int
 	name                 string
-	metricPort           string
+	metricsPort          string
 	debug                bool
 	securityScanImage    = "rancher/security-scan"
 	securityScanImageTag = "v0.2.1"
@@ -89,8 +89,8 @@ func main() {
 		cli.StringFlag{
 			Name:        "cis_metrics_port",
 			EnvVar:      "CIS_METRICS_PORT",
-			Value:       ":8080",
-			Destination: &metricPort,
+			Value:       "8080",
+			Destination: &metricsPort,
 		},
 		cli.BoolFlag{
 			Name:        "debug",
@@ -144,7 +144,7 @@ func run(c *cli.Context) {
 		logrus.Fatalf("Error starting: %v", err)
 	}
 	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(metricPort, nil))
+	log.Fatal(http.ListenAndServe(":"+metricsPort, nil))
 
 	<-ctx.Done()
 	logrus.Info("Registered CIS controller")
