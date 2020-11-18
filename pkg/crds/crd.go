@@ -46,6 +46,7 @@ func List() []crd.CRD {
 				WithColumn("Pass", ".status.summary.pass").
 				WithColumn("Fail", ".status.summary.fail").
 				WithColumn("Skip", ".status.summary.skip").
+				WithColumn("Warn", ".status.summary.warn").
 				WithColumn("Not Applicable", ".status.summary.notApplicable").
 				WithColumn("LastRunTimestamp", ".status.lastRunTimestamp").
 				WithColumn("CronSchedule", ".spec.cronSchedule")
@@ -91,7 +92,6 @@ func customizeClusterScan(clusterScan *apiext.CustomResourceDefinition) {
 	passRaw, _ := json.Marshal(cisoperator.ClusterScanPassOnWarning)
 	failRaw, _ := json.Marshal(cisoperator.ClusterScanFailOnWarning)
 	scoreWarning.Enum = []apiext.JSON{{Raw: passRaw}, {Raw: failRaw}}
-	scoreWarning.Default = &apiext.JSON{Raw: passRaw}
 	spec.Properties["scoreWarning"] = scoreWarning
 	properties["spec"] = spec
 }

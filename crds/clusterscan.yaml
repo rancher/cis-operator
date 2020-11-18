@@ -19,6 +19,9 @@ spec:
   - JSONPath: .status.summary.skip
     name: Skip
     type: string
+  - JSONPath: .status.summary.warn
+    name: Warn
+    type: string
   - JSONPath: .status.summary.notApplicable
     name: Not Applicable
     type: string
@@ -49,7 +52,6 @@ spec:
               nullable: true
               type: string
             scoreWarning:
-              default: pass
               enum:
               - pass
               - fail
