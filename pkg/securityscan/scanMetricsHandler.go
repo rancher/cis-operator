@@ -2,6 +2,7 @@ package securityscan
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/sirupsen/logrus"
@@ -16,20 +17,20 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 		if obj == nil || obj.DeletionTimestamp != nil {
 			return obj, nil
 		}
-
 		if !(v1.ClusterScanConditionAlerted.IsUnknown(obj) && v1.ClusterScanConditionComplete.IsTrue(obj)) {
 			return obj, nil
 		}
-
 		if obj.Spec.ScanAlertRule == nil {
-			logrus.Infof("No AlertRules configured for scan %v", obj.Name)
+			logrus.Debugf("No AlertRules configured for scan %v", obj.Name)
 			v1.ClusterScanConditionAlerted.False(obj)
 			v1.ClusterScanConditionAlerted.Message(obj, "No AlertRule configured for this scan")
+			_, err := scans.UpdateStatus(obj)
+			if err != nil {
+				return obj, fmt.Errorf("Retrying, got error %v in updating condition of scan object: %v ", err, obj.Name)
+			}
 			return obj, nil
 		}
-
-		logrus.Infof("Updating gauge cis_scan_num_tests_fail for scan %v", obj.Name)
-
+		logrus.Debugf("Updating metrics for scan %v", obj.Name)
 		scanName := "manual"
 		if obj.Spec.CronSchedule != "" {
 			scanName = obj.Name
@@ -45,16 +46,16 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 		if obj.Spec.ScanAlertRule.AlertOnFailure {
 			c.numTestsFailed.WithLabelValues(scanName, scanProfileName, numTestsTotal, numTestsSkip, numTestsNA).Set(numTestsFailed)
 		}
-
 		if obj.Spec.ScanAlertRule.AlertOnComplete {
 			c.numScansComplete.WithLabelValues(scanName, scanProfileName, numTestsTotal, numTestsSkip, numTestsNA, numTestsPass, numTestsFail).Inc()
 		}
-
+		logrus.Debugf("Done updating metrics for scan %v", obj.Name)
 		v1.ClusterScanConditionAlerted.True(obj)
-		logrus.Infof("Done Updating gauge cis_scan_num_tests_fail for scan %v", obj.Name)
-
+		_, err := scans.UpdateStatus(obj)
+		if err != nil {
+			return obj, fmt.Errorf("Retrying, got error %v in updating condition of scan object: %v ", err, obj.Name)
+		}
 		return obj, nil
 	})
-
 	return nil
 }

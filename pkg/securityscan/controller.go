@@ -109,7 +109,6 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 	if err != nil {
 		return nil, fmt.Errorf("Error registering CIS Metrics: %s", err.Error())
 	}
-
 	return ctl, nil
 }
 
@@ -146,7 +145,6 @@ func (c *Controller) registerCRD(ctx context.Context) error {
 		}
 		crds = append(crds, *crdef)
 	}
-
 	return factory.BatchCreateCRDs(ctx, crds...).BatchWait()
 }
 
@@ -208,6 +206,5 @@ func initializeMetrics(ctl *Controller) error {
 	if err := prometheus.Register(ctl.numScansComplete); err != nil {
 		return err
 	}
-
 	return nil
 }

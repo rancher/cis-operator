@@ -31,9 +31,10 @@ var (
 	kubeConfig           string
 	threads              int
 	name                 string
-	metricPort           = ":8080"
-	securityScanImage    = "prachidamle/security-scan"
-	securityScanImageTag = "v0.1.20"
+	metricPort           string
+	debug                bool
+	securityScanImage    = "rancher/security-scan"
+	securityScanImageTag = "v0.2.1"
 	sonobuoyImage        = "rancher/sonobuoy-sonobuoy"
 	sonobuoyImageTag     = "v0.16.3"
 )
@@ -91,6 +92,11 @@ func main() {
 			Value:       ":8080",
 			Destination: &metricPort,
 		},
+		cli.BoolFlag{
+			Name:        "debug",
+			EnvVar:      "CIS_OPERATOR_DEBUG",
+			Destination: &debug,
+		},
 	}
 	app.Action = run
 
@@ -100,10 +106,11 @@ func main() {
 }
 
 func run(c *cli.Context) {
-
 	logrus.Info("Starting CIS-Operator")
 	ctx := signals.SetupSignalHandler(context.Background())
-
+	if debug {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
 	kubeConfig = c.String("kubeconfig")
 	threads = c.Int("threads")
 	securityScanImage = c.String("security-scan-image")
@@ -136,7 +143,6 @@ func run(c *cli.Context) {
 	if err := ctl.Start(ctx, threads, 2*time.Hour); err != nil {
 		logrus.Fatalf("Error starting: %v", err)
 	}
-
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(metricPort, nil))
 
@@ -148,10 +154,8 @@ func validateConfig(imgConfig *cisoperatorapiv1.ScanImageConfig) error {
 	if imgConfig.SecurityScanImage == "" {
 		return errors.New("No Security-Scan Image specified")
 	}
-
 	if imgConfig.SonobuoyImage == "" {
 		return errors.New("No Sonobuoy tool Image specified")
 	}
-
 	return nil
 }
