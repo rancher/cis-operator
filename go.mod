@@ -8,7 +8,7 @@ require (
 	github.com/blang/semver v3.5.0+incompatible
 	github.com/rancher/kubernetes-provider-detector v0.0.0-20200807181951-690274ab1fb3
 	github.com/rancher/lasso v0.0.0-20200820172840-0e4cc0ef5cb0
-	github.com/rancher/security-scan v0.2.2-0.20201117171930-af478b83fbe4
+	github.com/rancher/security-scan v0.2.2-0.20201120000202-012f56ef6353
 	github.com/rancher/wrangler v0.6.2-0.20200829053106-7e1dd4260224
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.4.2
