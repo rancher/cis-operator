@@ -3,7 +3,6 @@ package securityscan
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/sirupsen/logrus"
 
@@ -20,7 +19,7 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 		if !(v1.ClusterScanConditionAlerted.IsUnknown(obj) && v1.ClusterScanConditionComplete.IsTrue(obj)) {
 			return obj, nil
 		}
-		if obj.Spec.ScanAlertRule == nil {
+		if obj.Spec.ScheduledScanConfig != nil && obj.Spec.ScheduledScanConfig.ScanAlertRule == nil {
 			logrus.Debugf("No AlertRules configured for scan %v", obj.Name)
 			v1.ClusterScanConditionAlerted.False(obj)
 			v1.ClusterScanConditionAlerted.Message(obj, "No AlertRule configured for this scan")
@@ -31,24 +30,25 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 			return obj, nil
 		}
 		logrus.Debugf("Updating metrics for scan %v", obj.Name)
+
 		scanName := "manual"
-		if obj.Spec.CronSchedule != "" {
+		if obj.Spec.ScheduledScanConfig != nil && obj.Spec.ScheduledScanConfig.CronSchedule != "" {
 			scanName = obj.Name
 		}
 		scanProfileName := obj.Status.LastRunScanProfileName
 		numTestsFailed := float64(obj.Status.Summary.Fail)
-		numTestsTotal := strconv.Itoa(obj.Status.Summary.Total)
-		numTestsNA := strconv.Itoa(obj.Status.Summary.NotApplicable)
-		numTestsSkip := strconv.Itoa(obj.Status.Summary.Skip)
-		numTestsPass := strconv.Itoa(obj.Status.Summary.Pass)
-		numTestsFail := strconv.Itoa(obj.Status.Summary.Fail)
+		numTestsTotal := float64(obj.Status.Summary.Total)
+		numTestsNA := float64(obj.Status.Summary.NotApplicable)
+		numTestsSkip := float64(obj.Status.Summary.Skip)
+		numTestsPass := float64(obj.Status.Summary.Pass)
 
-		if obj.Spec.ScanAlertRule.AlertOnFailure {
-			c.numTestsFailed.WithLabelValues(scanName, scanProfileName, numTestsTotal, numTestsSkip, numTestsNA).Set(numTestsFailed)
-		}
-		if obj.Spec.ScanAlertRule.AlertOnComplete {
-			c.numScansComplete.WithLabelValues(scanName, scanProfileName, numTestsTotal, numTestsSkip, numTestsNA, numTestsPass, numTestsFail).Inc()
-		}
+		c.numTestsFailed.WithLabelValues(scanName, scanProfileName).Set(numTestsFailed)
+		c.numScansComplete.WithLabelValues(scanName, scanProfileName).Inc()
+		c.numTestsTotal.WithLabelValues(scanName, scanProfileName).Set(numTestsTotal)
+		c.numTestsPassed.WithLabelValues(scanName, scanProfileName).Set(numTestsPass)
+		c.numTestsSkipped.WithLabelValues(scanName, scanProfileName).Set(numTestsSkip)
+		c.numTestsNA.WithLabelValues(scanName, scanProfileName).Set(numTestsNA)
+
 		logrus.Debugf("Done updating metrics for scan %v", obj.Name)
 		v1.ClusterScanConditionAlerted.True(obj)
 		_, err := scans.UpdateStatus(obj)

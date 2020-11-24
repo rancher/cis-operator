@@ -24,7 +24,7 @@ func (c *Controller) handleScheduledClusterScans(ctx context.Context) error {
 			return obj, nil
 		}
 
-		if obj.Spec.CronSchedule == "" {
+		if obj.Spec.ScheduledScanConfig != nil && obj.Spec.ScheduledScanConfig.CronSchedule == "" {
 			return obj, nil
 		}
 
@@ -77,8 +77,8 @@ func (c *Controller) handleScheduledClusterScans(ctx context.Context) error {
 }
 
 func (c *Controller) validateScheduledScanSpec(scan *v1.ClusterScan) error {
-	if scan.Spec.CronSchedule != "" {
-		_, err := cron.ParseStandard(scan.Spec.CronSchedule)
+	if scan.Spec.ScheduledScanConfig != nil && scan.Spec.ScheduledScanConfig.CronSchedule != "" {
+		_, err := cron.ParseStandard(scan.Spec.ScheduledScanConfig.CronSchedule)
 		if err != nil {
 			return fmt.Errorf("error parsing invalid cron string for schedule: %v", err)
 		}
@@ -88,8 +88,8 @@ func (c *Controller) validateScheduledScanSpec(scan *v1.ClusterScan) error {
 
 func (c *Controller) getCronSchedule(scan *v1.ClusterScan) (cron.Schedule, error) {
 	schedule := v1.DefaultCronSchedule
-	if scan.Spec.CronSchedule != "" {
-		schedule = scan.Spec.CronSchedule
+	if scan.Spec.ScheduledScanConfig != nil && scan.Spec.ScheduledScanConfig.CronSchedule != "" {
+		schedule = scan.Spec.ScheduledScanConfig.CronSchedule
 	}
 	cronSchedule, err := cron.ParseStandard(schedule)
 	if err != nil {
@@ -100,8 +100,8 @@ func (c *Controller) getCronSchedule(scan *v1.ClusterScan) (cron.Schedule, error
 
 func (c *Controller) getRetentionCount(scan *v1.ClusterScan) int {
 	retentionCount := v1.DefaultRetention
-	if scan.Spec.RetentionCount != 0 {
-		retentionCount = scan.Spec.RetentionCount
+	if scan.Spec.ScheduledScanConfig != nil && scan.Spec.ScheduledScanConfig.RetentionCount != 0 {
+		retentionCount = scan.Spec.ScheduledScanConfig.RetentionCount
 	}
 	return retentionCount
 }

@@ -53,14 +53,10 @@ type ClusterScan struct {
 type ClusterScanSpec struct {
 	// scan profile to use
 	ScanProfileName string `json:"scanProfileName,omitempty"`
-	// Cron Expression for Schedule
-	CronSchedule string `yaml:"cron_schedule" json:"cronSchedule,omitempty"`
-	// Number of past scans to keep
-	RetentionCount int `yaml:"retentionCount" json:"retentionCount,omitempty"`
+	//config for scheduled scan
+	ScheduledScanConfig *ScheduledScanConfig `yaml:"scheduled_scan_config" json:"scheduledScanConfig,omitempty"`
 	// Specify if tests with "warn" output should be counted towards scan failure
 	ScoreWarning string `yaml:"score_warning" json:"scoreWarning,omitempty"`
-	//configure the alerts to be sent out
-	ScanAlertRule *ClusterScanAlertRule `json:"scanAlertRule,omitempty"`
 }
 
 type ClusterScanStatus struct {
@@ -71,6 +67,7 @@ type ClusterScanStatus struct {
 	ObservedGeneration     int64                               `json:"observedGeneration"`
 	Conditions             []genericcondition.GenericCondition `json:"conditions,omitempty"`
 	NextScanAt             string                              `json:"NextScanAt"`
+	ScanAlertingRuleName   string                              `json:"ScanAlertingRuleName"`
 }
 
 type ClusterScanStatusDisplay struct {
@@ -87,6 +84,15 @@ type ClusterScanSummary struct {
 	Skip          int `json:"skip"`
 	Warn          int `json:"warn"`
 	NotApplicable int `json:"notApplicable"`
+}
+
+type ScheduledScanConfig struct {
+	// Cron Expression for Schedule
+	CronSchedule string `yaml:"cron_schedule" json:"cronSchedule,omitempty"`
+	// Number of past scans to keep
+	RetentionCount int `yaml:"retentionCount" json:"retentionCount,omitempty"`
+	//configure the alerts to be sent out
+	ScanAlertRule *ClusterScanAlertRule `json:"scanAlertRule,omitempty"`
 }
 
 type ClusterScanAlertRule struct {
@@ -152,4 +158,5 @@ type ScanImageConfig struct {
 	SecurityScanImageTag string
 	SonobuoyImage        string
 	SonobuoyImageTag     string
+	AlertsSeverity       string
 }

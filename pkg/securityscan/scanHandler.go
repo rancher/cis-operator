@@ -3,23 +3,23 @@ package securityscan
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/sirupsen/logrus"
-
-	"github.com/rancher/wrangler/pkg/generic"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"strings"
+	"github.com/rancher/wrangler/pkg/generic"
+	"github.com/rancher/wrangler/pkg/genericcondition"
 
-	"github.com/blang/semver"
 	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	cisctlv1 "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io/v1"
+	cisalert "github.com/rancher/cis-operator/pkg/securityscan/alert"
 	ciscore "github.com/rancher/cis-operator/pkg/securityscan/core"
 	cisjob "github.com/rancher/cis-operator/pkg/securityscan/job"
-	"github.com/rancher/wrangler/pkg/genericcondition"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
 const (
@@ -59,9 +59,6 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				if err := c.isRunnerPodPresent(); err != nil {
 					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
 				}
-				//launch new on demand scan
-				c.mu.Lock()
-				defer c.mu.Unlock()
 
 				profile, err := c.getClusterScanProfile(obj)
 				if err != nil {
@@ -75,22 +72,45 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 
 				if err := c.validateScheduledScanSpec(obj); err != nil {
 					v1.ClusterScanConditionFailed.True(obj)
-					message := fmt.Sprintf("Error validating Schedule %v, error: %v", obj.Spec.CronSchedule, err)
+					message := fmt.Sprintf("Error validating Schedule %v, error: %v", obj.Spec.ScheduledScanConfig.CronSchedule, err)
 					v1.ClusterScanConditionFailed.Message(obj, message)
 					logrus.Errorf(message)
 					c.setClusterScanStatusDisplay(obj)
 					return objects, obj.Status, nil
 				}
 
-				logrus.Infof("Launching a new on demand Job to run cis using profile %v", profile.Name)
+				if obj.Spec.ScheduledScanConfig != nil && obj.Spec.ScheduledScanConfig.ScanAlertRule != nil {
+					if obj.Status.ScanAlertingRuleName == "" {
+						alertRule, err := cisalert.NewPrometheusRule(obj, profile, c.ImageConfig)
+						if err != nil {
+							v1.ClusterScanConditionReconciling.True(obj)
+							return objects, obj.Status, fmt.Errorf("Error when trying to create a PrometheusRule: %v", err)
+						}
+						ruleCreated, err := c.monitoringClient.PrometheusRules(v1.ClusterScanNS).Create(ctx, alertRule, metav1.CreateOptions{})
+						if err != nil {
+							v1.ClusterScanConditionReconciling.True(obj)
+							return objects, obj.Status, fmt.Errorf("Error when creating PrometheusRule: %v", err)
+						}
+						obj.Status.ScanAlertingRuleName = ruleCreated.Name
+					}
+				}
+				if err := c.isRunnerPodPresent(); err != nil {
+					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
+				}
+				//launch new on demand scan
+				c.mu.Lock()
+				logrus.Infof("Launching a new on demand Job for scan %v to run cis using profile %v", obj.Name, profile.Name)
 				configmaps, err := ciscore.NewConfigMaps(obj, profile, c.Name, c.ImageConfig)
 				if err != nil {
 					v1.ClusterScanConditionReconciling.True(obj)
+					c.mu.Unlock()
 					return objects, obj.Status, fmt.Errorf("Error when creating ConfigMaps: %v", err)
+
 				}
 				service, err := ciscore.NewService(obj, profile, c.Name)
 				if err != nil {
 					v1.ClusterScanConditionReconciling.True(obj)
+					c.mu.Unlock()
 					return objects, obj.Status, fmt.Errorf("Error when creating Service: %v", err)
 				}
 
@@ -106,7 +126,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				v1.ClusterScanConditionRunCompleted.Unknown(obj)
 				v1.ClusterScanConditionRunCompleted.Message(obj, "Creating Job to run the CIS scan")
 				c.setClusterScanStatusDisplay(obj)
-
+				c.mu.Unlock()
 				return objects, obj.Status, nil
 			}
 			return objects, obj.Status, nil
@@ -117,6 +137,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 	)
 	return nil
 }
+
 func (c *Controller) getClusterScanProfile(scan *v1.ClusterScan) (*v1.ClusterScanProfile, error) {
 	var profileName string
 	var err error

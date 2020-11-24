@@ -65,7 +65,7 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 			logrus.Infof("Marking ClusterScanConditionAlerted for scan: %v", scanName)
 			c.setClusterScanStatusDisplay(scan)
 
-			if scan.Spec.CronSchedule != "" {
+			if scan.Spec.ScheduledScanConfig != nil && scan.Spec.ScheduledScanConfig.CronSchedule != "" {
 				c.rescheduleScan(scan)
 				c.purgeOldClusterScanReports(scan)
 			}

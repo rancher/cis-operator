@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{.name}}
+  namespace: {{.namespace}}
+  labels:
+    app: rancher-monitoring
+spec:
+  groups:
+  - name: rancher-cis-scan-exporter
+    rules:{{if .alertOnFailure}}
+    - alert: CISScanHasFailures
+      annotations:
+        description: CIS ClusterScan "{{.scanName}}" has {{ "{{ $value }}" }} test failures
+        summary: CIS ClusterScan has tests failures
+      expr: cis_scan_num_tests_fail{scan_name="{{.scanName}}"} > 0
+      for: 1m
+      labels:
+        severity: {{ .severity }}
+        job: rancher-cis-scan{{ end }}{{if .alertOnComplete}}
+    - alert: CISScanHasCompleted
+      annotations:
+        description: CIS ClusterScan "{{.scanName}}" with Cluster Scan profile  "{{.scanProfileName}}" has completed.
+        summary: CIS ClusterScan has completed
+      expr: increase(cis_scan_num_scans_complete{scan_name="{{.scanName}}"}[5m]) > 0
+      for: 1m
+      labels:
+        severity: {{ .severity }}
+        job: rancher-cis-scan{{end}}

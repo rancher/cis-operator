@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	v1monitoringclient "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/sirupsen/logrus"
 	kubeapiext "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
@@ -33,17 +34,22 @@ type Controller struct {
 	KubernetesVersion string
 	ImageConfig       *cisoperatorapiv1.ScanImageConfig
 
-	kcs          *kubernetes.Clientset
-	xcs          *kubeapiext.Clientset
-	coreFactory  *corectl.Factory
-	batchFactory *batchctl.Factory
-	cisFactory   *cisoperatorctl.Factory
-	apply        apply.Apply
+	kcs              *kubernetes.Clientset
+	xcs              *kubeapiext.Clientset
+	coreFactory      *corectl.Factory
+	batchFactory     *batchctl.Factory
+	cisFactory       *cisoperatorctl.Factory
+	apply            apply.Apply
+	monitoringClient v1monitoringclient.MonitoringV1Interface
 
 	mu *sync.Mutex
 
 	numTestsFailed   *prometheus.GaugeVec
 	numScansComplete *prometheus.CounterVec
+	numTestsSkipped  *prometheus.GaugeVec
+	numTestsTotal    *prometheus.GaugeVec
+	numTestsNA       *prometheus.GaugeVec
+	numTestsPassed   *prometheus.GaugeVec
 }
 
 func NewController(ctx context.Context, cfg *rest.Config, namespace, name string, imgConfig *cisoperatorapiv1.ScanImageConfig) (ctl *Controller, err error) {
@@ -103,6 +109,11 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 	ctl.coreFactory, err = corectl.NewFactoryFromConfig(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("Error building core NewFactoryFromConfig: %s", err.Error())
+	}
+
+	ctl.monitoringClient, err = v1monitoringclient.NewForConfig(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("Error building v1 monitoring client from config: %s", err.Error())
 	}
 
 	err = initializeMetrics(ctl)
@@ -175,12 +186,8 @@ func initializeMetrics(ctl *Controller) error {
 			"scan_name",
 			// name of the clusterScanProfile used for scanning
 			"scan_profile_name",
-			"num_tests_total",
-			"num_tests_skip",
-			"num_tests_na",
 		},
 	)
-
 	if err := prometheus.Register(ctl.numTestsFailed); err != nil {
 		return err
 	}
@@ -195,16 +202,75 @@ func initializeMetrics(ctl *Controller) error {
 			"scan_name",
 			// name of the clusterScanProfile used for scanning
 			"scan_profile_name",
-			"num_tests_total",
-			"num_tests_skip",
-			"num_tests_na",
-			"num_tests_pass",
-			"num_tests_fail",
 		},
 	)
-
 	if err := prometheus.Register(ctl.numScansComplete); err != nil {
 		return err
 	}
+
+	ctl.numTestsTotal = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_total",
+			Help: "Total Number of tests run in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numTestsTotal); err != nil {
+		return err
+	}
+
+	ctl.numTestsPassed = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_pass",
+			Help: "Number of tests passing in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numTestsPassed); err != nil {
+		return err
+	}
+
+	ctl.numTestsSkipped = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_skipped",
+			Help: "Number of test skipped in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numTestsSkipped); err != nil {
+		return err
+	}
+
+	ctl.numTestsNA = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_na",
+			Help: "Number of tests not applicable in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numTestsNA); err != nil {
+		return err
+	}
+
 	return nil
 }
