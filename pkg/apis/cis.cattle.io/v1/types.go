@@ -158,5 +158,5 @@ type ScanImageConfig struct {
 	SecurityScanImageTag string
 	SonobuoyImage        string
 	SonobuoyImageTag     string
-	AlertsSeverity       string
+	AlertSeverity        string
 }

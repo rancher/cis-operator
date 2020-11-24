@@ -32,7 +32,7 @@ var (
 	threads              int
 	name                 string
 	metricsPort          string
-	alertsSeverity       string
+	alertSeverity        string
 	debug                bool
 	securityScanImage    = "rancher/security-scan"
 	securityScanImageTag = "v0.2.1"
@@ -99,10 +99,10 @@ func main() {
 			Destination: &debug,
 		},
 		cli.StringFlag{
-			Name:        "alertsSeverity",
+			Name:        "alertSeverity",
 			EnvVar:      "CIS_ALERTS_SEVERITY",
 			Value:       "warning",
-			Destination: &alertsSeverity,
+			Destination: &alertSeverity,
 		},
 	}
 	app.Action = run
@@ -136,7 +136,7 @@ func run(c *cli.Context) {
 		SecurityScanImageTag: securityScanImageTag,
 		SonobuoyImage:        sonobuoyImage,
 		SonobuoyImageTag:     sonobuoyImageTag,
-		AlertsSeverity:       alertsSeverity,
+		AlertSeverity:        alertSeverity,
 	}
 
 	if err := validateConfig(imgConfig); err != nil {

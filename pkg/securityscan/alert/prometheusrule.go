@@ -2,9 +2,9 @@ package alert
 
 import (
 	"bytes"
+	"fmt"
 	"text/template"
 
-	"github.com/sirupsen/logrus"
 	meta1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -14,17 +14,20 @@ import (
 	"github.com/rancher/wrangler/pkg/name"
 )
 
+const templateName = "prometheusrule.template"
+const templatePath = "./pkg/securityscan/alert/templates/prometheusrule.template"
+
 func NewPrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, imageConfig *cisoperatorapiv1.ScanImageConfig) (*monitoringv1.PrometheusRule, error) {
 	configdata := map[string]interface{}{
 		"namespace":       cisoperatorapiv1.ClusterScanNS,
-		"name":            name.SafeConcatName("rancher-monitoring-cis-alerts", clusterscan.Name),
-		"severity":        imageConfig.AlertsSeverity,
+		"name":            name.SafeConcatName("rancher-cis-alerts", clusterscan.Name),
+		"severity":        imageConfig.AlertSeverity,
 		"scanName":        clusterscan.Name,
 		"scanProfileName": clusterscanprofile.Name,
 		"alertOnFailure":  clusterscan.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnFailure,
 		"alertOnComplete": clusterscan.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnComplete,
 	}
-	scanAlertRule, err := generatePrometheusRule(clusterscan, "alertingRule.template", "./pkg/securityscan/alert/templates/alertingRule.template", configdata)
+	scanAlertRule, err := generatePrometheusRule(clusterscan, templateName, templatePath, configdata)
 	if err != nil {
 		return scanAlertRule, err
 	}
@@ -34,17 +37,13 @@ func NewPrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanpro
 
 func generatePrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, templateName string, templateFile string, data map[string]interface{}) (*monitoringv1.PrometheusRule, error) {
 	scanAlertRule := &monitoringv1.PrometheusRule{}
-	logrus.Infof("config %v", data)
 	obj, err := parseTemplate(clusterscan, templateName, templateFile, data)
 	if err != nil {
-		logrus.Infof("Error parsing Template %v", err)
-		return nil, err
+		return nil, fmt.Errorf("Error parsing the template %v", err)
 	}
 
-	logrus.Infof("after parsing Template %v", obj)
 	if err := obj.Decode(&scanAlertRule); err != nil {
-		logrus.Infof("Error decoding to Template %v", err)
-		return nil, err
+		return nil, fmt.Errorf("Error decoding to template %v", err)
 	}
 
 	ownerRef := meta1.OwnerReference{
