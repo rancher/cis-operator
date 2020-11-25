@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	v1monitoringclient "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/sirupsen/logrus"
 	kubeapiext "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
@@ -19,6 +20,8 @@ import (
 
 	"sync"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	cisoperatorctl "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io"
 	"github.com/rancher/cis-operator/pkg/securityscan/scan"
@@ -31,14 +34,22 @@ type Controller struct {
 	KubernetesVersion string
 	ImageConfig       *cisoperatorapiv1.ScanImageConfig
 
-	kcs          *kubernetes.Clientset
-	xcs          *kubeapiext.Clientset
-	coreFactory  *corectl.Factory
-	batchFactory *batchctl.Factory
-	cisFactory   *cisoperatorctl.Factory
-	apply        apply.Apply
+	kcs              *kubernetes.Clientset
+	xcs              *kubeapiext.Clientset
+	coreFactory      *corectl.Factory
+	batchFactory     *batchctl.Factory
+	cisFactory       *cisoperatorctl.Factory
+	apply            apply.Apply
+	monitoringClient v1monitoringclient.MonitoringV1Interface
 
 	mu *sync.Mutex
+
+	numTestsFailed   *prometheus.GaugeVec
+	numScansComplete *prometheus.CounterVec
+	numTestsSkipped  *prometheus.GaugeVec
+	numTestsTotal    *prometheus.GaugeVec
+	numTestsNA       *prometheus.GaugeVec
+	numTestsPassed   *prometheus.GaugeVec
 }
 
 func NewController(ctx context.Context, cfg *rest.Config, namespace, name string, imgConfig *cisoperatorapiv1.ScanImageConfig) (ctl *Controller, err error) {
@@ -100,6 +111,15 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 		return nil, fmt.Errorf("Error building core NewFactoryFromConfig: %s", err.Error())
 	}
 
+	ctl.monitoringClient, err = v1monitoringclient.NewForConfig(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("Error building v1 monitoring client from config: %s", err.Error())
+	}
+
+	err = initializeMetrics(ctl)
+	if err != nil {
+		return nil, fmt.Errorf("Error registering CIS Metrics: %s", err.Error())
+	}
 	return ctl, nil
 }
 
@@ -117,7 +137,9 @@ func (c *Controller) Start(ctx context.Context, threads int, resync time.Duratio
 	if err := c.handleScheduledClusterScans(ctx); err != nil {
 		return err
 	}
-
+	if err := c.handleClusterScanMetrics(ctx); err != nil {
+		return err
+	}
 	return start.All(ctx, threads, c.cisFactory, c.coreFactory, c.batchFactory)
 }
 
@@ -134,7 +156,6 @@ func (c *Controller) registerCRD(ctx context.Context) error {
 		}
 		crds = append(crds, *crdef)
 	}
-
 	return factory.BatchCreateCRDs(ctx, crds...).BatchWait()
 }
 
@@ -152,4 +173,104 @@ func detectKubernetesVersion(ctx context.Context, k8sClient kubernetes.Interface
 		return "", err
 	}
 	return v.GitVersion, nil
+}
+
+func initializeMetrics(ctl *Controller) error {
+	ctl.numTestsFailed = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_fail",
+			Help: "Number of test failed in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numTestsFailed); err != nil {
+		return err
+	}
+
+	ctl.numScansComplete = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cis_scan_num_scans_complete",
+			Help: "Number of CIS clusterscans completed, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numScansComplete); err != nil {
+		return err
+	}
+
+	ctl.numTestsTotal = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_total",
+			Help: "Total Number of tests run in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numTestsTotal); err != nil {
+		return err
+	}
+
+	ctl.numTestsPassed = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_pass",
+			Help: "Number of tests passing in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numTestsPassed); err != nil {
+		return err
+	}
+
+	ctl.numTestsSkipped = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_skipped",
+			Help: "Number of test skipped in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numTestsSkipped); err != nil {
+		return err
+	}
+
+	ctl.numTestsNA = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_na",
+			Help: "Number of tests not applicable in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numTestsNA); err != nil {
+		return err
+	}
+
+	return nil
 }

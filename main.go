@@ -16,6 +16,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 
+	"log"
+	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	cisoperator "github.com/rancher/cis-operator/pkg/securityscan"
 )
@@ -26,8 +31,11 @@ var (
 	kubeConfig           string
 	threads              int
 	name                 string
-	securityScanImage    = "prachidamle/security-scan"
-	securityScanImageTag = "v0.1.20"
+	metricsPort          string
+	alertSeverity        string
+	debug                bool
+	securityScanImage    = "rancher/security-scan"
+	securityScanImageTag = "v0.2.1"
 	sonobuoyImage        = "rancher/sonobuoy-sonobuoy"
 	sonobuoyImageTag     = "v0.16.3"
 )
@@ -79,6 +87,23 @@ func main() {
 			Value:       "v0.16.3",
 			Destination: &sonobuoyImageTag,
 		},
+		cli.StringFlag{
+			Name:        "cis_metrics_port",
+			EnvVar:      "CIS_METRICS_PORT",
+			Value:       "8080",
+			Destination: &metricsPort,
+		},
+		cli.BoolFlag{
+			Name:        "debug",
+			EnvVar:      "CIS_OPERATOR_DEBUG",
+			Destination: &debug,
+		},
+		cli.StringFlag{
+			Name:        "alertSeverity",
+			EnvVar:      "CIS_ALERTS_SEVERITY",
+			Value:       "warning",
+			Destination: &alertSeverity,
+		},
 	}
 	app.Action = run
 
@@ -88,10 +113,11 @@ func main() {
 }
 
 func run(c *cli.Context) {
-
 	logrus.Info("Starting CIS-Operator")
 	ctx := signals.SetupSignalHandler(context.Background())
-
+	if debug {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
 	kubeConfig = c.String("kubeconfig")
 	threads = c.Int("threads")
 	securityScanImage = c.String("security-scan-image")
@@ -110,6 +136,7 @@ func run(c *cli.Context) {
 		SecurityScanImageTag: securityScanImageTag,
 		SonobuoyImage:        sonobuoyImage,
 		SonobuoyImageTag:     sonobuoyImageTag,
+		AlertSeverity:        alertSeverity,
 	}
 
 	if err := validateConfig(imgConfig); err != nil {
@@ -124,6 +151,9 @@ func run(c *cli.Context) {
 	if err := ctl.Start(ctx, threads, 2*time.Hour); err != nil {
 		logrus.Fatalf("Error starting: %v", err)
 	}
+	http.Handle("/metrics", promhttp.Handler())
+	log.Fatal(http.ListenAndServe(":"+metricsPort, nil))
+
 	<-ctx.Done()
 	logrus.Info("Registered CIS controller")
 }
@@ -132,10 +162,8 @@ func validateConfig(imgConfig *cisoperatorapiv1.ScanImageConfig) error {
 	if imgConfig.SecurityScanImage == "" {
 		return errors.New("No Security-Scan Image specified")
 	}
-
 	if imgConfig.SonobuoyImage == "" {
 		return errors.New("No Sonobuoy tool Image specified")
 	}
-
 	return nil
 }

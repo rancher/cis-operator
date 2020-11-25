@@ -43,14 +43,26 @@ spec:
       properties:
         spec:
           properties:
-            cronSchedule:
-              nullable: true
-              type: string
-            retentionCount:
-              type: integer
             scanProfileName:
               nullable: true
               type: string
+            scheduledScanConfig:
+              nullable: true
+              properties:
+                cronSchedule:
+                  nullable: true
+                  type: string
+                retentionCount:
+                  type: integer
+                scanAlertRule:
+                  nullable: true
+                  properties:
+                    alertOnComplete:
+                      type: boolean
+                    alertOnFailure:
+                      type: boolean
+                  type: object
+              type: object
             scoreWarning:
               enum:
               - pass
@@ -61,6 +73,9 @@ spec:
         status:
           properties:
             NextScanAt:
+              nullable: true
+              type: string
+            ScanAlertingRuleName:
               nullable: true
               type: string
             conditions:
