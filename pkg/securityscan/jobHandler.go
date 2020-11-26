@@ -60,9 +60,11 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 		// if the scan has completed then delete the job
 		if v1.ClusterScanConditionComplete.IsTrue(scan) {
 			c.ensureCleanup(scan)
-			v1.ClusterScanConditionAlerted.Unknown(scan)
+			if !v1.ClusterScanConditionFailed.IsTrue(scan) {
+				logrus.Infof("Marking ClusterScanConditionAlerted for scan: %v", scanName)
+				v1.ClusterScanConditionAlerted.Unknown(scan)
+			}
 			scan.Status.ObservedGeneration = scan.Generation
-			logrus.Infof("Marking ClusterScanConditionAlerted for scan: %v", scanName)
 			c.setClusterScanStatusDisplay(scan)
 
 			if scan.Spec.ScheduledScanConfig != nil && scan.Spec.ScheduledScanConfig.CronSchedule != "" {

@@ -14,7 +14,7 @@ data:
       hostIPC: true
       hostNetwork: true
       hostPID: true
-      serviceAccountName: {{.serviceaccount}}
+      serviceAccountName: {{ .serviceaccount }}
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/controlplane
@@ -38,6 +38,22 @@ data:
       - hostPath:
           path: /etc/cni/net.d
         name: rke2-cni
+      {{- if .isCustomBenchmark }}
+      - configMap:
+          defaultMode: 420
+          items:
+          {{- range $key, $value := .customBenchmarkConfigMapData }}
+          {{- if eq $key "config.yaml"}}
+          - key: {{ $key }}
+            path: {{ $key }}
+          {{- else}}
+          - key: {{ $key }}
+            path: {{ $.benchmarkVersion }}/{{ $key }}
+          {{- end }}
+          {{- end }}
+          name: {{ .customBenchmarkConfigMapName }}
+        name: custom-benchmark-volume
+      {{- end }}
     sonobuoy-config:
       driver: DaemonSet
       plugin-name: rancher-kube-bench
@@ -45,11 +61,11 @@ data:
       result-format: raw
     spec:
       name: rancher-kube-bench
-      image: {{.securityScanImage}}
+      image: {{ .securityScanImage }}
       command: ["/bin/bash", "-c", "run_sonobuoy_plugin.sh && sleep 3600"]
       env:
       - name: SONOBUOY_NS
-        value: {{.namespace}}
+        value: {{ .namespace }}
       - name: NODE_NAME
         valueFrom:
           fieldRef:
@@ -59,7 +75,11 @@ data:
       - name: CHROOT_DIR
         value: /node
       - name: OVERRIDE_BENCHMARK_VERSION
-        value: {{.benchmarkVersion}}
+        value: {{ .benchmarkVersion }}
+      {{- if .isCustomBenchmark }}
+      - name: CONFIG_DIR
+        value: {{ .configDir }}
+      {{- end }}
       imagePullPolicy: Always
       securityContext:
         privileged: true
@@ -82,3 +102,7 @@ data:
       - mountPath: /etc/cni/net.d
         name: rke2-cni
         readOnly: true
+      {{- if .isCustomBenchmark }}
+      - mountPath: /etc/kbs/custombenchmark/cfg
+        name: custom-benchmark-volume
+      {{- end }}
