@@ -99,22 +99,25 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				}
 				//launch new on demand scan
 				c.mu.Lock()
+				defer c.mu.Unlock()
 				logrus.Infof("Launching a new on demand Job for scan %v to run cis using profile %v", obj.Name, profile.Name)
-				configmaps, err := ciscore.NewConfigMaps(obj, profile, c.Name, c.ImageConfig)
+				benchmark, err := c.getClusterScanBenchmark(profile)
 				if err != nil {
 					v1.ClusterScanConditionReconciling.True(obj)
-					c.mu.Unlock()
+					return objects, obj.Status, fmt.Errorf("Error when getting Benchmark: %v", err)
+				}
+				cmMap, err := ciscore.NewConfigMaps(obj, profile, benchmark, c.Name, c.ImageConfig, configmaps)
+				if err != nil {
+					v1.ClusterScanConditionReconciling.True(obj)
 					return objects, obj.Status, fmt.Errorf("Error when creating ConfigMaps: %v", err)
 
 				}
 				service, err := ciscore.NewService(obj, profile, c.Name)
 				if err != nil {
 					v1.ClusterScanConditionReconciling.True(obj)
-					c.mu.Unlock()
 					return objects, obj.Status, fmt.Errorf("Error when creating Service: %v", err)
 				}
-
-				objects = append(objects, cisjob.New(obj, profile, c.Name, c.ImageConfig), configmaps[0], configmaps[1], configmaps[2], service)
+				objects = append(objects, cisjob.New(obj, profile, c.Name, c.ImageConfig), cmMap["configcm"], cmMap["plugincm"], cmMap["skipConfigcm"], service)
 
 				if v1.ClusterScanConditionFailed.IsTrue(obj) {
 					//clear the earlier failed status
@@ -126,7 +129,6 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				v1.ClusterScanConditionRunCompleted.Unknown(obj)
 				v1.ClusterScanConditionRunCompleted.Message(obj, "Creating Job to run the CIS scan")
 				c.setClusterScanStatusDisplay(obj)
-				c.mu.Unlock()
 				return objects, obj.Status, nil
 			}
 			return objects, obj.Status, nil
@@ -161,6 +163,11 @@ func (c *Controller) getClusterScanProfile(scan *v1.ClusterScan) (*v1.ClusterSca
 		return nil, err
 	}
 	return profile, nil
+}
+
+func (c *Controller) getClusterScanBenchmark(profile *v1.ClusterScanProfile) (*v1.ClusterScanBenchmark, error) {
+	clusterscanbmks := c.cisFactory.Cis().V1().ClusterScanBenchmark()
+	return clusterscanbmks.Get(profile.Spec.BenchmarkVersion, metav1.GetOptions{})
 }
 
 func (c *Controller) getDefaultClusterScanProfile(clusterprovider string) (string, error) {
