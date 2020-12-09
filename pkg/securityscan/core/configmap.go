@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"text/template"
 
+	"github.com/sirupsen/logrus"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8Yaml "k8s.io/apimachinery/pkg/util/yaml"
@@ -43,15 +45,19 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 	}
 	cmMap["configcm"] = configcm
 
+	logrus.Infof("CustomBenchmarkConfigMapName Set: %v %v", clusterscanbenchmark.Spec.CustomBenchmarkConfigMapName, clusterscanbenchmark.Spec.CustomBenchmarkConfigMapNamespace)
+
 	var isCustomBenchmark bool
 	customBenchmarkConfigMapData := make(map[string]string)
 	if clusterscanbenchmark.Spec.CustomBenchmarkConfigMapName != "" {
 		isCustomBenchmark = true
 		customcm, err := getCustomBenchmarkConfigMap(clusterscanbenchmark, configmapsClient)
 		if err != nil {
+			logrus.Infof("Error getting customBenchmarkConfigMapData: %v ", clusterscanbenchmark)
 			return cmMap, err
 		}
 		customBenchmarkConfigMapData = customcm.Data
+		logrus.Infof("customBenchmarkConfigMapData: %v ", customBenchmarkConfigMapData)
 	}
 
 	plugindata := map[string]interface{}{
@@ -71,6 +77,7 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 	if err != nil {
 		return cmMap, err
 	}
+	logrus.Infof("plugincm: %v ", plugincm.Data)
 	cmMap["plugincm"] = plugincm
 
 	var skipConfigcm *corev1.ConfigMap
@@ -93,10 +100,12 @@ func generateConfigMap(clusterscan *cisoperatorapiv1.ClusterScan, templateName s
 
 	obj, err := parseTemplate(clusterscan, templateName, templateFile, data)
 	if err != nil {
+		logrus.Infof("Error parsing plugincm: %v ", err)
 		return nil, err
 	}
 
 	if err := obj.Decode(&configcm); err != nil {
+		logrus.Infof("Error decoding plugincm: %v ", err)
 		return nil, err
 	}
 	return configcm, nil
@@ -146,5 +155,8 @@ func getCustomBenchmarkConfigMap(benchmark *cisoperatorapiv1.ClusterScanBenchmar
 	if benchmark.Spec.CustomBenchmarkConfigMapName == "" {
 		return nil, nil
 	}
-	return configmapsClient.Get(benchmark.Spec.CustomBenchmarkConfigMapNameSpace, benchmark.Spec.CustomBenchmarkConfigMapName, metav1.GetOptions{})
+	logrus.Infof("benchmark.Spec.CustomBenchmarkConfigMapNamespace %v", benchmark.Spec.CustomBenchmarkConfigMapNamespace)
+	logrus.Infof("benchmark.Spec.CustomBenchmarkConfigMapName %v", benchmark.Spec.CustomBenchmarkConfigMapName)
+
+	return configmapsClient.Get(benchmark.Spec.CustomBenchmarkConfigMapNamespace, benchmark.Spec.CustomBenchmarkConfigMapName, metav1.GetOptions{})
 }

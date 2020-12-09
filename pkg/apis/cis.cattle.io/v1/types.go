@@ -117,7 +117,7 @@ type ClusterScanBenchmarkSpec struct {
 	MaxKubernetesVersion string `json:"maxKubernetesVersion,omitempty"`
 
 	CustomBenchmarkConfigMapName      string `json:"customBenchmarkConfigMapName,omitempty"`
-	CustomBenchmarkConfigMapNameSpace string `json:"customBenchmarkConfigMapNameSpace,omitempty"`
+	CustomBenchmarkConfigMapNamespace string `json:"customBenchmarkConfigMapNamespace,omitempty"`
 }
 
 // +genclient

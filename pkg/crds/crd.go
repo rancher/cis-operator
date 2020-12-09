@@ -49,7 +49,7 @@ func List() []crd.CRD {
 				WithColumn("Warn", ".status.summary.warn").
 				WithColumn("Not Applicable", ".status.summary.notApplicable").
 				WithColumn("LastRunTimestamp", ".status.lastRunTimestamp").
-				WithColumn("CronSchedule", ".spec.cronSchedule")
+				WithColumn("CronSchedule", ".spec.scheduledScanConfig.cronSchedule")
 		}),
 		newCRD(&cisoperator.ClusterScanProfile{}, func(c crd.CRD) crd.CRD {
 			return c.
@@ -64,7 +64,9 @@ func List() []crd.CRD {
 			return c.
 				WithColumn("ClusterProvider", ".spec.clusterProvider").
 				WithColumn("MinKubernetesVersion", ".spec.minKubernetesVersion").
-				WithColumn("MaxKubernetesVersion", ".spec.maxKubernetesVersion")
+				WithColumn("MaxKubernetesVersion", ".spec.maxKubernetesVersion").
+				WithColumn("customBenchmarkConfigMapName", ".spec.customBenchmarkConfigMapName").
+				WithColumn("customBenchmarkConfigMapNamespace", ".spec.customBenchmarkConfigMapNamespace")
 		}),
 	}
 }
