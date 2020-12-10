@@ -186,6 +186,7 @@ func initializeMetrics(ctl *Controller) error {
 			"scan_name",
 			// name of the clusterScanProfile used for scanning
 			"scan_profile_name",
+			"cluster_name",
 		},
 	)
 	if err := prometheus.Register(ctl.numTestsFailed); err != nil {
@@ -202,6 +203,7 @@ func initializeMetrics(ctl *Controller) error {
 			"scan_name",
 			// name of the clusterScanProfile used for scanning
 			"scan_profile_name",
+			"cluster_name",
 		},
 	)
 	if err := prometheus.Register(ctl.numScansComplete); err != nil {
@@ -218,6 +220,7 @@ func initializeMetrics(ctl *Controller) error {
 			"scan_name",
 			// name of the clusterScanProfile used for scanning
 			"scan_profile_name",
+			"cluster_name",
 		},
 	)
 	if err := prometheus.Register(ctl.numTestsTotal); err != nil {
@@ -234,6 +237,7 @@ func initializeMetrics(ctl *Controller) error {
 			"scan_name",
 			// name of the clusterScanProfile used for scanning
 			"scan_profile_name",
+			"cluster_name",
 		},
 	)
 	if err := prometheus.Register(ctl.numTestsPassed); err != nil {
@@ -250,6 +254,7 @@ func initializeMetrics(ctl *Controller) error {
 			"scan_name",
 			// name of the clusterScanProfile used for scanning
 			"scan_profile_name",
+			"cluster_name",
 		},
 	)
 	if err := prometheus.Register(ctl.numTestsSkipped); err != nil {
@@ -266,6 +271,7 @@ func initializeMetrics(ctl *Controller) error {
 			"scan_name",
 			// name of the clusterScanProfile used for scanning
 			"scan_profile_name",
+			"cluster_name",
 		},
 	)
 	if err := prometheus.Register(ctl.numTestsNA); err != nil {

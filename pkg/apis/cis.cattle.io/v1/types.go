@@ -159,4 +159,5 @@ type ScanImageConfig struct {
 	SonobuoyImage        string
 	SonobuoyImageTag     string
 	AlertSeverity        string
+	ClusterName          string
 }

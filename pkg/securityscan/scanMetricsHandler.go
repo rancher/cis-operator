@@ -34,13 +34,16 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 		numTestsNA := float64(obj.Status.Summary.NotApplicable)
 		numTestsSkip := float64(obj.Status.Summary.Skip)
 		numTestsPass := float64(obj.Status.Summary.Pass)
+		clusterName := c.ImageConfig.ClusterName
 
-		c.numTestsFailed.WithLabelValues(scanName, scanProfileName).Set(numTestsFailed)
-		c.numScansComplete.WithLabelValues(scanName, scanProfileName).Inc()
-		c.numTestsTotal.WithLabelValues(scanName, scanProfileName).Set(numTestsTotal)
-		c.numTestsPassed.WithLabelValues(scanName, scanProfileName).Set(numTestsPass)
-		c.numTestsSkipped.WithLabelValues(scanName, scanProfileName).Set(numTestsSkip)
-		c.numTestsNA.WithLabelValues(scanName, scanProfileName).Set(numTestsNA)
+		logrus.Infof("clusterName %v", clusterName)
+
+		c.numTestsFailed.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsFailed)
+		c.numScansComplete.WithLabelValues(scanName, scanProfileName, clusterName).Inc()
+		c.numTestsTotal.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsTotal)
+		c.numTestsPassed.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsPass)
+		c.numTestsSkipped.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsSkip)
+		c.numTestsNA.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsNA)
 
 		logrus.Debugf("Done updating metrics for scan %v", obj.Name)
 
