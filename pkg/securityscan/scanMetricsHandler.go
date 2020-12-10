@@ -34,9 +34,8 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 		numTestsNA := float64(obj.Status.Summary.NotApplicable)
 		numTestsSkip := float64(obj.Status.Summary.Skip)
 		numTestsPass := float64(obj.Status.Summary.Pass)
+		numTestsWarn := float64(obj.Status.Summary.Warn)
 		clusterName := c.ImageConfig.ClusterName
-
-		logrus.Infof("clusterName %v", clusterName)
 
 		c.numTestsFailed.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsFailed)
 		c.numScansComplete.WithLabelValues(scanName, scanProfileName, clusterName).Inc()
@@ -44,6 +43,7 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 		c.numTestsPassed.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsPass)
 		c.numTestsSkipped.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsSkip)
 		c.numTestsNA.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsNA)
+		c.numTestsWarn.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsWarn)
 
 		logrus.Debugf("Done updating metrics for scan %v", obj.Name)
 
@@ -54,13 +54,13 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 					(obj.Spec.ScheduledScanConfig.ScanAlertRule != nil &&
 						!obj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnComplete &&
 						!obj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnFailure) {
-					logrus.Infof("No AlertRules configured for scan %v", obj.Name)
+					logrus.Debugf("No AlertRules configured for scan %v", obj.Name)
 					v1.ClusterScanConditionAlerted.False(obj)
 					v1.ClusterScanConditionAlerted.Message(obj, "No AlertRule configured for this scan")
 				} else if obj.Status.ScanAlertingRuleName == "" {
-					logrus.Infof("Error creating PrometheusRule for scan %v", obj.Name)
+					logrus.Debugf("Error creating PrometheusRule for scan %v", obj.Name)
 					v1.ClusterScanConditionAlerted.False(obj)
-					v1.ClusterScanConditionAlerted.Message(obj, "Alerts will not work due to the error creating PrometheusRule")
+					v1.ClusterScanConditionAlerted.Message(obj, "Alerts will not work due to the error creating PrometheusRule, Please check if Monitoring app is installed")
 				} else {
 					v1.ClusterScanConditionAlerted.True(obj)
 				}

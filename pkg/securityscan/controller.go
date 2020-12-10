@@ -50,6 +50,7 @@ type Controller struct {
 	numTestsTotal    *prometheus.GaugeVec
 	numTestsNA       *prometheus.GaugeVec
 	numTestsPassed   *prometheus.GaugeVec
+	numTestsWarn     *prometheus.GaugeVec
 }
 
 func NewController(ctx context.Context, cfg *rest.Config, namespace, name string, imgConfig *cisoperatorapiv1.ScanImageConfig) (ctl *Controller, err error) {
@@ -275,6 +276,23 @@ func initializeMetrics(ctl *Controller) error {
 		},
 	)
 	if err := prometheus.Register(ctl.numTestsNA); err != nil {
+		return err
+	}
+
+	ctl.numTestsWarn = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cis_scan_num_tests_warn",
+			Help: "Number of tests having warn status in the CIS scans, partioned by scan_name, scan_profile_name",
+		},
+		[]string{
+			// scan_name will be set to "manual" for on-demand manual scans and the actual name set for the scheduled scans
+			"scan_name",
+			// name of the clusterScanProfile used for scanning
+			"scan_profile_name",
+			"cluster_name",
+		},
+	)
+	if err := prometheus.Register(ctl.numTestsWarn); err != nil {
 		return err
 	}
 
