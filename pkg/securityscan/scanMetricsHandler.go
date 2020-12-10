@@ -4,11 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sirupsen/logrus"
-
-	"k8s.io/client-go/util/retry"
-
 	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
+	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 )
 
 func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
@@ -50,21 +49,25 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 		if obj.Spec.ScheduledScanConfig != nil {
 			updateErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 				var err error
-				if obj.Spec.ScheduledScanConfig.ScanAlertRule == nil ||
-					(obj.Spec.ScheduledScanConfig.ScanAlertRule != nil &&
-						!obj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnComplete &&
-						!obj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnFailure) {
-					logrus.Debugf("No AlertRules configured for scan %v", obj.Name)
-					v1.ClusterScanConditionAlerted.False(obj)
-					v1.ClusterScanConditionAlerted.Message(obj, "No AlertRule configured for this scan")
-				} else if obj.Status.ScanAlertingRuleName == "" {
-					logrus.Debugf("Error creating PrometheusRule for scan %v", obj.Name)
-					v1.ClusterScanConditionAlerted.False(obj)
-					v1.ClusterScanConditionAlerted.Message(obj, "Alerts will not work due to the error creating PrometheusRule, Please check if Monitoring app is installed")
-				} else {
-					v1.ClusterScanConditionAlerted.True(obj)
+				scanObj, err := scans.Get(obj.Name, metav1.GetOptions{})
+				if err != nil {
+					return err
 				}
-				_, err = scans.UpdateStatus(obj)
+				if scanObj.Spec.ScheduledScanConfig.ScanAlertRule == nil ||
+					(scanObj.Spec.ScheduledScanConfig.ScanAlertRule != nil &&
+						!scanObj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnComplete &&
+						!scanObj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnFailure) {
+					logrus.Debugf("No AlertRules configured for scan %v", scanObj.Name)
+					v1.ClusterScanConditionAlerted.False(scanObj)
+					v1.ClusterScanConditionAlerted.Message(scanObj, "No AlertRule configured for this scan")
+				} else if scanObj.Status.ScanAlertingRuleName == "" {
+					logrus.Debugf("Error creating PrometheusRule for scan %v", scanObj.Name)
+					v1.ClusterScanConditionAlerted.False(scanObj)
+					v1.ClusterScanConditionAlerted.Message(scanObj, "Alerts will not work due to the error creating PrometheusRule, Please check if Monitoring app is installed")
+				} else {
+					v1.ClusterScanConditionAlerted.True(scanObj)
+				}
+				_, err = scans.UpdateStatus(scanObj)
 				return err
 			})
 
