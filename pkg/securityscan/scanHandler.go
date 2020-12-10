@@ -114,10 +114,10 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 							}
 							ruleCreated, err := c.monitoringClient.PrometheusRules(v1.ClusterScanNS).Create(ctx, alertRule, metav1.CreateOptions{})
 							if err != nil {
-								v1.ClusterScanConditionReconciling.True(obj)
-								return objects, obj.Status, fmt.Errorf("Error when creating PrometheusRule: %v", err)
+								logrus.Errorf("Alerts will not be sent out for this scan %v due to this error when creating PrometheusRule: %v", obj.Name, err)
+							} else {
+								obj.Status.ScanAlertingRuleName = ruleCreated.Name
 							}
-							obj.Status.ScanAlertingRuleName = ruleCreated.Name
 						}
 					}
 				}
