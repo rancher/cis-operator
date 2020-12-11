@@ -1023,6 +1023,8 @@ github.com/rancher/lasso v0.0.0-20200820172840-0e4cc0ef5cb0 h1:ng7i8n0kzTGnXyvVK
 github.com/rancher/lasso v0.0.0-20200820172840-0e4cc0ef5cb0/go.mod h1:OhBBBO1pBwYp0hacWdnvSGOj+XE9yMLOLnaypIlic18=
 github.com/rancher/security-scan v0.2.2-0.20201117171930-af478b83fbe4 h1:WRfe56iR0TfelgaNgT01bL5TXmz4KFF55gyUna0cOGQ=
 github.com/rancher/security-scan v0.2.2-0.20201117171930-af478b83fbe4/go.mod h1:WlLAocVyVQs5J8r0IiQXsp0ajVZO6hYi/Vo6zxjo73s=
+github.com/rancher/security-scan v0.2.2-rc2 h1:R791mqsUy0sUZNzKqaZeW2D+s/RpCdF6Y1aSQlipees=
+github.com/rancher/security-scan v0.2.2-rc2/go.mod h1:WlLAocVyVQs5J8r0IiQXsp0ajVZO6hYi/Vo6zxjo73s=
 github.com/rancher/wrangler v0.6.2-0.20200829053106-7e1dd4260224 h1:NWYSyS1YiWJOB84xq0FcGDY8xQQwrfKoip2BjMSlu1g=
 github.com/rancher/wrangler v0.6.2-0.20200829053106-7e1dd4260224/go.mod h1:I7qe4DZNMOLKVa9ax7DJdBZ0XtKOppLF/dalhPX3vaE=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=

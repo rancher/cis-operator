@@ -77,23 +77,23 @@ const (
 )
 
 type CheckWrapper struct {
-	ID             string                       `yaml:"id" json:"id"`
-	Text           string                       `json:"d"`
-	Type           string                       `json:"tt"`
-	Remediation    string                       `json:"r"`
-	State          State                        `json:"s"`
-	Scored         bool                         `json:"sc"`
-	Result         map[kb.State]map[string]bool `json:"-"`
-	NodeType       []NodeType                   `json:"t"`
-	NodesMap       map[string]bool              `json:"-"`
-	Nodes          []string                     `json:"n,omitempty"`
-	Audit          string                       `json:"a"`
-	AuditConfig    string                       `json:"ac"`
-	TestInfo       []string                     `json:"ti"`
-	Commands       []*exec.Cmd                  `json:"c"`
-	ConfigCommands []*exec.Cmd                  `json:"cc"`
-	ActualValue    string                       `json:"av"`
-	ExpectedResult string                       `json:"er"`
+	ID                 string                       `yaml:"id" json:"id"`
+	Text               string                       `json:"d"`
+	Type               string                       `json:"tt"`
+	Remediation        string                       `json:"r"`
+	State              State                        `json:"s"`
+	Scored             bool                         `json:"sc"`
+	Result             map[kb.State]map[string]bool `json:"-"`
+	NodeType           []NodeType                   `json:"t"`
+	NodesMap           map[string]bool              `json:"-"`
+	Nodes              []string                     `json:"n,omitempty"`
+	Audit              string                       `json:"a"`
+	AuditConfig        string                       `json:"ac"`
+	TestInfo           []string                     `json:"ti"`
+	Commands           []*exec.Cmd                  `json:"c"`
+	ConfigCommands     []*exec.Cmd                  `json:"cc"`
+	ActualValueNodeMap map[string]string            `json:"avmap"`
+	ExpectedResult     string                       `json:"er"`
 }
 
 type GroupWrapper struct {
@@ -253,7 +253,6 @@ func (s *Summarizer) processOneResultFileForHost(results *kb.Controls, hostname 
 				logrus.Errorf("check %s found in results but not in spec", check.ID)
 				continue
 			}
-
 			if check.Type == CheckTypeSkip {
 				check.State = NA
 			}
@@ -266,11 +265,20 @@ func (s *Summarizer) processOneResultFileForHost(results *kb.Controls, hostname 
 			} else if s.userSkip[check.ID] {
 				check.State = SKIP
 			}
-
 			if cw.Result[check.State] == nil {
 				cw.Result[check.State] = make(map[string]bool)
 			}
 			cw.Result[check.State][hostname] = true
+
+			if cw.ActualValueNodeMap == nil {
+				cw.ActualValueNodeMap = make(map[string]string)
+			}
+			cw.ActualValueNodeMap[hostname] = check.ActualValue
+
+			resultCheckWrapper := getCheckWrapper(check)
+			resultCheckWrapper.Result = cw.Result
+			resultCheckWrapper.ActualValueNodeMap = cw.ActualValueNodeMap
+			s.checkWrappersMaps[check.ID] = resultCheckWrapper
 		}
 	}
 }
@@ -514,7 +522,6 @@ func getCheckWrapper(check *kb.Check) *CheckWrapper {
 		TestInfo:       check.TestInfo,
 		Commands:       check.Commands,
 		ConfigCommands: check.ConfigCommands,
-		ActualValue:    check.ActualValue,
 		ExpectedResult: check.ExpectedResult,
 	}
 }
@@ -560,6 +567,8 @@ func (s *Summarizer) getMissingNodesMapOfCheckWrapper(check *CheckWrapper, nodes
 // - If a check has all fail, then nodes is empty. All nodes in that host type have failed.
 // - If a check is skipped, then nodes is empty.
 func (s *Summarizer) runFinalPassOnCheckWrapper(cw *CheckWrapper) {
+	//copy over the actual result info of the test after running the scan
+	s.copyDataFromResults(cw)
 	nodesMap := s.getNodesMapOfCheckWrapper(cw)
 	nodeCount := len(nodesMap)
 	logrus.Debugf("id: %s nodeCount: %d", cw.ID, nodeCount)
@@ -636,6 +645,19 @@ func (s *Summarizer) runFinalPassOnCheckWrapper(cw *CheckWrapper) {
 			cw.Nodes = append(cw.Nodes, n)
 		}
 	}
+}
+
+func (s *Summarizer) copyDataFromResults(cw *CheckWrapper) {
+	checkFromResults := s.checkWrappersMaps[cw.ID]
+	if checkFromResults == nil {
+		return
+	}
+	cw.Audit = checkFromResults.Audit
+	cw.AuditConfig = checkFromResults.AuditConfig
+	cw.ActualValueNodeMap = checkFromResults.ActualValueNodeMap
+	cw.ExpectedResult = checkFromResults.ExpectedResult
+	cw.Remediation = checkFromResults.Remediation
+	cw.TestInfo = checkFromResults.TestInfo
 }
 
 func (s *Summarizer) runFinalPass() error {
