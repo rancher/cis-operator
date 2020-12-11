@@ -38,6 +38,7 @@ var (
 	securityScanImageTag = "v0.2.1"
 	sonobuoyImage        = "rancher/sonobuoy-sonobuoy"
 	sonobuoyImageTag     = "v0.16.3"
+	clusterName          string
 )
 
 func main() {
@@ -104,6 +105,12 @@ func main() {
 			Value:       "warning",
 			Destination: &alertSeverity,
 		},
+		cli.StringFlag{
+			Name:        "clusterName",
+			EnvVar:      "CLUSTER_NAME",
+			Value:       "",
+			Destination: &clusterName,
+		},
 	}
 	app.Action = run
 
@@ -137,6 +144,7 @@ func run(c *cli.Context) {
 		SonobuoyImage:        sonobuoyImage,
 		SonobuoyImageTag:     sonobuoyImageTag,
 		AlertSeverity:        alertSeverity,
+		ClusterName:          clusterName,
 	}
 
 	if err := validateConfig(imgConfig); err != nil {

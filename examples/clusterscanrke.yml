@@ -2,6 +2,11 @@
 apiVersion: cis.cattle.io/v1
 kind: ClusterScan
 metadata:
-  name: rke-cis
+  name: can-you-alert
 spec:
   scanProfileName: rke-profile-hardened
+  scheduledScanConfig:
+    cronSchedule: "*/2 * * * *"
+    scanAlertRule:
+      alertOnComplete: true
+      alertOnFailure: true

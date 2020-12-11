@@ -146,5 +146,5 @@ func getCustomBenchmarkConfigMap(benchmark *cisoperatorapiv1.ClusterScanBenchmar
 	if benchmark.Spec.CustomBenchmarkConfigMapName == "" {
 		return nil, nil
 	}
-	return configmapsClient.Get(benchmark.Spec.CustomBenchmarkConfigMapNameSpace, benchmark.Spec.CustomBenchmarkConfigMapName, metav1.GetOptions{})
+	return configmapsClient.Get(benchmark.Spec.CustomBenchmarkConfigMapNamespace, benchmark.Spec.CustomBenchmarkConfigMapName, metav1.GetOptions{})
 }

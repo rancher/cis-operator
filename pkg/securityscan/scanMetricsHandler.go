@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sirupsen/logrus"
-
 	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
+	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 )
 
 func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
@@ -19,16 +20,7 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 		if !(v1.ClusterScanConditionAlerted.IsUnknown(obj) && v1.ClusterScanConditionComplete.IsTrue(obj)) {
 			return obj, nil
 		}
-		if obj.Spec.ScheduledScanConfig != nil && obj.Spec.ScheduledScanConfig.ScanAlertRule == nil {
-			logrus.Debugf("No AlertRules configured for scan %v", obj.Name)
-			v1.ClusterScanConditionAlerted.False(obj)
-			v1.ClusterScanConditionAlerted.Message(obj, "No AlertRule configured for this scan")
-			_, err := scans.UpdateStatus(obj)
-			if err != nil {
-				return obj, fmt.Errorf("Retrying, got error %v in updating condition of scan object: %v ", err, obj.Name)
-			}
-			return obj, nil
-		}
+
 		logrus.Debugf("Updating metrics for scan %v", obj.Name)
 
 		scanName := "manual"
@@ -41,20 +33,49 @@ func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 		numTestsNA := float64(obj.Status.Summary.NotApplicable)
 		numTestsSkip := float64(obj.Status.Summary.Skip)
 		numTestsPass := float64(obj.Status.Summary.Pass)
+		numTestsWarn := float64(obj.Status.Summary.Warn)
+		clusterName := c.ImageConfig.ClusterName
 
-		c.numTestsFailed.WithLabelValues(scanName, scanProfileName).Set(numTestsFailed)
-		c.numScansComplete.WithLabelValues(scanName, scanProfileName).Inc()
-		c.numTestsTotal.WithLabelValues(scanName, scanProfileName).Set(numTestsTotal)
-		c.numTestsPassed.WithLabelValues(scanName, scanProfileName).Set(numTestsPass)
-		c.numTestsSkipped.WithLabelValues(scanName, scanProfileName).Set(numTestsSkip)
-		c.numTestsNA.WithLabelValues(scanName, scanProfileName).Set(numTestsNA)
+		c.numTestsFailed.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsFailed)
+		c.numScansComplete.WithLabelValues(scanName, scanProfileName, clusterName).Inc()
+		c.numTestsTotal.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsTotal)
+		c.numTestsPassed.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsPass)
+		c.numTestsSkipped.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsSkip)
+		c.numTestsNA.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsNA)
+		c.numTestsWarn.WithLabelValues(scanName, scanProfileName, clusterName).Set(numTestsWarn)
 
 		logrus.Debugf("Done updating metrics for scan %v", obj.Name)
-		v1.ClusterScanConditionAlerted.True(obj)
-		_, err := scans.UpdateStatus(obj)
-		if err != nil {
-			return obj, fmt.Errorf("Retrying, got error %v in updating condition of scan object: %v ", err, obj.Name)
+
+		if obj.Spec.ScheduledScanConfig != nil {
+			updateErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				var err error
+				scanObj, err := scans.Get(obj.Name, metav1.GetOptions{})
+				if err != nil {
+					return err
+				}
+				if scanObj.Spec.ScheduledScanConfig.ScanAlertRule == nil ||
+					(scanObj.Spec.ScheduledScanConfig.ScanAlertRule != nil &&
+						!scanObj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnComplete &&
+						!scanObj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnFailure) {
+					logrus.Debugf("No AlertRules configured for scan %v", scanObj.Name)
+					v1.ClusterScanConditionAlerted.False(scanObj)
+					v1.ClusterScanConditionAlerted.Message(scanObj, "No AlertRule configured for this scan")
+				} else if scanObj.Status.ScanAlertingRuleName == "" {
+					logrus.Debugf("Error creating PrometheusRule for scan %v", scanObj.Name)
+					v1.ClusterScanConditionAlerted.False(scanObj)
+					v1.ClusterScanConditionAlerted.Message(scanObj, "Alerts will not work due to the error creating PrometheusRule, Please check if Monitoring app is installed")
+				} else {
+					v1.ClusterScanConditionAlerted.True(scanObj)
+				}
+				_, err = scans.UpdateStatus(scanObj)
+				return err
+			})
+
+			if updateErr != nil {
+				return obj, fmt.Errorf("Retrying, got error %v in updating condition of scan object: %v ", updateErr, obj.Name)
+			}
 		}
+
 		return obj, nil
 	})
 	return nil

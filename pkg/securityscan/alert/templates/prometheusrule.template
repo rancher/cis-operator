@@ -12,9 +12,13 @@ spec:
 {{- if .alertOnFailure }}
     - alert: CISScanHasFailures
       annotations:
-        description: CIS ClusterScan "{{ .scanName }}" has {{ "{{ $value }}" }} test failures
+        description: CIS ClusterScan "{{ .scanName }}" has {{ "{{ $value }}" }} test failures or warnings
         summary: CIS ClusterScan has tests failures
+      {{- if .failOnWarn }}
+      expr: cis_scan_num_tests_fail{scan_name="{{ .scanName }}"} > 0 or ON(scan_name) cis_scan_num_tests_warn{scan_name="{{ .scanName }}"} > 0
+      {{- else }}
       expr: cis_scan_num_tests_fail{scan_name="{{ .scanName }}"} > 0
+      {{- end }}
       for: 1m
       labels:
         severity: {{ .severity }}

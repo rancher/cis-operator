@@ -26,6 +26,7 @@ func NewPrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanpro
 		"scanProfileName": clusterscanprofile.Name,
 		"alertOnFailure":  clusterscan.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnFailure,
 		"alertOnComplete": clusterscan.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnComplete,
+		"failOnWarn":      clusterscan.Spec.ScoreWarning == cisoperatorapiv1.ClusterScanFailOnWarning,
 	}
 	scanAlertRule, err := generatePrometheusRule(clusterscan, templateName, templatePath, configdata)
 	if err != nil {
