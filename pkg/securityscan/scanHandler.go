@@ -114,23 +114,24 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 
 				objects = append(objects, cisjob.New(obj, profile, c.Name, c.ImageConfig), cmMap["configcm"], cmMap["plugincm"], cmMap["skipConfigcm"], service)
 
-				if obj.Spec.ScheduledScanConfig != nil && obj.Spec.ScheduledScanConfig.ScanAlertRule != nil {
-					if obj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnComplete || obj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnFailure {
-						if obj.Status.ScanAlertingRuleName == "" {
-							alertRule, err := cisalert.NewPrometheusRule(obj, profile, c.ImageConfig)
-							if err != nil {
-								v1.ClusterScanConditionReconciling.True(obj)
-								return objects, obj.Status, fmt.Errorf("Error when trying to create a PrometheusRule: %v", err)
-							}
-							ruleCreated, err := c.monitoringClient.PrometheusRules(v1.ClusterScanNS).Create(ctx, alertRule, metav1.CreateOptions{})
-							if err != nil {
-								logrus.Errorf("Alerts will not be sent out for this scan %v due to this error when creating PrometheusRule: %v", obj.Name, err)
-							} else {
-								obj.Status.ScanAlertingRuleName = ruleCreated.Name
-							}
-						}
+				if c.ImageConfig.AlertEnabled &&
+					obj.Spec.ScheduledScanConfig != nil &&
+					obj.Spec.ScheduledScanConfig.ScanAlertRule != nil &&
+					(obj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnComplete || obj.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnFailure) &&
+					obj.Status.ScanAlertingRuleName == "" {
+					alertRule, err := cisalert.NewPrometheusRule(obj, profile, c.ImageConfig)
+					if err != nil {
+						v1.ClusterScanConditionReconciling.True(obj)
+						return objects, obj.Status, fmt.Errorf("Error when trying to create a PrometheusRule: %v", err)
+					}
+					ruleCreated, err := c.monitoringClient.PrometheusRules(v1.ClusterScanNS).Create(ctx, alertRule, metav1.CreateOptions{})
+					if err != nil {
+						logrus.Errorf("Alerts will not be sent out for this scan %v due to this error when creating PrometheusRule: %v", obj.Name, err)
+					} else {
+						obj.Status.ScanAlertingRuleName = ruleCreated.Name
 					}
 				}
+
 				if v1.ClusterScanConditionFailed.IsTrue(obj) {
 					//clear the earlier failed status
 					v1.ClusterScanConditionFailed.False(obj)
