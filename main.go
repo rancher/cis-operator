@@ -111,6 +111,10 @@ func main() {
 			Value:       "",
 			Destination: &clusterName,
 		},
+		cli.BoolFlag{
+			Name:   "alertEnabled",
+			EnvVar: "CIS_ALERTS_ENABLED",
+		},
 	}
 	app.Action = run
 
@@ -145,6 +149,7 @@ func run(c *cli.Context) {
 		SonobuoyImageTag:     sonobuoyImageTag,
 		AlertSeverity:        alertSeverity,
 		ClusterName:          clusterName,
+		AlertEnabled:         c.Bool("alertEnabled"),
 	}
 
 	if err := validateConfig(imgConfig); err != nil {
