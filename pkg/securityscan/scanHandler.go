@@ -8,6 +8,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -15,17 +16,12 @@ import (
 	"github.com/rancher/wrangler/pkg/generic"
 	"github.com/rancher/wrangler/pkg/genericcondition"
 
+	cisoperatorapi "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io"
 	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	cisctlv1 "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io/v1"
 	cisalert "github.com/rancher/cis-operator/pkg/securityscan/alert"
 	ciscore "github.com/rancher/cis-operator/pkg/securityscan/core"
 	cisjob "github.com/rancher/cis-operator/pkg/securityscan/job"
-)
-
-const (
-	kubeBenchJobManifest    = "{\r\n   \"apiVersion\": \"batch/v1\",\r\n   \"kind\": \"Job\",\r\n   \"metadata\": {\r\n      \"namespace\": \"cisscan-system\"\r\n   },\r\n   \"spec\": {\r\n      \"template\": {\r\n         \"metadata\": {\r\n            \"labels\": {\r\n               \"app\": \"kube-bench\"\r\n            }\r\n         },\r\n         \"spec\": {\r\n            \"hostPID\": true,\r\n            \"containers\": [\r\n               {\r\n                  \"name\": \"kube-bench\",\r\n                  \"image\": \"aquasec/kube-bench:latest\",\r\n                  \"command\": [\r\n                     \"kube-bench\"\r\n                  ],\r\n                  \"volumeMounts\": [\r\n                     {\r\n                        \"name\": \"var-lib-etcd\",\r\n                        \"mountPath\": \"/var/lib/etcd\",\r\n                        \"readOnly\": true\r\n                     },\r\n                     {\r\n                        \"name\": \"var-lib-kubelet\",\r\n                        \"mountPath\": \"/var/lib/kubelet\",\r\n                        \"readOnly\": true\r\n                     },\r\n                     {\r\n                        \"name\": \"etc-systemd\",\r\n                        \"mountPath\": \"/etc/systemd\",\r\n                        \"readOnly\": true\r\n                     },\r\n                     {\r\n                        \"name\": \"etc-kubernetes\",\r\n                        \"mountPath\": \"/etc/kubernetes\",\r\n                        \"readOnly\": true\r\n                     },\r\n                     {\r\n                        \"name\": \"usr-bin\",\r\n                        \"mountPath\": \"/usr/local/mount-from-host/bin\",\r\n                        \"readOnly\": true\r\n                     }\r\n                  ]\r\n               }\r\n            ],\r\n            \"restartPolicy\": \"Never\",\r\n            \"volumes\": [\r\n               {\r\n                  \"name\": \"var-lib-etcd\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/var/lib/etcd\"\r\n                  }\r\n               },\r\n               {\r\n                  \"name\": \"var-lib-kubelet\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/var/lib/kubelet\"\r\n                  }\r\n               },\r\n               {\r\n                  \"name\": \"etc-systemd\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/etc/systemd\"\r\n                  }\r\n               },\r\n               {\r\n                  \"name\": \"etc-kubernetes\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/etc/kubernetes\"\r\n                  }\r\n               },\r\n               {\r\n                  \"name\": \"usr-bin\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/usr/bin\"\r\n                  }\r\n               }\r\n            ]\r\n         }\r\n      }\r\n   }\r\n}"
-	kubeBenchEKSJobManifest = "{\r\n   \"apiVersion\": \"batch/v1\",\r\n   \"kind\": \"Job\",\r\n   \"metadata\": {\r\n      \"name\": \"kube-bench\"\r\n   },\r\n   \"spec\": {\r\n      \"template\": {\r\n         \"spec\": {\r\n            \"hostPID\": true,\r\n            \"containers\": [\r\n               {\r\n                  \"name\": \"kube-bench\",\r\n                  \"image\": \"aquasec/kube-bench:latest\",\r\n                  \"command\": [\r\n                     \"kube-bench\",\r\n                     \"node\",\r\n                     \"--benchmark\",\r\n                     \"eks-1.0\"\r\n                  ],\r\n                  \"volumeMounts\": [\r\n                     {\r\n                        \"name\": \"var-lib-kubelet\",\r\n                        \"mountPath\": \"/var/lib/kubelet\",\r\n                        \"readOnly\": true\r\n                     },\r\n                     {\r\n                        \"name\": \"etc-systemd\",\r\n                        \"mountPath\": \"/etc/systemd\",\r\n                        \"readOnly\": true\r\n                     },\r\n                     {\r\n                        \"name\": \"etc-kubernetes\",\r\n                        \"mountPath\": \"/etc/kubernetes\",\r\n                        \"readOnly\": true\r\n                     }\r\n                  ]\r\n               }\r\n            ],\r\n            \"restartPolicy\": \"Never\",\r\n            \"volumes\": [\r\n               {\r\n                  \"name\": \"var-lib-kubelet\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/var/lib/kubelet\"\r\n                  }\r\n               },\r\n               {\r\n                  \"name\": \"etc-systemd\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/etc/systemd\"\r\n                  }\r\n               },\r\n               {\r\n                  \"name\": \"etc-kubernetes\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/etc/kubernetes\"\r\n                  }\r\n               }\r\n            ]\r\n         }\r\n      }\r\n   }\r\n}"
-	kubeBenchGKEJobManifest = "{\r\n   \"apiVersion\": \"batch/v1\",\r\n   \"kind\": \"Job\",\r\n   \"metadata\": {\r\n      \"name\": \"kube-bench\"\r\n   },\r\n   \"spec\": {\r\n      \"template\": {\r\n         \"spec\": {\r\n            \"hostPID\": true,\r\n            \"containers\": [\r\n               {\r\n                  \"name\": \"kube-bench\",\r\n                  \"image\": \"aquasec/kube-bench:latest\",\r\n                  \"command\": [\r\n                     \"kube-bench\",\r\n                     \"--benchmark\",\r\n                     \"gke-1.0\",\r\n                     \"run\",\r\n                     \"--targets\",\r\n                     \"node,policies,managedservices\"\r\n                  ],\r\n                  \"volumeMounts\": [\r\n                     {\r\n                        \"name\": \"var-lib-kubelet\",\r\n                        \"mountPath\": \"/var/lib/kubelet\"\r\n                     },\r\n                     {\r\n                        \"name\": \"etc-systemd\",\r\n                        \"mountPath\": \"/etc/systemd\"\r\n                     },\r\n                     {\r\n                        \"name\": \"etc-kubernetes\",\r\n                        \"mountPath\": \"/etc/kubernetes\"\r\n                     }\r\n                  ]\r\n               }\r\n            ],\r\n            \"restartPolicy\": \"Never\",\r\n            \"volumes\": [\r\n               {\r\n                  \"name\": \"var-lib-kubelet\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/var/lib/kubelet\"\r\n                  }\r\n               },\r\n               {\r\n                  \"name\": \"etc-systemd\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/etc/systemd\"\r\n                  }\r\n               },\r\n               {\r\n                  \"name\": \"etc-kubernetes\",\r\n                  \"hostPath\": {\r\n                     \"path\": \"/etc/kubernetes\"\r\n                  }\r\n               }\r\n            ]\r\n         }\r\n      }\r\n   }\r\n}"
 )
 
 var SonobuoyMasterLabel = map[string]string{"run": "sonobuoy-master"}
@@ -42,7 +38,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				return objects, status, nil
 			}
 
-			logrus.Infof("ClusterScan GENERATING HANDLER: scan=%s/%s@%s, %v, status=%+v", obj.Namespace, obj.Name, obj.Spec.ScanProfileName, obj.ResourceVersion, status.LastRunTimestamp)
+			logrus.Debugf("ClusterScan GENERATING HANDLER: scan=%s/%s@%s, %v, status=%+v", obj.Namespace, obj.Name, obj.Spec.ScanProfileName, obj.ResourceVersion, status.LastRunTimestamp)
 
 			if obj.Status.LastRunTimestamp == "" && !v1.ClusterScanConditionCreated.IsTrue(obj) {
 				if !v1.ClusterScanConditionPending.IsTrue(obj) {
@@ -85,6 +81,19 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				//launch new on demand scan
 				c.mu.Lock()
 				defer c.mu.Unlock()
+				if c.CurrentScanName != "" {
+					scanfound, err := c.isScanPresent(c.CurrentScanName)
+					if err != nil {
+						return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v, error when checking CurrentScan %v is present: %v", obj.Name, c.CurrentScanName, err)
+					}
+					if !scanfound {
+						logrus.Debugf("Current scan %v gone, reset CurrentScanName and move on with this scan", c.CurrentScanName)
+						c.CurrentScanName = ""
+					} else {
+						//Some scan is running, wait
+						return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since another Scan %v is running ", obj.Name, c.CurrentScanName)
+					}
+				}
 				logrus.Infof("Launching a new on demand Job for scan %v to run cis using profile %v", obj.Name, profile.Name)
 				benchmark, err := c.getClusterScanBenchmark(profile)
 				if err != nil {
@@ -102,6 +111,12 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					v1.ClusterScanConditionReconciling.True(obj)
 					return objects, obj.Status, fmt.Errorf("Error when creating Service: %v", err)
 				}
+
+				//recheck before launching job
+				if err := c.isRunnerPodPresent(); err != nil {
+					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
+				}
+
 				objects = append(objects, cisjob.New(obj, profile, c.Name, c.ImageConfig), cmMap["configcm"], cmMap["plugincm"], cmMap["skipConfigcm"], service)
 
 				if obj.Spec.ScheduledScanConfig != nil && obj.Spec.ScheduledScanConfig.ScanAlertRule != nil {
@@ -131,6 +146,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				v1.ClusterScanConditionRunCompleted.Unknown(obj)
 				v1.ClusterScanConditionRunCompleted.Message(obj, "Creating Job to run the CIS scan")
 				c.setClusterScanStatusDisplay(obj)
+				c.CurrentScanName = obj.Name
 				return objects, obj.Status, nil
 			}
 			return objects, obj.Status, nil
@@ -140,6 +156,20 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 		},
 	)
 	return nil
+}
+
+func (c *Controller) isScanPresent(scanName string) (bool, error) {
+	scans := c.cisFactory.Cis().V1().ClusterScan()
+	// get the scan being run
+	_, err := scans.Get(scanName, metav1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// scan is gone
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 func (c *Controller) getClusterScanProfile(scan *v1.ClusterScan) (*v1.ClusterScanProfile, error) {
@@ -227,6 +257,14 @@ func (c Controller) validateClusterScanProfile(profile *v1.ClusterScanProfile) e
 }
 
 func (c Controller) isRunnerPodPresent() error {
+	v2Jobs, err := c.listScanRunnerJobs(v1.ClusterScanNS)
+	if err != nil {
+		return fmt.Errorf("error listing jobs: %v", err)
+	}
+	if v2Jobs != 0 {
+		return fmt.Errorf("A rancher-cis-benchmark scan runner job is already running")
+	}
+
 	v2Pods, err := c.listRunnerPods(v1.ClusterScanNS)
 	if err != nil {
 		return fmt.Errorf("error listing pods: %v", err)
@@ -244,6 +282,16 @@ func (c Controller) isRunnerPodPresent() error {
 	}
 
 	return nil
+}
+
+func (c Controller) listScanRunnerJobs(namespace string) (int, error) {
+	jobs := c.batchFactory.Batch().V1().Job()
+	set := labels.Set(map[string]string{cisoperatorapi.LabelController: c.Name})
+	jobList, err := jobs.Cache().List(namespace, set.AsSelector())
+	if err != nil {
+		return 0, fmt.Errorf("error listing jobs: %v", err)
+	}
+	return len(jobList), nil
 }
 
 func (c Controller) listRunnerPods(namespace string) (int, error) {

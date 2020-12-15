@@ -21,27 +21,33 @@ import (
 const (
 	defaultTerminationGracePeriodSeconds = int64(0)
 	defaultBackoffLimit                  = int32(0)
+	defaultTTLSecondsAfterFinished       = int32(0)
 )
 
 var (
 	ConditionComplete = condition.Cond(batchv1.JobComplete)
 	ConditionFailed   = condition.Cond(batchv1.JobFailed)
 
-	BackoffLimit = func(defaultValue int32) int32 {
-		if str, ok := os.LookupEnv("SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT"); ok {
-			if i, err := strconv.ParseInt(str, 10, 32); err != nil {
-				logrus.Errorf("failed to parse $%s: %v", "SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT", err)
-			} else {
-				return int32(i)
-			}
-		}
-		return defaultValue
-	}(defaultBackoffLimit)
+	BackoffLimit = readFromEnv("CIS_JOB_BACKOFF_LIMIT", defaultBackoffLimit)
 
 	TerminationGracePeriodSeconds = func(defaultValue int64) int64 {
 		return defaultValue
 	}(defaultTerminationGracePeriodSeconds)
+
+	TTLSecondsAfterFinished = readFromEnv("CIS_JOB_TTL_SECONDS_AFTER_FINISH", defaultTTLSecondsAfterFinished)
 )
+
+func readFromEnv(key string, defaultValue int32) int32 {
+	if str, ok := os.LookupEnv(key); ok {
+		i, err := strconv.ParseInt(str, 10, 32)
+		if err != nil {
+			logrus.Errorf("failed to parse $%s: %v", key, err)
+			return defaultValue
+		}
+		return int32(i)
+	}
+	return defaultValue
+}
 
 func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig) *batchv1.Job {
 	privileged := true
@@ -63,7 +69,8 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 			}},
 		},
 		Spec: batchv1.JobSpec{
-			BackoffLimit: &BackoffLimit,
+			BackoffLimit:            &BackoffLimit,
+			TTLSecondsAfterFinished: &TTLSecondsAfterFinished,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels.Set{

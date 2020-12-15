@@ -122,6 +122,8 @@ github.com/rancher/wrangler/pkg/data
 github.com/rancher/wrangler/pkg/data/convert
 github.com/rancher/wrangler/pkg/generated/controllers/apiextensions.k8s.io
 github.com/rancher/wrangler/pkg/generated/controllers/apiextensions.k8s.io/v1beta1
+github.com/rancher/wrangler/pkg/generated/controllers/apps
+github.com/rancher/wrangler/pkg/generated/controllers/apps/v1
 github.com/rancher/wrangler/pkg/generated/controllers/batch
 github.com/rancher/wrangler/pkg/generated/controllers/batch/v1
 github.com/rancher/wrangler/pkg/generated/controllers/core

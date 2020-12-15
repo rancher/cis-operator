@@ -14,6 +14,7 @@ import (
 	detector "github.com/rancher/kubernetes-provider-detector"
 	"github.com/rancher/wrangler/pkg/apply"
 	"github.com/rancher/wrangler/pkg/crd"
+	appsctl "github.com/rancher/wrangler/pkg/generated/controllers/apps"
 	batchctl "github.com/rancher/wrangler/pkg/generated/controllers/batch"
 	corectl "github.com/rancher/wrangler/pkg/generated/controllers/core"
 	"github.com/rancher/wrangler/pkg/start"
@@ -38,11 +39,13 @@ type Controller struct {
 	xcs              *kubeapiext.Clientset
 	coreFactory      *corectl.Factory
 	batchFactory     *batchctl.Factory
+	appsFactory      *appsctl.Factory
 	cisFactory       *cisoperatorctl.Factory
 	apply            apply.Apply
 	monitoringClient v1monitoringclient.MonitoringV1Interface
 
-	mu *sync.Mutex
+	mu              *sync.Mutex
+	CurrentScanName string
 
 	numTestsFailed   *prometheus.GaugeVec
 	numScansComplete *prometheus.CounterVec
@@ -110,6 +113,11 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 	ctl.coreFactory, err = corectl.NewFactoryFromConfig(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("Error building core NewFactoryFromConfig: %s", err.Error())
+	}
+
+	ctl.appsFactory, err = appsctl.NewFactoryFromConfig(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("Error building apps NewFactoryFromConfig: %s", err.Error())
 	}
 
 	ctl.monitoringClient, err = v1monitoringclient.NewForConfig(cfg)
