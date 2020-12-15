@@ -22,6 +22,8 @@ import (
 	"github.com/rancher/wrangler/pkg/name"
 )
 
+var sonobuoyWorkerLabel = map[string]string{"sonobuoy-plugin": "rancher-kube-bench"}
+
 // job events (successful completions) should remove the job after validatinf Done annotation and Output CM
 func (c *Controller) handleJobs(ctx context.Context) error {
 	scans := c.cisFactory.Cis().V1().ClusterScan()
@@ -59,7 +61,6 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 
 		// if the scan has completed then delete the job
 		if v1.ClusterScanConditionComplete.IsTrue(scan) {
-			c.ensureCleanup(scan)
 			if !v1.ClusterScanConditionFailed.IsTrue(scan) {
 				logrus.Infof("Marking ClusterScanConditionAlerted for scan: %v", scanName)
 				v1.ClusterScanConditionAlerted.Unknown(scan)
@@ -71,12 +72,21 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 				c.rescheduleScan(scan)
 				c.purgeOldClusterScanReports(scan)
 			}
+			err := c.deleteJob(jobs, obj, metav1.DeletePropagationBackground)
+			if err != nil {
+				return obj, fmt.Errorf("error deleting job: %v", err)
+			}
+			err = c.ensureCleanup(scan)
+			if err != nil {
+				return obj, err
+			}
 			//update scan
 			_, err = scans.UpdateStatus(scan)
 			if err != nil {
 				return nil, fmt.Errorf("error updating condition of cluster scan object: %v", scanName)
 			}
-			return obj, c.deleteJob(jobs, obj, metav1.DeletePropagationBackground)
+			c.currentScanName = ""
+			return obj, nil
 		}
 
 		if v1.ClusterScanConditionRunCompleted.IsTrue(scan) {
@@ -187,9 +197,38 @@ func (c *Controller) createClusterScanReport(outputBytes []byte, scan *v1.Cluste
 
 func (c *Controller) ensureCleanup(scan *v1.ClusterScan) error {
 	var err error
-	configmaps := c.coreFactory.Core().V1().ConfigMap()
+	// Delete the dameonset
+	dsPrefix := "sonobuoy-rancher-kube-bench-daemon-set"
+	dsList, err := c.daemonsetCache.List(v1.ClusterScanNS, labels.Set(sonobuoyWorkerLabel).AsSelector())
+	if err != nil {
+		return fmt.Errorf("cis: ensureCleanup: error listing daemonsets: %v", err)
+	}
+	for _, ds := range dsList {
+		if !strings.HasPrefix(ds.Name, dsPrefix) {
+			continue
+		}
+		if e := c.daemonsets.Delete(v1.ClusterScanNS, ds.Name, &metav1.DeleteOptions{}); e != nil && !errors.IsNotFound(e) {
+			return fmt.Errorf("cis: ensureCleanup: error deleting daemonset %v: %v", ds.Name, e)
+		}
+	}
+
+	// Delete the pod
+	podPrefix := name.SafeConcatName("security-scan-runner", scan.Name)
+	podList, err := c.podCache.List(v1.ClusterScanNS, labels.Set(SonobuoyMasterLabel).AsSelector())
+	if err != nil {
+		return fmt.Errorf("cis: ensureCleanup: error listing pods: %v", err)
+	}
+	for _, pod := range podList {
+		if !strings.HasPrefix(pod.Name, podPrefix) {
+			continue
+		}
+		if e := c.pods.Delete(v1.ClusterScanNS, pod.Name, &metav1.DeleteOptions{}); e != nil && !errors.IsNotFound(e) {
+			return fmt.Errorf("cis: ensureCleanup: error deleting pod %v: %v", pod.Name, e)
+		}
+	}
+
 	// Delete cms
-	cms, err := configmaps.Cache().List(v1.ClusterScanNS, labels.NewSelector())
+	cms, err := c.configMapCache.List(v1.ClusterScanNS, labels.NewSelector())
 	if err != nil {
 		return fmt.Errorf("cis: ensureCleanup: error listing cm: %v", err)
 	}
@@ -198,7 +237,7 @@ func (c *Controller) ensureCleanup(scan *v1.ClusterScan) error {
 			continue
 		}
 
-		if e := configmaps.Delete(v1.ClusterScanNS, cm.Name, &metav1.DeleteOptions{}); e != nil && !errors.IsNotFound(e) {
+		if e := c.configmaps.Delete(v1.ClusterScanNS, cm.Name, &metav1.DeleteOptions{}); e != nil && !errors.IsNotFound(e) {
 			return fmt.Errorf("cis: ensureCleanup: error deleting cm %v: %v", cm.Name, e)
 		}
 	}

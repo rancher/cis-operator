@@ -31,15 +31,15 @@ func (c *Controller) handleScheduledClusterScans(ctx context.Context) error {
 		//if nextScanAt is set then make sure we process only if the time is right
 		if v1.ClusterScanConditionComplete.IsTrue(obj) && obj.Status.LastRunTimestamp != "" && obj.Status.NextScanAt != "" {
 			currTime := time.Now().Format(time.RFC3339)
-			logrus.Infof("scheduledScanHandler: sync called for scheduled ClusterScan CR %v ", obj.Name)
-			logrus.Infof("scheduledScanHandler: next run is scheduled for: %v, current time: %v", obj.Status.NextScanAt, currTime)
+			logrus.Debugf("scheduledScanHandler: sync called for scheduled ClusterScan CR %v ", obj.Name)
+			logrus.Debugf("scheduledScanHandler: next run is scheduled for: %v, current time: %v", obj.Status.NextScanAt, currTime)
 
 			nextScanTime, err := time.Parse(time.RFC3339, obj.Status.NextScanAt)
 			if err != nil {
 				return obj, fmt.Errorf("scheduledScanHandler: retrying, got error %v in parsing NextScanAt %v time for scheduledScan: %v ", err, obj.Status.NextScanAt, obj.Name)
 			}
 			if nextScanTime.After(time.Now()) {
-				logrus.Infof("scheduledScanHandler: run time is later, skipping this run scheduledScan CR %v ", obj.Name)
+				logrus.Debugf("scheduledScanHandler: run time is later, skipping this run scheduledScan CR %v ", obj.Name)
 				after := nextScanTime.Sub(time.Now())
 				scheduledScans.EnqueueAfter(obj.Name, after)
 				if obj.Generation != obj.Status.ObservedGeneration {
