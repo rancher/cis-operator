@@ -55,6 +55,12 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 				cisoperatorapi.LabelProfile:     clusterscan.Spec.ScanProfileName,
 				cisoperatorapi.LabelClusterScan: clusterscan.Name,
 			},
+			OwnerReferences: []metav1.OwnerReference{{
+				APIVersion: "cis.cattle.io/v1",
+				Kind:       "ClusterScan",
+				Name:       clusterscan.Name,
+				UID:        clusterscan.GetUID(),
+			}},
 		},
 		Spec: batchv1.JobSpec{
 			BackoffLimit: &BackoffLimit,
