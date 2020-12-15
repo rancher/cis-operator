@@ -97,9 +97,12 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				}
 				cmMap, err := ciscore.NewConfigMaps(obj, profile, benchmark, c.Name, c.ImageConfig, c.configmaps)
 				if err != nil {
-					v1.ClusterScanConditionReconciling.True(obj)
-					return objects, obj.Status, fmt.Errorf("Error when creating ConfigMaps: %v", err)
-
+					v1.ClusterScanConditionFailed.True(obj)
+					message := fmt.Sprintf("Error when creating ConfigMaps: %v", err)
+					v1.ClusterScanConditionFailed.Message(obj, message)
+					logrus.Errorf(message)
+					c.setClusterScanStatusDisplay(obj)
+					return objects, obj.Status, nil
 				}
 				service, err := ciscore.NewService(obj, profile, c.Name)
 				if err != nil {
@@ -112,7 +115,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
 				}
 
-				objects = append(objects, cisjob.New(obj, profile, c.Name, c.ImageConfig), cmMap["configcm"], cmMap["plugincm"], cmMap["skipConfigcm"], service)
+				objects = append(objects, cisjob.New(obj, profile, benchmark, c.Name, c.ImageConfig, c.configmaps), cmMap["configcm"], cmMap["plugincm"], cmMap["skipConfigcm"], service)
 
 				if c.ImageConfig.AlertEnabled &&
 					obj.Spec.ScheduledScanConfig != nil &&

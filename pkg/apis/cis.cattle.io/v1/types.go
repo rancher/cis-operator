@@ -24,6 +24,8 @@ const (
 	DefaultScanOutputFileName          = "output.json"
 	DefaultRetention                   = 3
 	DefaultCronSchedule                = "0 0 * * *"
+	CustomBenchmarkBaseDir             = "/etc/kbs/custombenchmark/cfg"
+	CustomBenchmarkConfigMap           = "cis-bmark-cm"
 
 	ClusterScanConditionCreated      = condition.Cond("Created")
 	ClusterScanConditionPending      = condition.Cond("Pending")

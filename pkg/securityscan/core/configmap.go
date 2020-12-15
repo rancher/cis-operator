@@ -20,9 +20,8 @@ type OverrideSkipInfoData struct {
 }
 
 const (
-	CurrentBenchmarkKey    = "current"
-	ConfigFileName         = "config.json"
-	customBenchmarkBaseDir = "/etc/kbs/custombenchmark/cfg"
+	CurrentBenchmarkKey = "current"
+	ConfigFileName      = "config.json"
 )
 
 func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, clusterscanbenchmark *cisoperatorapiv1.ClusterScanBenchmark, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig, configmapsClient wcorev1.ConfigMapController) (cmMap map[string]*corev1.ConfigMap, err error) {
@@ -44,14 +43,16 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 	cmMap["configcm"] = configcm
 
 	var isCustomBenchmark bool
+	customBenchmarkConfigMapName := ""
 	customBenchmarkConfigMapData := make(map[string]string)
 	if clusterscanbenchmark.Spec.CustomBenchmarkConfigMapName != "" {
 		isCustomBenchmark = true
-		customcm, err := getCustomBenchmarkConfigMap(clusterscanbenchmark, configmapsClient)
+		customcm, err := getCustomBenchmarkConfigMap(clusterscanbenchmark, clusterscan, configmapsClient)
 		if err != nil {
 			return cmMap, err
 		}
 		customBenchmarkConfigMapData = customcm.Data
+		customBenchmarkConfigMapName = customcm.Name
 	}
 
 	plugindata := map[string]interface{}{
@@ -63,8 +64,8 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		"securityScanImage":            imageConfig.SecurityScanImage + ":" + imageConfig.SecurityScanImageTag,
 		"benchmarkVersion":             clusterscanprofile.Spec.BenchmarkVersion,
 		"isCustomBenchmark":            isCustomBenchmark,
-		"configDir":                    customBenchmarkBaseDir,
-		"customBenchmarkConfigMapName": clusterscanbenchmark.Spec.CustomBenchmarkConfigMapName,
+		"configDir":                    cisoperatorapiv1.CustomBenchmarkBaseDir,
+		"customBenchmarkConfigMapName": customBenchmarkConfigMapName,
 		"customBenchmarkConfigMapData": customBenchmarkConfigMapData,
 	}
 	plugincm, err := generateConfigMap(clusterscan, "pluginConfig.template", "./pkg/securityscan/core/templates/pluginConfig.template", plugindata)
@@ -142,9 +143,29 @@ func getConfigMapObject(cmName, data string) *corev1.ConfigMap {
 	}
 }
 
-func getCustomBenchmarkConfigMap(benchmark *cisoperatorapiv1.ClusterScanBenchmark, configmapsClient wcorev1.ConfigMapController) (*corev1.ConfigMap, error) {
+func getCustomBenchmarkConfigMap(benchmark *cisoperatorapiv1.ClusterScanBenchmark, clusterscan *cisoperatorapiv1.ClusterScan, configmapsClient wcorev1.ConfigMapController) (*corev1.ConfigMap, error) {
 	if benchmark.Spec.CustomBenchmarkConfigMapName == "" {
 		return nil, nil
 	}
-	return configmapsClient.Get(benchmark.Spec.CustomBenchmarkConfigMapNamespace, benchmark.Spec.CustomBenchmarkConfigMapName, metav1.GetOptions{})
+	userConfigmap, err := configmapsClient.Get(benchmark.Spec.CustomBenchmarkConfigMapNamespace, benchmark.Spec.CustomBenchmarkConfigMapName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	if benchmark.Spec.CustomBenchmarkConfigMapNamespace == cisoperatorapiv1.ClusterScanNS {
+		return userConfigmap, nil
+	}
+	//copy the configmap to ClusterScanNS so that cis scan pod can find it for volume mount
+	//this will be cleaned up after scan job finishes
+	configmapCopy := corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "ConfigMap",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name.SafeConcatName(cisoperatorapiv1.CustomBenchmarkConfigMap, clusterscan.Name),
+			Namespace: cisoperatorapiv1.ClusterScanNS,
+		},
+		Data: userConfigmap.Data,
+	}
+	return configmapsClient.Create(&configmapCopy)
 }
