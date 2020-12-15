@@ -27,12 +27,7 @@ import (
 var SonobuoyMasterLabel = map[string]string{"run": "sonobuoy-master"}
 
 func (c *Controller) handleClusterScans(ctx context.Context) error {
-	scans := c.cisFactory.Cis().V1().ClusterScan()
-	jobs := c.batchFactory.Batch().V1().Job()
-	configmaps := c.coreFactory.Core().V1().ConfigMap()
-	services := c.coreFactory.Core().V1().Service()
-
-	cisctlv1.RegisterClusterScanGeneratingHandler(ctx, scans, c.apply.WithCacheTypes(configmaps, services).WithGVK(jobs.GroupVersionKind()).WithDynamicLookup().WithNoDelete(), "", c.Name,
+	cisctlv1.RegisterClusterScanGeneratingHandler(ctx, c.scans, c.apply.WithCacheTypes(c.configmaps, c.services).WithGVK(c.jobs.GroupVersionKind()).WithDynamicLookup().WithNoDelete(), "", c.Name,
 		func(obj *v1.ClusterScan, status v1.ClusterScanStatus) (objects []runtime.Object, _ v1.ClusterScanStatus, _ error) {
 			if obj == nil || obj.DeletionTimestamp != nil {
 				return objects, status, nil
@@ -45,7 +40,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					v1.ClusterScanConditionPending.True(obj)
 					v1.ClusterScanConditionPending.Message(obj, "ClusterScan run pending")
 					c.setClusterScanStatusDisplay(obj)
-					scans.Enqueue(obj.Name)
+					c.scans.Enqueue(obj.Name)
 					return objects, obj.Status, nil
 				}
 				obj.Status.Conditions = []genericcondition.GenericCondition{}
@@ -81,17 +76,17 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				//launch new on demand scan
 				c.mu.Lock()
 				defer c.mu.Unlock()
-				if c.CurrentScanName != "" {
-					scanfound, err := c.isScanPresent(c.CurrentScanName)
+				if c.currentScanName != "" {
+					scanfound, err := c.isScanPresent(c.currentScanName)
 					if err != nil {
-						return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v, error when checking CurrentScan %v is present: %v", obj.Name, c.CurrentScanName, err)
+						return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v, error when checking CurrentScan %v is present: %v", obj.Name, c.currentScanName, err)
 					}
 					if !scanfound {
-						logrus.Debugf("Current scan %v gone, reset CurrentScanName and move on with this scan", c.CurrentScanName)
-						c.CurrentScanName = ""
+						logrus.Debugf("Current scan %v gone, reset currentScanName and move on with this scan", c.currentScanName)
+						c.currentScanName = ""
 					} else {
 						//Some scan is running, wait
-						return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since another Scan %v is running ", obj.Name, c.CurrentScanName)
+						return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since another Scan %v is running ", obj.Name, c.currentScanName)
 					}
 				}
 				logrus.Infof("Launching a new on demand Job for scan %v to run cis using profile %v", obj.Name, profile.Name)
@@ -100,7 +95,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					v1.ClusterScanConditionReconciling.True(obj)
 					return objects, obj.Status, fmt.Errorf("Error when getting Benchmark: %v", err)
 				}
-				cmMap, err := ciscore.NewConfigMaps(obj, profile, benchmark, c.Name, c.ImageConfig, configmaps)
+				cmMap, err := ciscore.NewConfigMaps(obj, profile, benchmark, c.Name, c.ImageConfig, c.configmaps)
 				if err != nil {
 					v1.ClusterScanConditionReconciling.True(obj)
 					return objects, obj.Status, fmt.Errorf("Error when creating ConfigMaps: %v", err)
@@ -146,7 +141,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				v1.ClusterScanConditionRunCompleted.Unknown(obj)
 				v1.ClusterScanConditionRunCompleted.Message(obj, "Creating Job to run the CIS scan")
 				c.setClusterScanStatusDisplay(obj)
-				c.CurrentScanName = obj.Name
+				c.currentScanName = obj.Name
 				return objects, obj.Status, nil
 			}
 			return objects, obj.Status, nil
@@ -159,9 +154,8 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 }
 
 func (c *Controller) isScanPresent(scanName string) (bool, error) {
-	scans := c.cisFactory.Cis().V1().ClusterScan()
 	// get the scan being run
-	_, err := scans.Get(scanName, metav1.GetOptions{})
+	_, err := c.scans.Get(scanName, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// scan is gone

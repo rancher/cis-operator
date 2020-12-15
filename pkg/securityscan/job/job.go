@@ -28,13 +28,13 @@ var (
 	ConditionComplete = condition.Cond(batchv1.JobComplete)
 	ConditionFailed   = condition.Cond(batchv1.JobFailed)
 
-	BackoffLimit = readFromEnv("CIS_JOB_BACKOFF_LIMIT", defaultBackoffLimit)
+	backoffLimit = readFromEnv("CIS_JOB_BACKOFF_LIMIT", defaultBackoffLimit)
 
 	TerminationGracePeriodSeconds = func(defaultValue int64) int64 {
 		return defaultValue
 	}(defaultTerminationGracePeriodSeconds)
 
-	TTLSecondsAfterFinished = readFromEnv("CIS_JOB_TTL_SECONDS_AFTER_FINISH", defaultTTLSecondsAfterFinished)
+	ttlSecondsAfterFinished = readFromEnv("CIS_JOB_TTL_SECONDS_AFTER_FINISH", defaultTTLSecondsAfterFinished)
 )
 
 func readFromEnv(key string, defaultValue int32) int32 {
@@ -69,8 +69,8 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 			}},
 		},
 		Spec: batchv1.JobSpec{
-			BackoffLimit:            &BackoffLimit,
-			TTLSecondsAfterFinished: &TTLSecondsAfterFinished,
+			BackoffLimit:            &backoffLimit,
+			TTLSecondsAfterFinished: &ttlSecondsAfterFinished,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels.Set{

@@ -15,8 +15,11 @@ import (
 	"github.com/rancher/wrangler/pkg/apply"
 	"github.com/rancher/wrangler/pkg/crd"
 	appsctl "github.com/rancher/wrangler/pkg/generated/controllers/apps"
+	appsctlv1 "github.com/rancher/wrangler/pkg/generated/controllers/apps/v1"
 	batchctl "github.com/rancher/wrangler/pkg/generated/controllers/batch"
+	batchctlv1 "github.com/rancher/wrangler/pkg/generated/controllers/batch/v1"
 	corectl "github.com/rancher/wrangler/pkg/generated/controllers/core"
+	corectlv1 "github.com/rancher/wrangler/pkg/generated/controllers/core/v1"
 	"github.com/rancher/wrangler/pkg/start"
 
 	"sync"
@@ -25,6 +28,7 @@ import (
 
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	cisoperatorctl "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io"
+	cisoperatorctlv1 "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io/v1"
 	"github.com/rancher/cis-operator/pkg/securityscan/scan"
 )
 
@@ -45,7 +49,7 @@ type Controller struct {
 	monitoringClient v1monitoringclient.MonitoringV1Interface
 
 	mu              *sync.Mutex
-	CurrentScanName string
+	currentScanName string
 
 	numTestsFailed   *prometheus.GaugeVec
 	numScansComplete *prometheus.CounterVec
@@ -54,6 +58,16 @@ type Controller struct {
 	numTestsNA       *prometheus.GaugeVec
 	numTestsPassed   *prometheus.GaugeVec
 	numTestsWarn     *prometheus.GaugeVec
+
+	scans          cisoperatorctlv1.ClusterScanController
+	jobs           batchctlv1.JobController
+	configmaps     corectlv1.ConfigMapController
+	configMapCache corectlv1.ConfigMapCache
+	services       corectlv1.ServiceController
+	pods           corectlv1.PodController
+	podCache       corectlv1.PodCache
+	daemonsets     appsctlv1.DaemonSetController
+	daemonsetCache appsctlv1.DaemonSetCache
 }
 
 func NewController(ctx context.Context, cfg *rest.Config, namespace, name string, imgConfig *cisoperatorapiv1.ScanImageConfig) (ctl *Controller, err error) {
@@ -129,6 +143,17 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 	if err != nil {
 		return nil, fmt.Errorf("Error registering CIS Metrics: %s", err.Error())
 	}
+
+	ctl.scans = ctl.cisFactory.Cis().V1().ClusterScan()
+	ctl.jobs = ctl.batchFactory.Batch().V1().Job()
+	ctl.configmaps = ctl.coreFactory.Core().V1().ConfigMap()
+	ctl.configMapCache = ctl.coreFactory.Core().V1().ConfigMap().Cache()
+	ctl.services = ctl.coreFactory.Core().V1().Service()
+	ctl.pods = ctl.coreFactory.Core().V1().Pod()
+	ctl.podCache = ctl.coreFactory.Core().V1().Pod().Cache()
+	ctl.daemonsets = ctl.appsFactory.Apps().V1().DaemonSet()
+	ctl.daemonsetCache = ctl.appsFactory.Apps().V1().DaemonSet().Cache()
+
 	return ctl, nil
 }
 
