@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	wcorev1 "github.com/rancher/wrangler/pkg/generated/controllers/core/v1"
 	"github.com/rancher/wrangler/pkg/name"
 
 	cisoperatorapi "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io"
@@ -49,7 +50,7 @@ func readFromEnv(key string, defaultValue int32) int32 {
 	return defaultValue
 }
 
-func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig) *batchv1.Job {
+func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, clusterscanbenchmark *cisoperatorapiv1.ClusterScanBenchmark, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig, configmapsClient wcorev1.ConfigMapController) *batchv1.Job {
 	privileged := true
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -224,5 +225,62 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, skipVolMnt)
 	}
 
+	//add custom benchmark config and volume
+	if clusterscanbenchmark.Spec.CustomBenchmarkConfigMapName != "" {
+		//this env variable is read by kb-summarizer tool in security-scan image
+		configDirEnv := corev1.EnvVar{
+			Name:  `CONFIG_DIR`,
+			Value: cisoperatorapiv1.CustomBenchmarkBaseDir,
+		}
+		job.Spec.Template.Spec.Containers[0].Env = append(job.Spec.Template.Spec.Containers[0].Env, configDirEnv)
+
+		//add the volume
+		customcm, err := loadCustomBenchmarkConfigMap(clusterscanbenchmark, clusterscan, configmapsClient)
+		if err != nil {
+			logrus.Errorf("Error loading custom CustomBenchmarkConfigMap %v %v", clusterscanbenchmark.Spec.CustomBenchmarkConfigMapNamespace, clusterscanbenchmark.Spec.CustomBenchmarkConfigMapName)
+			return job
+		}
+		customVol := corev1.Volume{
+			Name: `custom-benchmark-volume`,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: customcm.Name,
+					},
+				},
+			},
+		}
+		for key := range customcm.Data {
+			if key == "config.yaml" {
+				customVol.VolumeSource.ConfigMap.Items = append(customVol.VolumeSource.ConfigMap.Items, corev1.KeyToPath{Key: key, Path: key})
+			} else {
+				customVol.VolumeSource.ConfigMap.Items = append(customVol.VolumeSource.ConfigMap.Items, corev1.KeyToPath{Key: key, Path: clusterscanbenchmark.Name + "/" + key})
+			}
+		}
+		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, customVol)
+		//volume mount
+		customVolMnt := corev1.VolumeMount{
+			Name:      `custom-benchmark-volume`,
+			MountPath: cisoperatorapiv1.CustomBenchmarkBaseDir,
+		}
+		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, customVolMnt)
+	}
+
 	return job
+}
+
+func loadCustomBenchmarkConfigMap(benchmark *cisoperatorapiv1.ClusterScanBenchmark, clusterscan *cisoperatorapiv1.ClusterScan, configmapsClient wcorev1.ConfigMapController) (*corev1.ConfigMap, error) {
+	if benchmark.Spec.CustomBenchmarkConfigMapName == "" {
+		return nil, nil
+	}
+	if benchmark.Spec.CustomBenchmarkConfigMapNamespace == cisoperatorapiv1.ClusterScanNS {
+		return configmapsClient.Get(cisoperatorapiv1.ClusterScanNS, benchmark.Spec.CustomBenchmarkConfigMapName, metav1.GetOptions{})
+	}
+	//get copy of the configmap in ClusterScanNS created while creating plugin configmap
+	cmName := name.SafeConcatName(cisoperatorapiv1.CustomBenchmarkConfigMap, clusterscan.Name)
+	configmapCopy, err := configmapsClient.Get(cisoperatorapiv1.ClusterScanNS, cmName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return configmapCopy, nil
 }
