@@ -1,6 +1,7 @@
 package securityscan
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"strings"
@@ -179,7 +180,7 @@ func (c *Controller) getClusterScanProfile(scan *v1.ClusterScan) (*v1.ClusterSca
 		profileName = scan.Spec.ScanProfileName
 	} else {
 		//pick the default profile by checking the cluster provider
-		profileName, err = c.getDefaultClusterScanProfile(c.ClusterProvider)
+		profileName, err = c.getDefaultClusterScanProfile(c.ClusterProvider, c.KubernetesVersion)
 		if err != nil {
 			return nil, err
 		}
@@ -200,7 +201,7 @@ func (c *Controller) getClusterScanBenchmark(profile *v1.ClusterScanProfile) (*v
 	return clusterscanbmks.Get(profile.Spec.BenchmarkVersion, metav1.GetOptions{})
 }
 
-func (c *Controller) getDefaultClusterScanProfile(clusterprovider string) (string, error) {
+func (c *Controller) getDefaultClusterScanProfile(clusterprovider string, clusterK8sVersion string) (string, error) {
 	var err error
 	configmaps := c.coreFactory.Core().V1().ConfigMap()
 	cm, err := configmaps.Cache().Get(v1.ClusterScanNS, v1.DefaultClusterScanProfileConfigMap)
@@ -211,7 +212,45 @@ func (c *Controller) getDefaultClusterScanProfile(clusterprovider string) (strin
 	if !ok {
 		profileName = cm.Data["default"]
 	}
+	lines := c.splitLines(profileName)
+	if len(lines) > 1 {
+		logrus.Debugf("profilename is determined by k8s version %v", lines)
+		for _, line := range lines {
+			parts := strings.Split(line, ":")
+			if len(parts) > 1 {
+				k8sRange := parts[0]
+				profile := parts[1]
+				// validate cluster's k8s version matches the profile's k8s version range
+				clusterK8sToMatch, err := semver.Make(clusterK8sVersion[1:])
+				if err != nil {
+					return "", fmt.Errorf("cluster's k8sVersion is not semver %s %v", c.KubernetesVersion, err)
+				}
+				if k8sRange != "" {
+					benchmarkK8sRange, err := semver.ParseRange(k8sRange)
+					if err != nil {
+						logrus.Errorf("K8s range set for profile %s is not semver: %v, error: %v", profile, k8sRange, err)
+						continue
+					}
+					if !benchmarkK8sRange(clusterK8sToMatch) {
+						logrus.Debugf("Kubernetes version mismatch, ClusterScanProfile %v is not valid for this cluster's K8s version %v", profile, c.KubernetesVersion)
+						continue
+					}
+					return strings.TrimSpace(profile), nil
+				}
+			}
+		}
+		return cm.Data["default"], nil
+	}
 	return profileName, nil
+}
+
+func (c *Controller) splitLines(s string) []string {
+	var lines []string
+	sc := bufio.NewScanner(strings.NewReader(s))
+	for sc.Scan() {
+		lines = append(lines, sc.Text())
+	}
+	return lines
 }
 
 func (c Controller) validateClusterScanProfile(profile *v1.ClusterScanProfile) error {
