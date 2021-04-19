@@ -142,7 +142,21 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 							HostPath: &corev1.HostPathVolumeSource{
 								Path: `/etc/group`,
 							},
+						},
+					}, {
+						Name: `journalctl`,
+						VolumeSource: corev1.VolumeSource{
+							HostPath: &corev1.HostPathVolumeSource{
+								Path: ` /var/log/journal`,
+							},
 						}},
+						{
+							Name: `syslog`,
+							VolumeSource: corev1.VolumeSource{
+								HostPath: &corev1.HostPathVolumeSource{
+									Path: ` /var/log/syslog`,
+								},
+							}},
 					},
 					Containers: []corev1.Container{{
 						Name:            `rancher-cis-benchmark`,
@@ -196,6 +210,12 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						}, {
 							Name:      `etc-group`,
 							MountPath: `/etc/group`,
+						}, {
+							Name:      `journalctl`,
+							MountPath: `/var/log/journal`,
+						}, {
+							Name:      `syslog`,
+							MountPath: `/var/log/syslog`,
 						}},
 					}},
 				},
