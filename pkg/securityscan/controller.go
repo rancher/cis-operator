@@ -3,7 +3,6 @@ package securityscan
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	v1monitoringclient "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
@@ -192,18 +191,6 @@ func (c *Controller) registerCRD(ctx context.Context) error {
 		crds = append(crds, *crdef)
 	}
 	return factory.BatchCreateCRDs(ctx, crds...).BatchWait()
-}
-
-func (c *Controller) refreshClusterKubernetesVersion(ctx context.Context) error {
-	clusterK8sVersion, err := detectKubernetesVersion(ctx, c.kcs)
-	if err != nil {
-		return err
-	}
-	if !strings.EqualFold(clusterK8sVersion, c.KubernetesVersion) {
-		c.KubernetesVersion = clusterK8sVersion
-		logrus.Infof("New KubernetesVersion detected %v", c.KubernetesVersion)
-	}
-	return nil
 }
 
 func detectClusterProvider(ctx context.Context, k8sClient kubernetes.Interface) (string, error) {
