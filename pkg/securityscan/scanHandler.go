@@ -52,7 +52,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
 				}
 
-				profile, err := c.getClusterScanProfile(obj)
+				profile, err := c.getClusterScanProfile(ctx, obj)
 				if err != nil {
 					v1.ClusterScanConditionFailed.True(obj)
 					message := fmt.Sprintf("Error validating ClusterScanProfile %v, error: %v", obj.Spec.ScanProfileName, err)
@@ -171,10 +171,14 @@ func (c *Controller) isScanPresent(scanName string) (bool, error) {
 	return true, nil
 }
 
-func (c *Controller) getClusterScanProfile(scan *v1.ClusterScan) (*v1.ClusterScanProfile, error) {
+func (c *Controller) getClusterScanProfile(ctx context.Context, scan *v1.ClusterScan) (*v1.ClusterScanProfile, error) {
 	var profileName string
 	var err error
 	clusterscanprofiles := c.cisFactory.Cis().V1().ClusterScanProfile()
+	err = c.refreshClusterKubernetesVersion(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error trying to read cluster's k8s version %v", err)
+	}
 
 	if scan.Spec.ScanProfileName != "" {
 		profileName = scan.Spec.ScanProfileName

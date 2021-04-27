@@ -93,7 +93,7 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 			scancopy := scan.DeepCopy()
 
 			if !v1.ClusterScanConditionFailed.IsTrue(scan) {
-				summary, report, err := c.getScanResults(scan)
+				summary, report, err := c.getScanResults(ctx, scan)
 				if err != nil {
 					return nil, fmt.Errorf("error %v reading results of cluster scan object: %v", err, scanName)
 				}
@@ -121,7 +121,7 @@ func (c *Controller) deleteJob(jobController batchctlv1.JobController, job *batc
 	return jobController.Delete(job.Namespace, job.Name, &metav1.DeleteOptions{PropagationPolicy: &deletionPropagation})
 }
 
-func (c *Controller) getScanResults(scan *v1.ClusterScan) (*v1.ClusterScanSummary, *v1.ClusterScanReport, error) {
+func (c *Controller) getScanResults(ctx context.Context, scan *v1.ClusterScan) (*v1.ClusterScanSummary, *v1.ClusterScanReport, error) {
 	configmaps := c.coreFactory.Core().V1().ConfigMap()
 	//get the output configmap and create a report
 	outputConfigName := strings.Join([]string{`cisscan-output-for`, scan.Name}, "-")
@@ -138,7 +138,7 @@ func (c *Controller) getScanResults(scan *v1.ClusterScan) (*v1.ClusterScanSummar
 		return nil, nil, fmt.Errorf("cisScanHandler: Updated: error: got empty report from configmap %v", outputConfigName)
 	}
 
-	scanReport, err := c.createClusterScanReport(outputBytes, scan)
+	scanReport, err := c.createClusterScanReport(ctx, outputBytes, scan)
 	if err != nil {
 		return nil, nil, fmt.Errorf("cisScanHandler: Updated: error getting report from configmap %v: %v", outputConfigName, err)
 	}
@@ -165,13 +165,13 @@ func (c *Controller) getScanSummary(outputBytes []byte) (*v1.ClusterScanSummary,
 	return cisScanSummary, nil
 }
 
-func (c *Controller) createClusterScanReport(outputBytes []byte, scan *v1.ClusterScan) (*v1.ClusterScanReport, error) {
+func (c *Controller) createClusterScanReport(ctx context.Context, outputBytes []byte, scan *v1.ClusterScan) (*v1.ClusterScanReport, error) {
 	scanReport := &v1.ClusterScanReport{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: name.SafeConcatName("scan-report", scan.Name) + "-",
 		},
 	}
-	profile, err := c.getClusterScanProfile(scan)
+	profile, err := c.getClusterScanProfile(ctx, scan)
 	if err != nil {
 		return nil, fmt.Errorf("Error %v loading v1.ClusterScanProfile for name %v", scan.Spec.ScanProfileName, err)
 	}
