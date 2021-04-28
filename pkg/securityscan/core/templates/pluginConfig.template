@@ -41,6 +41,9 @@ data:
       - hostPath:
           path: /var/log
         name: var-log
+      - hostPath:
+          path: /run/log
+        name: run-log
       {{- if .isCustomBenchmark }}
       - configMap:
           defaultMode: 420
@@ -107,6 +110,9 @@ data:
         readOnly: true
       - mountPath: /var/log/
         name: var-log
+        readOnly: true
+      - mountPath: /run/log/
+        name: run-log
         readOnly: true
       {{- if .isCustomBenchmark }}
       - mountPath: /etc/kbs/custombenchmark/cfg

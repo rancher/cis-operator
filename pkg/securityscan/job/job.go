@@ -150,6 +150,13 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 								Path: `/var/log`,
 							},
 						},
+					}, {
+						Name: `run-log`,
+						VolumeSource: corev1.VolumeSource{
+							HostPath: &corev1.HostPathVolumeSource{
+								Path: `/run/log`,
+							},
+						},
 					},
 					},
 					Containers: []corev1.Container{{
@@ -207,6 +214,9 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						}, {
 							Name:      `var-log`,
 							MountPath: `/var/log/`,
+						}, {
+							Name:      `run-log`,
+							MountPath: `/run/log/`,
 						}},
 					}},
 				},
