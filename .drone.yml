@@ -141,7 +141,6 @@ steps:
     platforms:
       - linux/amd64
       - linux/arm64
-      - linux/arm
     target: "rancher/cis-operator:${DRONE_TAG}"
     template: "rancher/cis-operator:${DRONE_TAG}-ARCH"
   when:
