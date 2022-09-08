@@ -36,8 +36,8 @@ var (
 	debug                bool
 	securityScanImage    = "rancher/security-scan"
 	securityScanImageTag = "v0.2.1"
-	sonobuoyImage        = "rancher/sonobuoy-sonobuoy"
-	sonobuoyImageTag     = "v0.16.3"
+	sonobuoyImage        = "rancher/mirrored-sonobuoy-sonobuoy"
+	sonobuoyImageTag     = "v0.56.7"
 	clusterName          string
 )
 
