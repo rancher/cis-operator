@@ -42,6 +42,9 @@ data:
           path: /var/lib/rancher
         name: rke2-root
       - hostPath:
+          path: /etc/rancher
+        name: rke2-root-config
+      - hostPath:
           path: /etc/cni/net.d
         name: rke2-cni
       - hostPath:
@@ -110,6 +113,9 @@ data:
         readOnly: true
       - mountPath: /var/lib/rancher
         name: rke2-root
+        readOnly: true
+      - mountPath: /etc/rancher
+        name: rke2-root-config
         readOnly: true
       - mountPath: /etc/cni/net.d
         name: rke2-cni

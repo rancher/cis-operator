@@ -123,6 +123,13 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 							},
 						},
 					}, {
+						Name: `rke2-root-config`,
+						VolumeSource: corev1.VolumeSource{
+							HostPath: &corev1.HostPathVolumeSource{
+								Path: `/etc/rancher`,
+							},
+						},
+					}, {
 						Name: `rke2-cni`,
 						VolumeSource: corev1.VolumeSource{
 							HostPath: &corev1.HostPathVolumeSource{
@@ -202,6 +209,9 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 						}, {
 							Name:      `rke2-root`,
 							MountPath: `/var/lib/rancher`,
+						}, {
+							Name:      `rke2-root-config`,
+							MountPath: `/etc/rancher`,
 						}, {
 							Name:      `rke2-cni`,
 							MountPath: `/etc/cni/net.d`,
