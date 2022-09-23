@@ -91,6 +91,9 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 					Tolerations: append([]corev1.Toleration{{
 						Operator: corev1.TolerationOpExists,
 					}}),
+					NodeSelector: labels.Set{
+						"kubernetes.io/os": "linux",
+					},
 					RestartPolicy: corev1.RestartPolicyNever,
 					Volumes: []corev1.Volume{{
 						Name: `s-config-volume`,
