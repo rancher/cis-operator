@@ -172,7 +172,7 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 					Containers: []corev1.Container{{
 						Name:            `rancher-cis-benchmark`,
 						Image:           imageConfig.SecurityScanImage + ":" + imageConfig.SecurityScanImageTag,
-						ImagePullPolicy: corev1.PullAlways,
+						ImagePullPolicy: corev1.PullIfNotPresent,
 						SecurityContext: &corev1.SecurityContext{
 							Privileged: &privileged,
 						},
