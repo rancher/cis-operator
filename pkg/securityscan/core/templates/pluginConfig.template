@@ -95,7 +95,7 @@ data:
       - name: CONFIG_DIR
         value: {{ .configDir }}
       {{- end }}
-      imagePullPolicy: Always
+      imagePullPolicy: IfNotPresent
       securityContext:
         privileged: true
       volumeMounts:
