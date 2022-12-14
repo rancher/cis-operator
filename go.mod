@@ -2,7 +2,7 @@ module github.com/rancher/cis-operator
 
 go 1.15
 
-replace k8s.io/client-go => k8s.io/client-go v0.19.2
+replace k8s.io/client-go => k8s.io/client-go v0.20.0
 
 require (
 	github.com/blang/semver v3.5.0+incompatible
@@ -18,9 +18,9 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/urfave/cli v1.22.2
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
-	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
-	k8s.io/api v0.19.2
+	golang.org/x/text v0.5.0 // indirect
+	k8s.io/api v0.20.0
 	k8s.io/apiextensions-apiserver v0.19.2
-	k8s.io/apimachinery v0.19.2
+	k8s.io/apimachinery v0.20.0
 	k8s.io/client-go v12.0.0+incompatible
 )
