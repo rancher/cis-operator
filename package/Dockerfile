@@ -1,5 +1,8 @@
-FROM registry.suse.com/bci/bci-base:15.4.27.8.6
-COPY pkg/ pkg/
+FROM registry.suse.com/bci/bci-minimal:15.4
 
+COPY pkg/ pkg/
 COPY bin/cis-operator /usr/bin/
+
+USER 65535:65535
+
 CMD ["cis-operator"]
