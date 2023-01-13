@@ -168,7 +168,7 @@ func (c *Controller) getScanSummary(outputBytes []byte) (*v1.ClusterScanSummary,
 func (c *Controller) createClusterScanReport(ctx context.Context, outputBytes []byte, scan *v1.ClusterScan) (*v1.ClusterScanReport, error) {
 	scanReport := &v1.ClusterScanReport{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: name.SafeConcatName("scan-report", scan.Name) + "-",
+			GenerateName: name.SafeConcatName("scan-report", scan.Name, scan.Spec.ScanProfileName) + "-",
 		},
 	}
 	profile, err := c.getClusterScanProfile(ctx, scan)
