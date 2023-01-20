@@ -50,7 +50,8 @@ func readFromEnv(key string, defaultValue int32) int32 {
 	return defaultValue
 }
 
-func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, clusterscanbenchmark *cisoperatorapiv1.ClusterScanBenchmark, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig, configmapsClient wcorev1.ConfigMapController) *batchv1.Job {
+func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, clusterscanbenchmark *cisoperatorapiv1.ClusterScanBenchmark,
+	controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig, configmapsClient wcorev1.ConfigMapController, tolerations []corev1.Toleration) *batchv1.Job {
 	privileged := true
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -88,9 +89,7 @@ func New(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisopera
 					HostIPC:                       true,
 					ServiceAccountName:            cisoperatorapiv1.ClusterScanSA,
 					TerminationGracePeriodSeconds: &TerminationGracePeriodSeconds,
-					Tolerations: append([]corev1.Toleration{{
-						Operator: corev1.TolerationOpExists,
-					}}),
+					Tolerations:                   tolerations,
 					NodeSelector: labels.Set{
 						"kubernetes.io/os": "linux",
 					},

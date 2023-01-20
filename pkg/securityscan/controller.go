@@ -31,6 +31,7 @@ import (
 	cisoperatorctl "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io"
 	cisoperatorctlv1 "github.com/rancher/cis-operator/pkg/generated/controllers/cis.cattle.io/v1"
 	"github.com/rancher/cis-operator/pkg/securityscan/scan"
+	corev1 "k8s.io/api/core/v1"
 )
 
 type Controller struct {
@@ -60,18 +61,20 @@ type Controller struct {
 	numTestsPassed   *prometheus.GaugeVec
 	numTestsWarn     *prometheus.GaugeVec
 
-	scans          cisoperatorctlv1.ClusterScanController
-	jobs           batchctlv1.JobController
-	configmaps     corectlv1.ConfigMapController
-	configMapCache corectlv1.ConfigMapCache
-	services       corectlv1.ServiceController
-	pods           corectlv1.PodController
-	podCache       corectlv1.PodCache
-	daemonsets     appsctlv1.DaemonSetController
-	daemonsetCache appsctlv1.DaemonSetCache
+	scans                      cisoperatorctlv1.ClusterScanController
+	jobs                       batchctlv1.JobController
+	configmaps                 corectlv1.ConfigMapController
+	configMapCache             corectlv1.ConfigMapCache
+	services                   corectlv1.ServiceController
+	pods                       corectlv1.PodController
+	podCache                   corectlv1.PodCache
+	daemonsets                 appsctlv1.DaemonSetController
+	daemonsetCache             appsctlv1.DaemonSetCache
+	securityScanJobTolerations []corev1.Toleration
 }
 
-func NewController(ctx context.Context, cfg *rest.Config, namespace, name string, imgConfig *cisoperatorapiv1.ScanImageConfig) (ctl *Controller, err error) {
+func NewController(ctx context.Context, cfg *rest.Config, namespace, name string,
+	imgConfig *cisoperatorapiv1.ScanImageConfig, securityScanJobTolerations []corev1.Toleration) (ctl *Controller, err error) {
 	if cfg == nil {
 		cfg, err = rest.InClusterConfig()
 		if err != nil {
@@ -154,7 +157,7 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 	ctl.podCache = ctl.coreFactory.Core().V1().Pod().Cache()
 	ctl.daemonsets = ctl.appsFactory.Apps().V1().DaemonSet()
 	ctl.daemonsetCache = ctl.appsFactory.Apps().V1().DaemonSet().Cache()
-
+	ctl.securityScanJobTolerations = securityScanJobTolerations
 	return ctl, nil
 }
 
