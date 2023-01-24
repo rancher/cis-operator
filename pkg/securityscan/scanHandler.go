@@ -383,13 +383,13 @@ func (c Controller) setClusterScanStatusDisplay(scan *v1.ClusterScan) {
 	}
 	if running {
 		display.State = "running"
-		display.Message = "Scan is now running"
+		display.Message = ""
 		display.Transitioning = true
 		display.Error = false
 	}
 	if runCompleted {
 		display.State = "reporting"
-		display.Message = "ClusterScan scan finished, reporting the results"
+		display.Message = ""
 		display.Transitioning = true
 		display.Error = false
 	}
