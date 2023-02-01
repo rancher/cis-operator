@@ -116,7 +116,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
 				}
 
-				objects = append(objects, cisjob.New(obj, profile, benchmark, c.Name, c.ImageConfig, c.configmaps), cmMap["configcm"], cmMap["plugincm"], cmMap["skipConfigcm"], service)
+				objects = append(objects, cisjob.New(obj, profile, benchmark, c.Name, c.ImageConfig, c.configmaps, c.securityScanJobTolerations), cmMap["configcm"], cmMap["plugincm"], cmMap["skipConfigcm"], service)
 
 				if c.ImageConfig.AlertEnabled &&
 					obj.Spec.ScheduledScanConfig != nil &&
