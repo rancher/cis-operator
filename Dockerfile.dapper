@@ -2,7 +2,7 @@ FROM registry.suse.com/bci/golang:1.19
 
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
-ENV GOLANGCI_LINT v1.50.1
+ENV GOLANGCI_LINT v1.51.2
 
 RUN zypper -n install git docker vim less file curl wget
 RUN if [[ "${ARCH}" == "amd64" ]]; then \

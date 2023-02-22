@@ -11,6 +11,8 @@ import (
 	_ "github.com/rancher/wrangler/pkg/generated/controllers/apiextensions.k8s.io" //using init
 	"github.com/rancher/wrangler/pkg/yaml"
 	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -20,15 +22,21 @@ func WriteCRD() error {
 		if err != nil {
 			return err
 		}
-		if bCrd.Name == "clusterscans.cis.cattle.io" {
-			customizeClusterScan(&bCrd)
+		newObj, _ := bCrd.(*unstructured.Unstructured)
+		var crd apiext.CustomResourceDefinition
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(newObj.Object, &crd); err != nil {
+			return err
 		}
-		yamlBytes, err := yaml.Export(&bCrd)
+
+		if crd.Name == "clusterscans.cis.cattle.io" {
+			customizeClusterScan(&crd)
+		}
+		yamlBytes, err := yaml.Export(&crd)
 		if err != nil {
 			return err
 		}
 
-		filename := fmt.Sprintf("./crds/%s.yaml", strings.ToLower(bCrd.Spec.Names.Kind))
+		filename := fmt.Sprintf("./crds/%s.yaml", strings.ToLower(crd.Spec.Names.Kind))
 		err = ioutil.WriteFile(filename, yamlBytes, 0644)
 		if err != nil {
 			return err
