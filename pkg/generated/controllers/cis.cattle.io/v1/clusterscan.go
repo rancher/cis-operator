@@ -325,9 +325,12 @@ func (a *clusterScanStatusHandler) sync(key string, obj *v1.ClusterScan) (*v1.Cl
 
 		var newErr error
 		obj.Status = newStatus
-		obj, newErr = a.client.UpdateStatus(obj)
+		newObj, newErr := a.client.UpdateStatus(obj)
 		if err == nil {
 			err = newErr
+		}
+		if newErr == nil {
+			obj = newObj
 		}
 	}
 	return obj, err
@@ -357,6 +360,10 @@ func (a *clusterScanGeneratingHandler) Remove(key string, obj *v1.ClusterScan) (
 }
 
 func (a *clusterScanGeneratingHandler) Handle(obj *v1.ClusterScan, status v1.ClusterScanStatus) (v1.ClusterScanStatus, error) {
+	if !obj.DeletionTimestamp.IsZero() {
+		return status, nil
+	}
+
 	objs, newStatus, err := a.ClusterScanGeneratingHandler(obj, status)
 	if err != nil {
 		return newStatus, err
