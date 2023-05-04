@@ -96,7 +96,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					v1.ClusterScanConditionReconciling.True(obj)
 					return objects, obj.Status, fmt.Errorf("Error when getting Benchmark: %v", err)
 				}
-				cmMap, err := ciscore.NewConfigMaps(obj, profile, benchmark, c.Name, c.ImageConfig, c.configmaps)
+				cmMap, err := ciscore.NewConfigMaps(obj, profile, benchmark, c.Name, c.ImageConfig, c.configmaps, c.securityScanDSTolerations)
 				if err != nil {
 					v1.ClusterScanConditionFailed.True(obj)
 					message := fmt.Sprintf("Error when creating ConfigMaps: %v", err)
