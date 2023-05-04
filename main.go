@@ -42,6 +42,7 @@ var (
 	sonobuoyImageTag              = "v0.56.7"
 	clusterName                   string
 	securityScanJobTolerationsVal string
+	securityScanDSTolerationsVal  string
 )
 
 func main() {
@@ -120,6 +121,12 @@ func main() {
 			Value:       "",
 			Destination: &securityScanJobTolerationsVal,
 		},
+		cli.StringFlag{
+			Name:        "security-scan-ds-tolerations",
+			EnvVar:      "SECURITY_SCAN_DS_TOLERATIONS",
+			Value:       "",
+			Destination: &securityScanDSTolerationsVal,
+		},
 		cli.BoolFlag{
 			Name:   "alertEnabled",
 			EnvVar: "CIS_ALERTS_ENABLED",
@@ -159,6 +166,17 @@ func run(c *cli.Context) {
 		}
 	}
 
+	var securityScanDSTolerations []corev1.Toleration
+
+	securityScanDSTolerationsVal = c.String("security-scan-ds-tolerations")
+
+	if securityScanDSTolerationsVal != "" {
+		err := json.Unmarshal([]byte(securityScanDSTolerationsVal), &securityScanDSTolerations)
+		if err != nil {
+			logrus.Fatalf("invalid value received for security-scan-ds-tolerations flag:%s", err.Error())
+		}
+	}
+
 	kubeConfig, err := kubeconfig.GetNonInteractiveClientConfig(kubeConfig).ClientConfig()
 	if err != nil {
 		logrus.Fatalf("failed to find kubeconfig: %v", err)
@@ -178,7 +196,7 @@ func run(c *cli.Context) {
 		logrus.Fatalf("Error starting CIS-Operator: %v", err)
 	}
 
-	ctl, err := cisoperator.NewController(ctx, kubeConfig, cisoperatorapiv1.ClusterScanNS, name, imgConfig, securityScanJobTolerations)
+	ctl, err := cisoperator.NewController(ctx, kubeConfig, cisoperatorapiv1.ClusterScanNS, name, imgConfig, securityScanJobTolerations, securityScanDSTolerations)
 	if err != nil {
 		logrus.Fatalf("Error building controller: %s", err.Error())
 	}
