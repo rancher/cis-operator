@@ -2,7 +2,7 @@ FROM registry.suse.com/bci/golang:1.19
 
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
-ENV GOLANGCI_LINT v1.50.1
+ENV GOLANGCI_LINT v1.51.2
 
 RUN zypper -n install git docker vim less file curl wget
 RUN if [[ "${ARCH}" == "amd64" ]]; then \
@@ -16,6 +16,11 @@ ENV DAPPER_DOCKER_SOCKET true
 ENV HOME ${DAPPER_SOURCE}
 ENV GOPATH /go
 WORKDIR ${DAPPER_SOURCE}
+
+# Cache go modules
+COPY go.mod go.mod
+COPY go.sum go.sum
+RUN go mod download
 
 ENTRYPOINT ["./scripts/entry"]
 CMD ["ci"]

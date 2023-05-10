@@ -19,6 +19,7 @@ limitations under the License.
 package cis
 
 import (
+	"github.com/rancher/lasso/pkg/controller"
 	"github.com/rancher/wrangler/pkg/generic"
 	"k8s.io/client-go/rest"
 )
@@ -54,6 +55,18 @@ func NewFactoryFromConfigWithOptions(config *rest.Config, opts *FactoryOptions) 
 	}, err
 }
 
+func NewFactoryFromConfigWithOptionsOrDie(config *rest.Config, opts *FactoryOptions) *Factory {
+	f, err := NewFactoryFromConfigWithOptions(config, opts)
+	if err != nil {
+		panic(err)
+	}
+	return f
+}
+
 func (c *Factory) Cis() Interface {
 	return New(c.ControllerFactory())
+}
+
+func (c *Factory) WithAgent(userAgent string) Interface {
+	return New(controller.NewSharedControllerFactoryWithAgent(userAgent, c.ControllerFactory()))
 }

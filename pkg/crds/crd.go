@@ -10,7 +10,9 @@ import (
 	"github.com/rancher/wrangler/pkg/crd"
 	_ "github.com/rancher/wrangler/pkg/generated/controllers/apiextensions.k8s.io" //using init
 	"github.com/rancher/wrangler/pkg/yaml"
-	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -20,15 +22,21 @@ func WriteCRD() error {
 		if err != nil {
 			return err
 		}
-		if bCrd.Name == "clusterscans.cis.cattle.io" {
-			customizeClusterScan(&bCrd)
+		newObj, _ := bCrd.(*unstructured.Unstructured)
+		var crd apiextv1.CustomResourceDefinition
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(newObj.Object, &crd); err != nil {
+			return err
 		}
-		yamlBytes, err := yaml.Export(&bCrd)
+
+		if crd.Name == "clusterscans.cis.cattle.io" {
+			customizeClusterScan(&crd)
+		}
+		yamlBytes, err := yaml.Export(&crd)
 		if err != nil {
 			return err
 		}
 
-		filename := fmt.Sprintf("./crds/%s.yaml", strings.ToLower(bCrd.Spec.Names.Kind))
+		filename := fmt.Sprintf("./crds/%s.yaml", strings.ToLower(crd.Spec.Names.Kind))
 		err = ioutil.WriteFile(filename, yamlBytes, 0644)
 		if err != nil {
 			return err
@@ -87,13 +95,18 @@ func newCRD(obj interface{}, customize func(crd.CRD) crd.CRD) crd.CRD {
 	return crd
 }
 
-func customizeClusterScan(clusterScan *apiext.CustomResourceDefinition) {
-	properties := clusterScan.Spec.Validation.OpenAPIV3Schema.Properties
+func customizeClusterScan(clusterScan *apiextv1.CustomResourceDefinition) {
+	properties := clusterScan.Spec.Versions[0].Schema.OpenAPIV3Schema.Properties
+
+	if len(properties) == 0 {
+		return
+	}
+
 	spec := properties["spec"]
 	scoreWarning := spec.Properties["scoreWarning"]
 	passRaw, _ := json.Marshal(cisoperator.ClusterScanPassOnWarning)
 	failRaw, _ := json.Marshal(cisoperator.ClusterScanFailOnWarning)
-	scoreWarning.Enum = []apiext.JSON{{Raw: passRaw}, {Raw: failRaw}}
+	scoreWarning.Enum = []apiextv1.JSON{{Raw: passRaw}, {Raw: failRaw}}
 	spec.Properties["scoreWarning"] = scoreWarning
 	properties["spec"] = spec
 }

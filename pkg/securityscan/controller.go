@@ -8,7 +8,6 @@ import (
 
 	v1monitoringclient "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/sirupsen/logrus"
-	kubeapiext "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
@@ -42,7 +41,7 @@ type Controller struct {
 	ImageConfig       *cisoperatorapiv1.ScanImageConfig
 
 	kcs              *kubernetes.Clientset
-	xcs              *kubeapiext.Clientset
+	cfg              *rest.Config
 	coreFactory      *corectl.Factory
 	batchFactory     *batchctl.Factory
 	appsFactory      *appsctl.Factory
@@ -93,10 +92,7 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 		return nil, err
 	}
 
-	ctl.xcs, err = kubeapiext.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
+	ctl.cfg = cfg
 
 	clientset, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
@@ -182,7 +178,10 @@ func (c *Controller) Start(ctx context.Context, threads int, resync time.Duratio
 }
 
 func (c *Controller) registerCRD(ctx context.Context) error {
-	factory := crd.NewFactoryFromClientGetter(c.xcs)
+	factory, err := crd.NewFactoryFromClient(c.cfg)
+	if err != nil {
+		return err
+	}
 
 	var crds []crd.CRD
 	for _, crdFn := range []func() (*crd.CRD, error){

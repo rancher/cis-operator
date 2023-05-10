@@ -37,9 +37,9 @@ var (
 	alertSeverity                 string
 	debug                         bool
 	securityScanImage             = "rancher/security-scan"
-	securityScanImageTag          = "v0.2.1"
+	securityScanImageTag          = "v0.2.9"
 	sonobuoyImage                 = "rancher/mirrored-sonobuoy-sonobuoy"
-	sonobuoyImageTag              = "v0.56.7"
+	sonobuoyImageTag              = "v0.56.14"
 	clusterName                   string
 	securityScanJobTolerationsVal string
 )
@@ -134,7 +134,14 @@ func main() {
 
 func run(c *cli.Context) {
 	logrus.Info("Starting CIS-Operator")
-	ctx := signals.SetupSignalHandler(context.Background())
+
+	ctx := context.Background()
+	handler := signals.SetupSignalHandler()
+	go func() {
+		<-handler
+		ctx.Done()
+	}()
+
 	if debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
@@ -189,7 +196,8 @@ func run(c *cli.Context) {
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(":"+metricsPort, nil))
 
-	<-ctx.Done()
+	<-handler
+	ctx.Done()
 	logrus.Info("Registered CIS controller")
 }
 
