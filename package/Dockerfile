@@ -1,4 +1,4 @@
-FROM registry.suse.com/bci/bci-minimal:15.5
+FROM registry.suse.com/bci/bci-busybox:15.5
 
 COPY pkg/ pkg/
 COPY bin/cis-operator /usr/bin/
