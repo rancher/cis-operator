@@ -40,11 +40,11 @@ func generatePrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, templateN
 	scanAlertRule := &monitoringv1.PrometheusRule{}
 	obj, err := parseTemplate(clusterscan, templateName, templateFile, data)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing the template %v", err)
+		return nil, fmt.Errorf("Error parsing the template %w", err)
 	}
 
 	if err := obj.Decode(&scanAlertRule); err != nil {
-		return nil, fmt.Errorf("Error decoding to template %v", err)
+		return nil, fmt.Errorf("Error decoding to template %w", err)
 	}
 
 	ownerRef := meta1.OwnerReference{
