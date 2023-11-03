@@ -36,10 +36,10 @@ var (
 	metricsPort                   string
 	alertSeverity                 string
 	debug                         bool
-	securityScanImage             = "rancher/security-scan"
-	securityScanImageTag          = "v0.2.9"
-	sonobuoyImage                 = "rancher/mirrored-sonobuoy-sonobuoy"
-	sonobuoyImageTag              = "v0.56.14"
+	securityScanImage             string
+	securityScanImageTag          string
+	sonobuoyImage                 string
+	sonobuoyImageTag              string
 	clusterName                   string
 	securityScanJobTolerationsVal string
 )
@@ -88,7 +88,7 @@ func main() {
 		cli.StringFlag{
 			Name:        "sonobuoy-image-tag",
 			EnvVar:      "SONOBUOY_IMAGE_TAG",
-			Value:       "v0.16.3",
+			Value:       "latest",
 			Destination: &sonobuoyImageTag,
 		},
 		cli.StringFlag{
