@@ -1,0 +1,14 @@
+# This image is solely used for testing purposes
+# and aims to wrap around k3s, making any needed
+# changes for the cis-operator tests to work.
+FROM rancher/k3s:v1.25.6-k3s1
+
+# Upstream does not have files /etc/passwd nor /etc/group
+# which causes cis-operator to fail when scheduling a
+# running that maps those files from the "host".
+RUN echo "root:!:0:0::/:/bin/false" > /etc/passwd && \
+    touch /etc/group
+
+# A fake apiserver to trigger the if condition within
+# security-scan that runs kube-bench for the api-server.
+COPY kube-apiserver /usr/local/bin/kube-apiserver
