@@ -1,11 +1,16 @@
 package core
 
 import (
+	_ "embed" // nolint
+
 	"github.com/rancher/wrangler/pkg/name"
 	corev1 "k8s.io/api/core/v1"
 
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 )
+
+//go:embed templates/service.template
+var serviceTemplate string
 
 func NewService(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string) (service *corev1.Service, err error) {
 
@@ -15,17 +20,17 @@ func NewService(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *c
 		"runName":   name.SafeConcatName("security-scan-runner", clusterscan.Name),
 		"appName":   "rancher-cis-benchmark",
 	}
-	service, err = generateService(clusterscan, "service.template", "./pkg/securityscan/core/templates/service.template", servicedata)
+	service, err = generateService(clusterscan, "service.template", serviceTemplate, servicedata)
 	if err != nil {
 		return nil, err
 	}
 	return service, nil
 }
 
-func generateService(clusterscan *cisoperatorapiv1.ClusterScan, templateName string, templateFile string, data map[string]interface{}) (*corev1.Service, error) {
+func generateService(clusterscan *cisoperatorapiv1.ClusterScan, templateName string, templContent string, data map[string]interface{}) (*corev1.Service, error) {
 	service := &corev1.Service{}
 
-	obj, err := parseTemplate(clusterscan, templateName, templateFile, data)
+	obj, err := parseTemplate(clusterscan, templateName, templContent, data)
 	if err != nil {
 		return nil, err
 	}
