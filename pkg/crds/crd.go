@@ -3,7 +3,7 @@ package crds
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	cisoperator "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
@@ -37,7 +37,7 @@ func WriteCRD() error {
 		}
 
 		filename := fmt.Sprintf("./crds/%s.yaml", strings.ToLower(crd.Spec.Names.Kind))
-		err = ioutil.WriteFile(filename, yamlBytes, 0644)
+		err = os.WriteFile(filename, yamlBytes, 0o644)
 		if err != nil {
 			return err
 		}
