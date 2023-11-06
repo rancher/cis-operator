@@ -24,6 +24,16 @@ import (
 
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	cisoperator "github.com/rancher/cis-operator/pkg/securityscan"
+
+	// Automatically sets fallback trusted x509 roots, in case they are
+	// not available at runtime. This is required to establish trust
+	// when deployed into a scratch container.
+	_ "golang.org/x/crypto/x509roots/fallback"
+
+	// Embed a copy of the timezone database, so that it does not depend
+	// on it being available at runtime.
+	_ "time/tzdata"
+
 	corev1 "k8s.io/api/core/v1"
 )
 

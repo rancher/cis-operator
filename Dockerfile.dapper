@@ -1,4 +1,4 @@
-FROM registry.suse.com/bci/golang:1.19
+FROM registry.suse.com/bci/golang:1.21
 
 # k3d and kubectl versions must be aligned with the Kubernetes versions
 # set in tests/k3s-bench-test.yaml.
