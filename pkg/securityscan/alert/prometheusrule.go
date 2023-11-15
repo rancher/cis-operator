@@ -2,6 +2,7 @@ package alert
 
 import (
 	"bytes"
+	_ "embed" // nolint
 	"fmt"
 	"text/template"
 
@@ -14,8 +15,10 @@ import (
 	"github.com/rancher/wrangler/pkg/name"
 )
 
+//go:embed templates/prometheusrule.template
+var prometheusRuleTemplate string
+
 const templateName = "prometheusrule.template"
-const templatePath = "./pkg/securityscan/alert/templates/prometheusrule.template"
 
 func NewPrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, imageConfig *cisoperatorapiv1.ScanImageConfig) (*monitoringv1.PrometheusRule, error) {
 	configdata := map[string]interface{}{
@@ -28,7 +31,7 @@ func NewPrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanpro
 		"alertOnComplete": clusterscan.Spec.ScheduledScanConfig.ScanAlertRule.AlertOnComplete,
 		"failOnWarn":      clusterscan.Spec.ScoreWarning == cisoperatorapiv1.ClusterScanFailOnWarning,
 	}
-	scanAlertRule, err := generatePrometheusRule(clusterscan, templateName, templatePath, configdata)
+	scanAlertRule, err := generatePrometheusRule(clusterscan, configdata)
 	if err != nil {
 		return scanAlertRule, err
 	}
@@ -36,15 +39,15 @@ func NewPrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanpro
 	return scanAlertRule, nil
 }
 
-func generatePrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, templateName string, templateFile string, data map[string]interface{}) (*monitoringv1.PrometheusRule, error) {
+func generatePrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, data map[string]interface{}) (*monitoringv1.PrometheusRule, error) {
 	scanAlertRule := &monitoringv1.PrometheusRule{}
-	obj, err := parseTemplate(clusterscan, templateName, templateFile, data)
+	obj, err := parseTemplate(clusterscan, data)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing the template %v", err)
+		return nil, fmt.Errorf("Error parsing the template %w", err)
 	}
 
 	if err := obj.Decode(&scanAlertRule); err != nil {
-		return nil, fmt.Errorf("Error decoding to template %v", err)
+		return nil, fmt.Errorf("Error decoding to template %w", err)
 	}
 
 	ownerRef := meta1.OwnerReference{
@@ -58,8 +61,8 @@ func generatePrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, templateN
 	return scanAlertRule, nil
 }
 
-func parseTemplate(clusterscan *cisoperatorapiv1.ClusterScan, templateName string, templateFile string, data map[string]interface{}) (*k8Yaml.YAMLOrJSONDecoder, error) {
-	cmTemplate, err := template.New(templateName).ParseFiles(templateFile)
+func parseTemplate(clusterscan *cisoperatorapiv1.ClusterScan, data map[string]interface{}) (*k8Yaml.YAMLOrJSONDecoder, error) {
+	cmTemplate, err := template.New(templateName).Parse(prometheusRuleTemplate)
 	if err != nil {
 		return nil, err
 	}

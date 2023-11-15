@@ -116,32 +116,32 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 	}
 	ctl.cisFactory, err = cisoperatorctl.NewFactoryFromConfig(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("Error building securityscan NewFactoryFromConfig: %s", err.Error())
+		return nil, fmt.Errorf("Error building securityscan NewFactoryFromConfig: %w", err)
 	}
 
 	ctl.batchFactory, err = batchctl.NewFactoryFromConfig(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("Error building batch NewFactoryFromConfig: %s", err.Error())
+		return nil, fmt.Errorf("Error building batch NewFactoryFromConfig: %w", err)
 	}
 
 	ctl.coreFactory, err = corectl.NewFactoryFromConfig(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("Error building core NewFactoryFromConfig: %s", err.Error())
+		return nil, fmt.Errorf("Error building core NewFactoryFromConfig: %w", err)
 	}
 
 	ctl.appsFactory, err = appsctl.NewFactoryFromConfig(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("Error building apps NewFactoryFromConfig: %s", err.Error())
+		return nil, fmt.Errorf("Error building apps NewFactoryFromConfig: %w", err)
 	}
 
 	ctl.monitoringClient, err = v1monitoringclient.NewForConfig(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("Error building v1 monitoring client from config: %s", err.Error())
+		return nil, fmt.Errorf("Error building v1 monitoring client from config: %w", err)
 	}
 
 	err = initializeMetrics(ctl)
 	if err != nil {
-		return nil, fmt.Errorf("Error registering CIS Metrics: %s", err.Error())
+		return nil, fmt.Errorf("Error registering CIS Metrics: %w", err)
 	}
 
 	ctl.scans = ctl.cisFactory.Cis().V1().ClusterScan()

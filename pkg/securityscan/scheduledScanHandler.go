@@ -36,7 +36,7 @@ func (c *Controller) handleScheduledClusterScans(ctx context.Context) error {
 
 			nextScanTime, err := time.Parse(time.RFC3339, obj.Status.NextScanAt)
 			if err != nil {
-				return obj, fmt.Errorf("scheduledScanHandler: retrying, got error %v in parsing NextScanAt %v time for scheduledScan: %v ", err, obj.Status.NextScanAt, obj.Name)
+				return obj, fmt.Errorf("scheduledScanHandler: retrying, got error %w in parsing NextScanAt %v time for scheduledScan: %s", err, obj.Status.NextScanAt, obj.Name)
 			}
 			if nextScanTime.After(time.Now()) {
 				logrus.Debugf("scheduledScanHandler: run time is later, skipping this run scheduledScan CR %v ", obj.Name)
@@ -66,7 +66,7 @@ func (c *Controller) handleScheduledClusterScans(ctx context.Context) error {
 			})
 
 			if updateErr != nil {
-				return obj, fmt.Errorf("Retrying, got error %v in updating status for scheduledScan: %v ", updateErr, obj.Name)
+				return obj, fmt.Errorf("Retrying, got error %w in updating status for scheduledScan: %s", updateErr, obj.Name)
 			}
 		}
 
@@ -80,7 +80,7 @@ func (c *Controller) validateScheduledScanSpec(scan *v1.ClusterScan) error {
 	if scan.Spec.ScheduledScanConfig != nil && scan.Spec.ScheduledScanConfig.CronSchedule != "" {
 		_, err := cron.ParseStandard(scan.Spec.ScheduledScanConfig.CronSchedule)
 		if err != nil {
-			return fmt.Errorf("error parsing invalid cron string for schedule: %v", err)
+			return fmt.Errorf("error parsing invalid cron string for schedule: %w", err)
 		}
 	}
 	return nil
@@ -93,7 +93,7 @@ func (c *Controller) getCronSchedule(scan *v1.ClusterScan) (cron.Schedule, error
 	}
 	cronSchedule, err := cron.ParseStandard(schedule)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing invalid cron string for schedule: %v", err)
+		return nil, fmt.Errorf("Error parsing invalid cron string for schedule: %w", err)
 	}
 	return cronSchedule, nil
 }
@@ -110,7 +110,7 @@ func (c *Controller) rescheduleScan(scan *v1.ClusterScan) error {
 	scans := c.cisFactory.Cis().V1().ClusterScan()
 	cronSchedule, err := c.getCronSchedule(scan)
 	if err != nil {
-		return fmt.Errorf("Cannot reschedule, Error parsing invalid cron string for schedule: %v", err)
+		return fmt.Errorf("Cannot reschedule, Error parsing invalid cron string for schedule: %w", err)
 	}
 	now := time.Now()
 	nextScanAt := cronSchedule.Next(now)
@@ -125,7 +125,7 @@ func (c *Controller) purgeOldClusterScanReports(obj *v1.ClusterScan) error {
 	retention := c.getRetentionCount(obj)
 	allClusterScanReportsList, err := reports.List(metav1.ListOptions{})
 	if err != nil {
-		return fmt.Errorf("error listing cluster scans for scheduledScan %v: %v", obj.Name, err)
+		return fmt.Errorf("error listing cluster scans for scheduledScan %v: %w", obj.Name, err)
 	}
 	allClusterScanReports := allClusterScanReportsList.Items
 	var clusterScanReports []v1.ClusterScanReport

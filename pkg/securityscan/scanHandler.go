@@ -49,7 +49,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				v1.ClusterScanConditionPending.Message(obj, "ClusterScan run pending")
 
 				if err := c.isRunnerPodPresent(); err != nil {
-					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
+					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %q since got error: %w", obj.Name, err)
 				}
 
 				profile, err := c.getClusterScanProfile(ctx, obj)
@@ -72,7 +72,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				}
 
 				if err := c.isRunnerPodPresent(); err != nil {
-					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
+					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %w", obj.Name, err)
 				}
 				//launch new on demand scan
 				c.mu.Lock()
@@ -80,21 +80,21 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				if c.currentScanName != "" {
 					scanfound, err := c.isScanPresent(c.currentScanName)
 					if err != nil {
-						return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v, error when checking CurrentScan %v is present: %v", obj.Name, c.currentScanName, err)
+						return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v, error when checking CurrentScan %v is present: %w", obj.Name, c.currentScanName, err)
 					}
 					if !scanfound {
 						logrus.Debugf("Current scan %v gone, reset currentScanName and move on with this scan", c.currentScanName)
 						c.currentScanName = ""
 					} else {
 						//Some scan is running, wait
-						return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since another Scan %v is running ", obj.Name, c.currentScanName)
+						return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since another Scan %v is running", obj.Name, c.currentScanName)
 					}
 				}
 				logrus.Infof("Launching a new on demand Job for scan %v to run cis using profile %v", obj.Name, profile.Name)
 				benchmark, err := c.getClusterScanBenchmark(profile)
 				if err != nil {
 					v1.ClusterScanConditionReconciling.True(obj)
-					return objects, obj.Status, fmt.Errorf("Error when getting Benchmark: %v", err)
+					return objects, obj.Status, fmt.Errorf("Error when getting Benchmark: %w", err)
 				}
 				cmMap, err := ciscore.NewConfigMaps(obj, profile, benchmark, c.Name, c.ImageConfig, c.configmaps)
 				if err != nil {
@@ -108,12 +108,12 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 				service, err := ciscore.NewService(obj, profile, c.Name)
 				if err != nil {
 					v1.ClusterScanConditionReconciling.True(obj)
-					return objects, obj.Status, fmt.Errorf("Error when creating Service: %v", err)
+					return objects, obj.Status, fmt.Errorf("Error when creating Service: %w", err)
 				}
 
 				//recheck before launching job
 				if err := c.isRunnerPodPresent(); err != nil {
-					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %v ", obj.Name, err)
+					return objects, obj.Status, fmt.Errorf("Retrying ClusterScan %v since got error: %w", obj.Name, err)
 				}
 
 				objects = append(objects, cisjob.New(obj, profile, benchmark, c.Name, c.ImageConfig, c.configmaps, c.securityScanJobTolerations), cmMap["configcm"], cmMap["plugincm"], cmMap["skipConfigcm"], service)
@@ -126,7 +126,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					alertRule, err := cisalert.NewPrometheusRule(obj, profile, c.ImageConfig)
 					if err != nil {
 						v1.ClusterScanConditionReconciling.True(obj)
-						return objects, obj.Status, fmt.Errorf("Error when trying to create a PrometheusRule: %v", err)
+						return objects, obj.Status, fmt.Errorf("Error when trying to create a PrometheusRule: %w", err)
 					}
 					ruleCreated, err := c.monitoringClient.PrometheusRules(v1.ClusterScanNS).Create(ctx, alertRule, metav1.CreateOptions{})
 					if err != nil {
@@ -177,7 +177,7 @@ func (c *Controller) getClusterScanProfile(ctx context.Context, scan *v1.Cluster
 	clusterscanprofiles := c.cisFactory.Cis().V1().ClusterScanProfile()
 	err = c.refreshClusterKubernetesVersion(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error trying to read cluster's k8s version %v", err)
+		return nil, fmt.Errorf("error trying to read cluster's k8s version %w", err)
 	}
 
 	if scan.Spec.ScanProfileName != "" {
@@ -210,7 +210,7 @@ func (c *Controller) getDefaultClusterScanProfile(clusterprovider string, cluste
 	configmaps := c.coreFactory.Core().V1().ConfigMap()
 	cm, err := configmaps.Cache().Get(v1.ClusterScanNS, v1.DefaultClusterScanProfileConfigMap)
 	if err != nil {
-		return "", fmt.Errorf("Configmap to load default ClusterScanProfiles not found: %v", err)
+		return "", fmt.Errorf("Configmap to load default ClusterScanProfiles not found: %w", err)
 	}
 	profileName, ok := cm.Data[clusterprovider]
 	if !ok {
@@ -227,7 +227,7 @@ func (c *Controller) getDefaultClusterScanProfile(clusterprovider string, cluste
 				// validate cluster's k8s version matches the profile's k8s version range
 				clusterK8sToMatch, err := semver.Make(clusterK8sVersion[1:])
 				if err != nil {
-					return "", fmt.Errorf("cluster's k8sVersion is not semver %s %v", c.KubernetesVersion, err)
+					return "", fmt.Errorf("cluster's k8sVersion is not semver %s %w", c.KubernetesVersion, err)
 				}
 				if k8sRange != "" {
 					benchmarkK8sRange, err := semver.ParseRange(k8sRange)
@@ -275,7 +275,7 @@ func (c Controller) validateClusterScanProfile(profile *v1.ClusterScanProfile) e
 	// validate cluster's k8s version matches the benchmark's k8s version range
 	clusterK8sToMatch, err := semver.Make(c.KubernetesVersion[1:])
 	if err != nil {
-		return fmt.Errorf("Cluster's k8sVersion is not sem-ver %s %v", c.KubernetesVersion, err)
+		return fmt.Errorf("Cluster's k8sVersion is not sem-ver %s %w", c.KubernetesVersion, err)
 	}
 	var k8sRange string
 	if benchmark.Spec.MinKubernetesVersion != "" {
@@ -287,7 +287,7 @@ func (c Controller) validateClusterScanProfile(profile *v1.ClusterScanProfile) e
 	if k8sRange != "" {
 		benchmarkK8sRange, err := semver.ParseRange(k8sRange)
 		if err != nil {
-			return fmt.Errorf("Range for Benchmark %s not sem-ver %v, error: %v", benchmark.Name, k8sRange, err)
+			return fmt.Errorf("Range for Benchmark %s not sem-ver %v, error: %w", benchmark.Name, k8sRange, err)
 		}
 		if !benchmarkK8sRange(clusterK8sToMatch) {
 			return fmt.Errorf("Kubernetes version mismatch, ClusterScanProfile %v is not valid for this cluster's K8s version %v", profile.Name, c.KubernetesVersion)
@@ -300,7 +300,7 @@ func (c Controller) validateClusterScanProfile(profile *v1.ClusterScanProfile) e
 func (c Controller) isRunnerPodPresent() error {
 	v2Jobs, err := c.listScanRunnerJobs(v1.ClusterScanNS)
 	if err != nil {
-		return fmt.Errorf("error listing jobs: %v", err)
+		return fmt.Errorf("error listing jobs: %w", err)
 	}
 	if v2Jobs != 0 {
 		return fmt.Errorf("A rancher-cis-benchmark scan runner job is already running")
@@ -308,7 +308,7 @@ func (c Controller) isRunnerPodPresent() error {
 
 	v2Pods, err := c.listRunnerPods(v1.ClusterScanNS)
 	if err != nil {
-		return fmt.Errorf("error listing pods: %v", err)
+		return fmt.Errorf("error listing pods: %w", err)
 	}
 	if v2Pods != 0 {
 		return fmt.Errorf("A rancher-cis-benchmark runner pod is already running")
@@ -316,7 +316,7 @@ func (c Controller) isRunnerPodPresent() error {
 
 	v1Pods, err := c.listRunnerPods(v1.CISV1NS)
 	if err != nil {
-		return fmt.Errorf("error listing pods: %v", err)
+		return fmt.Errorf("error listing pods: %w", err)
 	}
 	if v1Pods != 0 {
 		return fmt.Errorf("A CIS v1 rancher-cis-benchmark runner pod is already running")
@@ -330,7 +330,7 @@ func (c Controller) listScanRunnerJobs(namespace string) (int, error) {
 	set := labels.Set(map[string]string{cisoperatorapi.LabelController: c.Name})
 	jobList, err := jobs.Cache().List(namespace, set.AsSelector())
 	if err != nil {
-		return 0, fmt.Errorf("error listing jobs: %v", err)
+		return 0, fmt.Errorf("error listing jobs: %w", err)
 	}
 	return len(jobList), nil
 }
@@ -339,7 +339,7 @@ func (c Controller) listRunnerPods(namespace string) (int, error) {
 	pods := c.coreFactory.Core().V1().Pod()
 	podList, err := pods.Cache().List(namespace, labels.Set(SonobuoyMasterLabel).AsSelector())
 	if err != nil {
-		return 0, fmt.Errorf("error listing pods: %v", err)
+		return 0, fmt.Errorf("error listing pods: %w", err)
 	}
 	return len(podList), nil
 }

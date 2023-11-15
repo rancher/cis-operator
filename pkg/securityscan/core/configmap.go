@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	_ "embed" // nolint
 	"encoding/json"
 	"text/template"
 
@@ -14,6 +15,12 @@ import (
 
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 )
+
+//go:embed templates/pluginConfig.template
+var pluginConfigTemplate string
+
+//go:embed templates/cisscanConfig.template
+var cisscanConfigTemplate string
 
 type OverrideSkipInfoData struct {
 	Skip map[string][]string `json:"skip"`
@@ -36,7 +43,7 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		"sonobuoyImage":    imageConfig.SonobuoyImage + ":" + imageConfig.SonobuoyImageTag,
 		"sonobuoyVersion":  imageConfig.SonobuoyImageTag,
 	}
-	configcm, err := generateConfigMap(clusterscan, "cisscanConfig.template", "./pkg/securityscan/core/templates/cisscanConfig.template", configdata)
+	configcm, err := generateConfigMap(clusterscan, "cisscanConfig.template", cisscanConfigTemplate, configdata)
 	if err != nil {
 		return cmMap, err
 	}
@@ -68,7 +75,7 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		"customBenchmarkConfigMapName": customBenchmarkConfigMapName,
 		"customBenchmarkConfigMapData": customBenchmarkConfigMapData,
 	}
-	plugincm, err := generateConfigMap(clusterscan, "pluginConfig.template", "./pkg/securityscan/core/templates/pluginConfig.template", plugindata)
+	plugincm, err := generateConfigMap(clusterscan, "pluginConfig.template", pluginConfigTemplate, plugindata)
 	if err != nil {
 		return cmMap, err
 	}
@@ -89,10 +96,10 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 	return cmMap, nil
 }
 
-func generateConfigMap(clusterscan *cisoperatorapiv1.ClusterScan, templateName string, templateFile string, data map[string]interface{}) (*corev1.ConfigMap, error) {
+func generateConfigMap(clusterscan *cisoperatorapiv1.ClusterScan, name string, text string, data map[string]interface{}) (*corev1.ConfigMap, error) {
 	configcm := &corev1.ConfigMap{}
 
-	obj, err := parseTemplate(clusterscan, templateName, templateFile, data)
+	obj, err := parseTemplate(clusterscan, name, text, data)
 	if err != nil {
 		return nil, err
 	}
@@ -103,8 +110,8 @@ func generateConfigMap(clusterscan *cisoperatorapiv1.ClusterScan, templateName s
 	return configcm, nil
 }
 
-func parseTemplate(clusterscan *cisoperatorapiv1.ClusterScan, templateName string, templateFile string, data map[string]interface{}) (*k8Yaml.YAMLOrJSONDecoder, error) {
-	cmTemplate, err := template.New(templateName).ParseFiles(templateFile)
+func parseTemplate(clusterscan *cisoperatorapiv1.ClusterScan, name string, text string, data map[string]interface{}) (*k8Yaml.YAMLOrJSONDecoder, error) {
+	cmTemplate, err := template.New(name).Parse(text)
 	if err != nil {
 		return nil, err
 	}
