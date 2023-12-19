@@ -16,7 +16,7 @@ RUN if [[ "${ARCH}" == "amd64" ]]; then \
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s ${GOLANGCI_LINT}; \
     fi
 
-RUN curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG="v${K3D_VERSION}" bash
+RUN curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG="${K3D_VERSION}" bash
 ADD --chown=root:root --chmod=755 \
     "https://dl.k8s.io/release/v${KUBERNETES_VERSION}/bin/linux/${ARCH}/kubectl" \
     /usr/local/bin/kubectl
