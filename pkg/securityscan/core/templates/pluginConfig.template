@@ -28,6 +28,9 @@ data:
       - effect: NoExecute
         key: CriticalAddonsOnly
         operator: Exists
+      {{- range .customTolerations }}
+      - {{ . }}
+      {{- end }}
       volumes:
       - hostPath:
           path: /

@@ -31,7 +31,7 @@ const (
 	ConfigFileName      = "config.json"
 )
 
-func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, clusterscanbenchmark *cisoperatorapiv1.ClusterScanBenchmark, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig, configmapsClient wcorev1.ConfigMapController) (cmMap map[string]*corev1.ConfigMap, err error) {
+func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, clusterscanbenchmark *cisoperatorapiv1.ClusterScanBenchmark, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig, configmapsClient wcorev1.ConfigMapController, securityScanDSTolerations []corev1.Toleration) (cmMap map[string]*corev1.ConfigMap, err error) {
 	cmMap = make(map[string]*corev1.ConfigMap)
 
 	configdata := map[string]interface{}{
@@ -62,6 +62,13 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		customBenchmarkConfigMapName = customcm.Name
 	}
 
+	var customTolerations []string
+
+	for _, toleration := range securityScanDSTolerations {
+		jsonToleration, _ := json.Marshal(toleration)
+		customTolerations = append(customTolerations, string(jsonToleration))
+	}
+
 	plugindata := map[string]interface{}{
 		"namespace":                    cisoperatorapiv1.ClusterScanNS,
 		"name":                         name.SafeConcatName(cisoperatorapiv1.ClusterScanPluginsConfigMap, clusterscan.Name),
@@ -74,6 +81,7 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		"configDir":                    cisoperatorapiv1.CustomBenchmarkBaseDir,
 		"customBenchmarkConfigMapName": customBenchmarkConfigMapName,
 		"customBenchmarkConfigMapData": customBenchmarkConfigMapData,
+		"customTolerations":            customTolerations,
 	}
 	plugincm, err := generateConfigMap(clusterscan, "pluginConfig.template", pluginConfigTemplate, plugindata)
 	if err != nil {
