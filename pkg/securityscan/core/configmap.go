@@ -31,7 +31,7 @@ const (
 	ConfigFileName      = "config.json"
 )
 
-func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, clusterscanbenchmark *cisoperatorapiv1.ClusterScanBenchmark, controllerName string, imageConfig *cisoperatorapiv1.ScanImageConfig, configmapsClient wcorev1.ConfigMapController) (cmMap map[string]*corev1.ConfigMap, err error) {
+func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, clusterscanbenchmark *cisoperatorapiv1.ClusterScanBenchmark, _ string, imageConfig *cisoperatorapiv1.ScanImageConfig, configmapsClient wcorev1.ConfigMapController) (cmMap map[string]*corev1.ConfigMap, err error) {
 	cmMap = make(map[string]*corev1.ConfigMap)
 
 	configdata := map[string]interface{}{
@@ -110,7 +110,7 @@ func generateConfigMap(clusterscan *cisoperatorapiv1.ClusterScan, name string, t
 	return configcm, nil
 }
 
-func parseTemplate(clusterscan *cisoperatorapiv1.ClusterScan, name string, text string, data map[string]interface{}) (*k8Yaml.YAMLOrJSONDecoder, error) {
+func parseTemplate(_ *cisoperatorapiv1.ClusterScan, name string, text string, data map[string]interface{}) (*k8Yaml.YAMLOrJSONDecoder, error) {
 	cmTemplate, err := template.New(name).Parse(text)
 	if err != nil {
 		return nil, err
