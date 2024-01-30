@@ -1,0 +1,125 @@
+#!/bin/bash
+set -eox pipefail
+
+# If specific binaries not passed on, falls back to default which would need
+# to exist within PATH.
+export RUNNER="${RUNNER:-docker}"
+export KUBECTL="${KUBECTL:-kubectl}"
+export K3D="${K3D:-k3d}"
+
+export ARCH="${ARCH:-amd64}"
+export IMAGE="${IMAGE}"
+
+export SECURITY_SCAN_IMAGE="rancher/security-scan:${SECURITY_SCAN_VERSION}"
+export SONOBUOY_IMAGE="rancher/mirrored-sonobuoy-sonobuoy:${SONOBUOY_VERSION}"
+export COREDNS_IMAGE="rancher/mirrored-coredns-coredns:${CORE_DNS_VERSION}"
+export HELM_IMAGE="rancher/klipper-helm:${KLIPPER_HELM_VERSION}"
+
+CLUSTER_NAME="cis-op-e2e-${RANDOM}"
+E2E_TIMEOUT_SECONDS=200
+
+CANCELLING=""
+
+function cleanup() {
+  CANCELLING="true"
+  echo "Cleaning up cluster..."
+  ${K3D} cluster rm "${CLUSTER_NAME}"
+}
+trap cleanup EXIT
+
+function pull_image() {
+  EXTERNAL_IMAGE=$1
+  echo "> Pull and import ${EXTERNAL_IMAGE} into cluster"
+  ${RUNNER} pull "${EXTERNAL_IMAGE}"
+  ${K3D} image import "${EXTERNAL_IMAGE}" -c "${CLUSTER_NAME}"
+}
+
+function dump_logs() {
+  ${KUBECTL} get pods -n cis-operator-system --show-labels
+  echo "RUNNER LOGS:"
+  ${KUBECTL} logs -n cis-operator-system -l app.kubernetes.io/instance=security-scan-runner-k3s-e2e-scan || true
+  echo "SONOBUOY LOGS (rancher-kube-bench):"
+  ${KUBECTL} logs -n cis-operator-system -l component=sonobuoy -c rancher-kube-bench || true
+  echo "SONOBUOY LOGS (sonobuoy-worker):"
+  ${KUBECTL} logs -n cis-operator-system -l component=sonobuoy -c sonobuoy-worker || true    
+}
+
+echo "Running E2E tests"
+sleep "${E2E_TIMEOUT_SECONDS}" && cleanup | false &
+
+${RUNNER} build -t local-k3s -f tests/Dockerfile.k3s tests
+
+echo "> Spinning up k3d cluster"
+# After a few executions k3d can have problems with evictions:
+# https://k3d.io/v5.0.1/faq/faq/#pods-evicted-due-to-lack-of-disk-space
+${K3D} cluster create "${CLUSTER_NAME}" --no-lb --kubeconfig-update-default --image local-k3s \
+  --k3s-arg '--kubelet-arg=eviction-hard=imagefs.available<1%,nodefs.available<1%@server:0' \
+  --k3s-arg '--kubelet-arg=eviction-minimum-reclaim=imagefs.available=1%,nodefs.available=1%@server:0'
+
+# Load built image into k3d.
+echo "> Import ${IMAGE} into cluster"
+${K3D} image import "${IMAGE}" -c "${CLUSTER_NAME}"
+
+pull_image "${SECURITY_SCAN_IMAGE}"
+pull_image "${SONOBUOY_IMAGE}"
+pull_image "${COREDNS_IMAGE}"
+pull_image "${HELM_IMAGE}"
+
+# cis-operator may have intermittent issues if key components
+# from the cluster aren't ready.
+echo "> Wait for k3d base components to be ready"
+${KUBECTL} wait node "k3d-${CLUSTER_NAME}-server-0" --for=condition=ready --timeout=45s
+${KUBECTL} wait --timeout=60s --for=condition=ready -n kube-system pod -l app=local-path-provisioner
+${KUBECTL} wait --timeout=60s --for=condition=ready -n kube-system pod -l k8s-app=kube-dns
+
+echo "> Deploying cis-operator"
+${KUBECTL} apply -f ./crds
+envsubst < ./tests/deploy.yaml | ${KUBECTL} apply -f -
+
+echo "> Wait for cis-operator to be ready"
+# Can't kubectl wait before the deployment schedules the pod, so
+# wait 10 seconds for that to happen first.
+sleep 10s
+${KUBECTL} wait --for=condition=ready -n cis-operator-system pod -l cis.cattle.io/operator=cis-operator --timeout=30s
+
+echo "> Create ClusterScan"
+${KUBECTL} apply -f tests/k3s-bench-test.yaml
+
+${RUNNER} exec "k3d-${CLUSTER_NAME}-server-0" /usr/local/bin/kube-apiserver &
+
+# Keep trying to check if the ClusterScan had any some tests that passed
+# that is good enough indication that all the mechanics of cis-operator
+# are working as expected.
+#
+# As soon as passing tests are detected, exit the e2e. If none is found,
+# the tests will eventually timeout based on E2E_TIMEOUT_SECONDS.
+while (true)
+do
+  if [ -n "${CANCELLING}" ]; then
+    break
+  fi
+
+  json=$(${KUBECTL} get ClusterScan k3s-e2e-scan -o jsonpath='{.status.summary}')
+  if [ -n "${json}" ]; then
+    passed=$(echo "${json}" | jq '.pass')
+    total=$(echo "${json}" | jq '.total')
+    fail=$(echo "${json}" | jq '.fail')
+    
+    if [ "${passed}" -gt "0" ]; then
+      echo "> cis-operator worked successfully"
+      
+      ${KUBECTL} get ClusterScan -o yaml
+      echo "${json}" | jq .
+
+      exit 0
+    fi
+
+    if [ "${total}" == "${fail}" ]; then
+      echo "ERR: ALL TESTS FAILED!"
+      exit 1
+    fi
+  fi
+
+  dump_logs
+  sleep 2s
+done
