@@ -16,7 +16,7 @@ on:
 #   - PUBLIC_REGISTRY_PASSWORD
 
 permissions:
-  contents: read
+  contents: write # Upload artefacts to release.
 
 jobs:
 
@@ -45,3 +45,7 @@ jobs:
       env:
         TAG: ${{ github.ref_name }}
         REPO: ${{ vars.PUBLIC_REGISTRY }}/${{ vars.PUBLIC_REGISTRY_REPO }}
+
+    - run: make upload
+      env:
+          GH_TOKEN: ${{ github.token }}
