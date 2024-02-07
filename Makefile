@@ -16,6 +16,7 @@ ARCH ?= $(shell docker info --format '{{.ClientInfo.Arch}}')
 
 # TARGET_ARCHS defines all GOARCH used for releasing binaries.
 TARGET_ARCHS = arm64 amd64
+BUILD_ACTION = --load
 
 .DEFAULT_GOAL := ci
 ci: build test validate e2e ## run the targets needed to validate a PR in CI.
@@ -31,10 +32,15 @@ test: ## run unit tests.
 build: ## build project and output binary to TARGET_BIN.
 	CGO_ENABLED=0 $(GO) build -trimpath -tags "$(GO_TAGS)" -ldflags "$(LINKFLAGS)" -o $(TARGET_BIN)
 
+test-build:
+	# Instead of loading image, target all platforms, effectivelly testing
+	# the build for the target architectures.
+	$(MAKE) image-build BUILD_ACTION="--platform=$(TARGET_PLATFORMS)"
+
 image-build: buildx-machine ## build (and load) the container image targeting the current platform.
 	$(IMAGE_BUILDER) build -f package/Dockerfile \
 		--builder $(MACHINE) $(IMAGE_ARGS) \
-		--build-arg VERSION=$(VERSION) -t "$(IMAGE)" --load .
+		--build-arg VERSION=$(VERSION) -t "$(IMAGE)" $(BUILD_ACTION) .
 	@echo "Built $(IMAGE)"
 
 image-push: buildx-machine ## build the container image targeting all platforms defined by TARGET_PLATFORMS and push to a registry.

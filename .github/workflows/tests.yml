@@ -55,5 +55,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
   
+    - name: Test building images
+      run: make test-build
+
     - name: E2E Tests
       run: make e2e

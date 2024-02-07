@@ -1,7 +1,7 @@
 # Image that provides cross compilation tooling.
 FROM --platform=$BUILDPLATFORM rancher/mirrored-tonistiigi-xx:1.3.0 as xx
 
-FROM registry.suse.com/bci/golang:1.21 AS builder
+FROM --platform=$BUILDPLATFORM registry.suse.com/bci/golang:1.21 AS builder
 
 # There is no real need for containers to fully comply with the
 # Filesystem Hierarchy Standard (FHS). However, some applications
@@ -45,19 +45,18 @@ COPY pkg /src/pkg
 COPY hack /src/hack
 COPY main.go /src
 
+# Ensures that the binary that was built was cross-compiled correctly
+# and is valid on the target platform.
+COPY --from=xx / /
+
+ARG TARGETPLATFORM
+RUN xx-go --wrap && mkdir -p /run/lock
+
 # By setting the version as an argument, we can avoid running the version logic 
 # a second time (inside the Docker build process). Therefore, removing the need
 # to access the .git dir.
 ARG VERSION
 RUN VERSION=${VERSION} TARGET_BIN=/final/usr/bin/cis-operator make build
-
-# Ensures that the binary that was built was cross-compiled correctly
-# and is valid on the target platform.
-COPY --from=xx \
-    /usr/bin/xx-verify \
-    /usr/bin/xx-info \
-    /usr/bin
-RUN mkdir -p /run/lock
 RUN xx-verify --static /final/usr/bin/cis-operator
 
 FROM scratch as final

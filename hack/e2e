@@ -87,8 +87,8 @@ ${KUBECTL} apply -f tests/k3s-bench-test.yaml
 
 ${RUNNER} exec "k3d-${CLUSTER_NAME}-server-0" /usr/local/bin/kube-apiserver &
 
-# Keep trying to check if the ClusterScan had any some tests that passed
-# that is good enough indication that all the mechanics of cis-operator
+# Keep trying to check if the ClusterScan had any tests that passed.
+# This is a good indication that all the mechanics of cis-operator
 # are working as expected.
 #
 # As soon as passing tests are detected, exit the e2e. If none is found,
