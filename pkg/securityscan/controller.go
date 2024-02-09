@@ -157,7 +157,7 @@ func NewController(ctx context.Context, cfg *rest.Config, namespace, name string
 	return ctl, nil
 }
 
-func (c *Controller) Start(ctx context.Context, threads int, resync time.Duration) error {
+func (c *Controller) Start(ctx context.Context, threads int, _ time.Duration) error {
 	// register our handlers
 	if err := c.handleJobs(ctx); err != nil {
 		return err
@@ -216,7 +216,7 @@ func detectClusterProvider(ctx context.Context, k8sClient kubernetes.Interface) 
 	return provider, err
 }
 
-func detectKubernetesVersion(ctx context.Context, k8sClient kubernetes.Interface) (string, error) {
+func detectKubernetesVersion(_ context.Context, k8sClient kubernetes.Interface) (string, error) {
 	v, err := k8sClient.Discovery().ServerVersion()
 	if err != nil {
 		return "", err

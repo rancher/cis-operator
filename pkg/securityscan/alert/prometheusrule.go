@@ -61,7 +61,7 @@ func generatePrometheusRule(clusterscan *cisoperatorapiv1.ClusterScan, data map[
 	return scanAlertRule, nil
 }
 
-func parseTemplate(clusterscan *cisoperatorapiv1.ClusterScan, data map[string]interface{}) (*k8Yaml.YAMLOrJSONDecoder, error) {
+func parseTemplate(_ *cisoperatorapiv1.ClusterScan, data map[string]interface{}) (*k8Yaml.YAMLOrJSONDecoder, error) {
 	cmTemplate, err := template.New(templateName).Parse(prometheusRuleTemplate)
 	if err != nil {
 		return nil, err

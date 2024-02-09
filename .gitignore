@@ -5,3 +5,4 @@
 *.swp
 .idea
 /cis-operator
+/build

@@ -14,7 +14,7 @@ func main() {
 	os.Unsetenv("GOPATH")
 	controllergen.Run(args.Options{
 		OutputPackage: "github.com/rancher/cis-operator/pkg/generated",
-		Boilerplate:   "scripts/boilerplate.go.txt",
+		Boilerplate:   "hack/boilerplate.go.txt",
 		Groups: map[string]args.Group{
 			"cis.cattle.io": {
 				Types: []interface{}{

@@ -203,8 +203,11 @@ func run(c *cli.Context) {
 	if err := ctl.Start(ctx, threads, 2*time.Hour); err != nil {
 		logrus.Fatalf("Error starting: %v", err)
 	}
+
 	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":"+metricsPort, nil))
+	if err := http.ListenAndServe(":"+metricsPort, nil); err != nil {
+		log.Fatal(err)
+	}
 
 	<-handler
 	ctx.Done()

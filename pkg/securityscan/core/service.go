@@ -12,7 +12,7 @@ import (
 //go:embed templates/service.template
 var serviceTemplate string
 
-func NewService(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, controllerName string) (service *corev1.Service, err error) {
+func NewService(clusterscan *cisoperatorapiv1.ClusterScan, _ *cisoperatorapiv1.ClusterScanProfile, _ string) (service *corev1.Service, err error) {
 
 	servicedata := map[string]interface{}{
 		"namespace": cisoperatorapiv1.ClusterScanNS,
