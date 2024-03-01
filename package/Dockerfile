@@ -1,7 +1,7 @@
 # Image that provides cross compilation tooling.
 FROM --platform=$BUILDPLATFORM rancher/mirrored-tonistiigi-xx:1.3.0 as xx
 
-FROM --platform=$BUILDPLATFORM registry.suse.com/bci/golang:1.21 AS builder
+FROM --platform=$BUILDPLATFORM registry.suse.com/bci/golang:1.22 AS builder
 
 # There is no real need for containers to fully comply with the
 # Filesystem Hierarchy Standard (FHS). However, some applications
