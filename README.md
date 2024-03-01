@@ -9,7 +9,9 @@ as per the CIS benchmarks, on the cluster.
 
 
 ## Running
-
+1. Install the custom resource definitions:
+- `kubectl apply -f crds/`
+2. Install the operator
 `./bin/cis-operator`
 
 ## License
