@@ -11,7 +11,7 @@ KUBECTL_SUM_amd64 ?= 4717660fd1466ec72d59000bb1d9f5cdc91fac31d491043ca62b34398e0
 KUBECTL_SUM = KUBECTL_SUM_amd64
 
 # renovate: datasource=github-release-attachments depName=rancher/security-scan
-SECURITY_SCAN_VERSION ?= v0.2.13
+SECURITY_SCAN_VERSION ?= v0.2.14
 # renovate: datasource=github-release-attachments depName=vmware-tanzu/sonobuoy
 SONOBUOY_VERSION ?= v0.57.1
 # renovate: datasource=github-release-attachments depName=coredns/coredns
