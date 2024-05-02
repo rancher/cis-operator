@@ -13,7 +13,7 @@ KUBECTL_SUM = KUBECTL_SUM_amd64
 # renovate: datasource=github-release-attachments depName=rancher/security-scan
 SECURITY_SCAN_VERSION ?= v0.2.13
 # renovate: datasource=github-release-attachments depName=vmware-tanzu/sonobuoy
-SONOBUOY_VERSION ?= v0.56.16
+SONOBUOY_VERSION ?= v0.57.1
 # renovate: datasource=github-release-attachments depName=coredns/coredns
 CORE_DNS_VERSION ?= 1.9.4
 # renovate: datasource=github-release-attachments depName=k3s-io/klipper-helm
