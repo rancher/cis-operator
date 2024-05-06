@@ -32,8 +32,8 @@ github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj
 github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
-github.com/cpuguy83/go-md2man/v2 v2.0.3 h1:qMCsGGgs+MAzDFyp9LpAe1Lqy/fY/qCovCm0qnXZOBM=
-github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
+github.com/cpuguy83/go-md2man/v2 v2.0.4 h1:wfIWP927BUkWJb2NmU/kNDYIBTh/ziUX91+lVfRxZq4=
+github.com/cpuguy83/go-md2man/v2 v2.0.4/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -217,8 +217,8 @@ github.com/rancher/kubernetes-provider-detector v0.1.5 h1:hWRAsWuJOemzGjz/XrbTlM
 github.com/rancher/kubernetes-provider-detector v0.1.5/go.mod h1:ypuJS7kP7rUiAn330xG46mj+Nhvym05GM8NqMVekpH0=
 github.com/rancher/lasso v0.0.0-20240123150939-7055397d6dfa h1:eRhvQJjIpPxJunlS3e1J3qTghUy9MIrMjQa2aXYSC3k=
 github.com/rancher/lasso v0.0.0-20240123150939-7055397d6dfa/go.mod h1:utdskbIL7kdVvPCUFPEJQDWJwPHGFpUCRfVkX2G2Xxg=
-github.com/rancher/security-scan v0.2.14 h1:2znsSRhGg+fmMx4dertSNpkCCGnQNq5PKM54upTARd0=
-github.com/rancher/security-scan v0.2.14/go.mod h1:+fSkWkhX5PvKmHzvfvLrXuy09F3UUR6BvPTczZ9wijQ=
+github.com/rancher/security-scan v0.2.15 h1:bBGxJSoGGy5HwhZ3L2rQwyUC77BnCtwpZYq3wcYmF9c=
+github.com/rancher/security-scan v0.2.15/go.mod h1:nPRE6nCejk+TzZddZFNOI7WCVrnPeUlgKWXVcTJjx4I=
 github.com/rancher/wrangler v1.1.1 h1:wmqUwqc2M7ADfXnBCJTFkTB5ZREWpD78rnZMzmxwMvM=
 github.com/rancher/wrangler v1.1.1/go.mod h1:ioVbKupzcBOdzsl55MvEDN0R1wdGggj8iNCYGFI5JvM=
 github.com/robfig/cron v1.2.0 h1:ZjScXvvxeQ63Dbyxy76Fj3AT3Ut0aKsyd2/tl3DTMuQ=
