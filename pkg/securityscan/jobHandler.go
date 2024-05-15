@@ -30,7 +30,7 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 	reports := c.cisFactory.Cis().V1().ClusterScanReport()
 	jobs := c.batchFactory.Batch().V1().Job()
 
-	jobs.OnChange(ctx, c.Name, func(key string, obj *batchv1.Job) (*batchv1.Job, error) {
+	jobs.OnChange(ctx, c.Name, func(_ string, obj *batchv1.Job) (*batchv1.Job, error) {
 		if obj == nil || obj.DeletionTimestamp != nil {
 			return obj, nil
 		}

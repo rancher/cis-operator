@@ -22,7 +22,7 @@ func (c *Controller) handlePods(ctx context.Context) error {
 	scans := c.cisFactory.Cis().V1().ClusterScan()
 	jobs := c.batchFactory.Batch().V1().Job()
 	pods := c.coreFactory.Core().V1().Pod()
-	pods.OnChange(ctx, c.Name, func(key string, obj *corev1.Pod) (*corev1.Pod, error) {
+	pods.OnChange(ctx, c.Name, func(_ string, obj *corev1.Pod) (*corev1.Pod, error) {
 		if obj == nil || obj.DeletionTimestamp != nil {
 			return obj, nil
 		}
