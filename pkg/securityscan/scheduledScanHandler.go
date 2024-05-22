@@ -19,7 +19,7 @@ import (
 func (c *Controller) handleScheduledClusterScans(ctx context.Context) error {
 	scheduledScans := c.cisFactory.Cis().V1().ClusterScan()
 
-	scheduledScans.OnChange(ctx, c.Name, func(key string, obj *v1.ClusterScan) (*v1.ClusterScan, error) {
+	scheduledScans.OnChange(ctx, c.Name, func(_ string, obj *v1.ClusterScan) (*v1.ClusterScan, error) {
 		if obj == nil || obj.DeletionTimestamp != nil {
 			return obj, nil
 		}

@@ -13,7 +13,7 @@ import (
 func (c *Controller) handleClusterScanMetrics(ctx context.Context) error {
 	scans := c.cisFactory.Cis().V1().ClusterScan()
 
-	scans.OnChange(ctx, c.Name, func(key string, obj *v1.ClusterScan) (*v1.ClusterScan, error) {
+	scans.OnChange(ctx, c.Name, func(_ string, obj *v1.ClusterScan) (*v1.ClusterScan, error) {
 		if obj == nil || obj.DeletionTimestamp != nil {
 			return obj, nil
 		}
