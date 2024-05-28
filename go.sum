@@ -214,8 +214,8 @@ github.com/prometheus/procfs v0.12.0 h1:jluTpSng7V9hY0O2R9DzzJHYb2xULk9VTR1V1R/k
 github.com/prometheus/procfs v0.12.0/go.mod h1:pcuDEFsWDnvcgNzo4EEweacyhjeA9Zk3cnaOZAZEfOo=
 github.com/rancher/kubernetes-provider-detector v0.1.5 h1:hWRAsWuJOemzGjz/XrbTlM7QmfO4OedvFE3QwXiH60I=
 github.com/rancher/kubernetes-provider-detector v0.1.5/go.mod h1:ypuJS7kP7rUiAn330xG46mj+Nhvym05GM8NqMVekpH0=
-github.com/rancher/lasso v0.0.0-20240510135026-3fb88e5e2836 h1:TqWh3oFGS8W2NMf/w/Y/D4GVc8FVDXDetls828Q79n0=
-github.com/rancher/lasso v0.0.0-20240510135026-3fb88e5e2836/go.mod h1:7WkdfPEvWAdnHVioMUkhpZkshJzjDY62ocHVhcbw89M=
+github.com/rancher/lasso v0.0.0-20240524131950-8eab1b18a161 h1:gs0NyCnFxFoBpP2LG2ZpZoPnjJs28lRGJwjRtiTyZ+Q=
+github.com/rancher/lasso v0.0.0-20240524131950-8eab1b18a161/go.mod h1:7WkdfPEvWAdnHVioMUkhpZkshJzjDY62ocHVhcbw89M=
 github.com/rancher/security-scan v0.2.15 h1:bBGxJSoGGy5HwhZ3L2rQwyUC77BnCtwpZYq3wcYmF9c=
 github.com/rancher/security-scan v0.2.15/go.mod h1:nPRE6nCejk+TzZddZFNOI7WCVrnPeUlgKWXVcTJjx4I=
 github.com/rancher/wrangler v1.1.1 h1:wmqUwqc2M7ADfXnBCJTFkTB5ZREWpD78rnZMzmxwMvM=
