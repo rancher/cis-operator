@@ -1,7 +1,7 @@
 # renovate: datasource=github-release-attachments depName=golangci/golangci-lint
 GOLANGCI_VERSION ?= v1.59.1
 # renovate: datasource=github-release-attachments depName=k3d-io/k3d
-K3D_VERSION ?= v5.7.0
+K3D_VERSION ?= v5.7.1
 
 KUBECTL_VERSION ?= 1.28.0
 # curk -L "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/arm64/kubectl.sha256"
