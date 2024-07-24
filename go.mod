@@ -7,7 +7,7 @@ toolchain go1.22.5
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.71.2
-	github.com/prometheus-operator/prometheus-operator/pkg/client v0.71.2
+	github.com/prometheus-operator/prometheus-operator/pkg/client v0.75.2
 	github.com/prometheus/client_golang v1.19.1
 	github.com/rancher/kubernetes-provider-detector v0.1.5
 	github.com/rancher/lasso v0.0.0-20240710130346-32d96874d344
