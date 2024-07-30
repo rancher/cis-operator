@@ -14,7 +14,7 @@ KUBECTL_SUM = KUBECTL_SUM_amd64
 SECURITY_SCAN_VERSION ?= v0.2.15
 # renovate: datasource=github-release-attachments depName=vmware-tanzu/sonobuoy
 SONOBUOY_VERSION ?= v0.57.1
-# renovate: datasource=github-release-attachments depName=coredns/coredns
+# renovate: datasource=docker depName=rancher/mirrored-coredns-coredns
 CORE_DNS_VERSION ?= 1.11.1
 # renovate: datasource=github-release-attachments depName=k3s-io/klipper-helm
 KLIPPER_HELM_VERSION ?= v0.7.4-build20221121
