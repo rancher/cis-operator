@@ -32,24 +32,24 @@ test: ## run unit tests.
 build: ## build project and output binary to TARGET_BIN.
 	CGO_ENABLED=0 $(GO) build -trimpath -tags "$(GO_TAGS)" -ldflags "$(LINKFLAGS)" -o $(TARGET_BIN)
 
-test-build:
+test-image:
 	# Instead of loading image, target all platforms, effectivelly testing
 	# the build for the target architectures.
-	$(MAKE) image-build BUILD_ACTION="--platform=$(TARGET_PLATFORMS)"
+	$(MAKE) build-image BUILD_ACTION="--platform=$(TARGET_PLATFORMS)"
 
-image-build: buildx-machine ## build (and load) the container image targeting the current platform.
+build-image: buildx-machine ## build (and load) the container image targeting the current platform.
 	$(IMAGE_BUILDER) build -f package/Dockerfile \
 		--builder $(MACHINE) $(IMAGE_ARGS) \
 		--build-arg VERSION=$(VERSION) -t "$(IMAGE)" $(BUILD_ACTION) .
 	@echo "Built $(IMAGE)"
 
-image-push: buildx-machine ## build the container image targeting all platforms defined by TARGET_PLATFORMS and push to a registry.
+push-image: buildx-machine ## build the container image targeting all platforms defined by TARGET_PLATFORMS and push to a registry.
 	$(IMAGE_BUILDER) build -f package/Dockerfile \
 		--builder $(MACHINE) $(IMAGE_ARGS) $(IID_FILE_FLAG) $(BUILDX_ARGS) \
 		--build-arg VERSION=$(VERSION) --platform=$(TARGET_PLATFORMS) -t "$(IMAGE)" --push .
 	@echo "Pushed $(IMAGE)"
 
-e2e: $(K3D) $(KUBECTL) image-build ## Run E2E tests.
+e2e: $(K3D) $(KUBECTL) build-image ## Run E2E tests.
 	K3D=$(K3D) KUBECTL=$(KUBECTL) VERSION=$(VERSION) \
 	IMAGE=$(IMAGE) SECURITY_SCAN_VERSION=$(SECURITY_SCAN_VERSION) \
 	SONOBUOY_VERSION=$(SONOBUOY_VERSION) CORE_DNS_VERSION=$(CORE_DNS_VERSION) \
