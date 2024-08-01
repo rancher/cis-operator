@@ -1,5 +1,5 @@
 # Image that provides cross compilation tooling.
-FROM --platform=$BUILDPLATFORM rancher/mirrored-tonistiigi-xx:1.3.0 as xx
+FROM --platform=$BUILDPLATFORM rancher/mirrored-tonistiigi-xx:1.3.0 AS xx
 
 FROM --platform=$BUILDPLATFORM registry.suse.com/bci/golang:1.22 AS builder
 
@@ -59,7 +59,7 @@ ARG VERSION
 RUN VERSION=${VERSION} TARGET_BIN=/final/usr/bin/cis-operator make build
 RUN xx-verify --static /final/usr/bin/cis-operator
 
-FROM scratch as final
+FROM scratch AS final
 
 COPY --from=builder /final/ /
 
