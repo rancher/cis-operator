@@ -5,42 +5,61 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: write # Upload artefacts to release.
-  id-token: write # required by read-vault-secrets.
-
 jobs:
 
-  publish-public:
+  publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # write is needed for:
+      # - OIDC for cosign's use in ecm-distro-tools/publish-image.
+      # - Read vault secrets in rancher-eio/read-vault-secrets.
+      id-token: write
+    
+    strategy:
+      matrix:
+        include:
+          # Three images are created:
+          # - Multi-arch manifest for both amd64 and arm64
+          - tag-suffix: ""
+            platforms: linux/amd64,linux/arm64
+          # - arm64 manifest
+          - tag-suffix: "-arm64"
+            platforms: linux/arm64
+          # - amd64 manifest
+          - tag-suffix: "-amd64"
+            platforms: linux/amd64
     
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+  
     - name: Load Secrets from Vault
       uses: rancher-eio/read-vault-secrets@main
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/dockerhub/rancher/credentials username | DOCKER_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/dockerhub/rancher/credentials password | DOCKER_PASSWORD
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
+          secret/data/github/repo/${{ github.repository }}/dockerhub/rancher/credentials password | DOCKER_PASSWORD ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD
+
+    - name: Publish manifest
+      uses: rancher/ecm-distro-tools/actions/publish-image@master
       with:
-        username: ${{ env.DOCKER_USERNAME }}
-        password: ${{ env.DOCKER_PASSWORD }}
-    - name: Setup QEMU
-      uses: docker/setup-qemu-action@v3
-    - name: Setup Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    - name: Checkout code
-      uses: actions/checkout@v4
-  
-    - name: Build and push all image variations
-      run: |
-        make image-push
-        TAG="${TAG}-amd64" TARGET_PLATFORMS=linux/amd64 make image-push
-        TAG="${TAG}-arm64" TARGET_PLATFORMS=linux/arm64 make image-push
-      env:
-        TAG: ${{ github.ref_name }}
-        REPO: ${{ vars.PUBLIC_REGISTRY }}/${{ vars.PUBLIC_REGISTRY_REPO }}
+        image: cis-operator
+        tag: ${{ github.ref_name }}${{ matrix.tag-suffix }}
+        platforms: ${{ matrix.platforms }}
+
+        public-registry: docker.io
+        public-repo: rancher
+        public-username: ${{ env.DOCKER_USERNAME }}
+        public-password: ${{ env.DOCKER_PASSWORD }}
+
+        prime-registry: ${{ env.PRIME_REGISTRY }}
+        prime-repo: rancher
+        prime-username: ${{ env.PRIME_REGISTRY_USERNAME }}
+        prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
     - run: make upload
       env:
