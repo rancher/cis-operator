@@ -10,7 +10,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Upload artefacts to release.
+      contents: read
       # write is needed for:
       # - OIDC for cosign's use in ecm-distro-tools/publish-image.
       # - Read vault secrets in rancher-eio/read-vault-secrets.
@@ -33,7 +33,7 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-  
+
     - name: Load Secrets from Vault
       uses: rancher-eio/read-vault-secrets@main
       with:
@@ -61,6 +61,15 @@ jobs:
         prime-username: ${{ env.PRIME_REGISTRY_USERNAME }}
         prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
+  publish-assets:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Upload artefacts to release.
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+  
     - run: make upload
       env:
           GH_TOKEN: ${{ github.token }}
