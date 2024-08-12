@@ -1,7 +1,7 @@
 # cis-operator
 
-This is an operator that can run on a given Kubernetes cluster and provide ability to run security scans
-as per the CIS benchmarks, on the cluster.
+The cis-operator enables running CIS benchmark security scans on a Kubernetes cluster and generate compliance reports that can be downloaded.
+Benchmarks tests and the execution logic lives on [rancher/security].
 
 ## Building
 
@@ -13,6 +13,28 @@ as per the CIS benchmarks, on the cluster.
 - `kubectl apply -f crds/`
 2. Install the operator
 `./bin/cis-operator`
+
+
+## Branches and Releases
+The current branch strategy for `rancher/cis-operator` is laid out below:
+
+| Branch                | Tag      | Rancher                |
+|-----------------------|----------|------------------------|
+| `main`                | `head`   | `main` branch (`head`) |
+| `release/v1.2`        | `v1.2.x` | `v2.9.x`               |
+| `release/v1.1`        | `v1.1.x` | `v2.8.x`               |
+| `master` (deprecated) | `v1.0.x` | `v2.7.x`,`v2.8.x`      |
+
+Note that it aligns with Rancher Manager releases to maximize compatibility
+within the ecosystem. This includes k8s dependencies that the Rancher release
+aims to support, meaning that cis-operator should use the same k8s minor release
+that the Rancher release line it aims to support.
+
+Active development takes place against `main`. Release branches are only used for
+bug fixes and security-related dependency bumps.
+
+Refer to the [Support Compatibility Matrix](https://www.suse.com/suse-rancher/support-matrix/)
+for official compatibility information.
 
 ## License
 Copyright (c) 2019 [Rancher Labs, Inc.](http://rancher.com)
@@ -28,3 +50,5 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+[rancher/security]: https://github.com/rancher/security-scan
