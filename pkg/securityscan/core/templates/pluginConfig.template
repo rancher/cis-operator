@@ -40,13 +40,16 @@ data:
         name: etc-group
       - hostPath:
           path: /var/lib/rancher
-        name: rke2-root
+        name: var-rancher
       - hostPath:
           path: /etc/rancher
-        name: rke2-root-config
+        name: etc-rancher
       - hostPath:
           path: /etc/cni/net.d
-        name: rke2-cni
+        name: etc-cni
+      - hostPath:
+          path: /var/lib/cni
+        name: var-cni
       - hostPath:
           path: /var/log
         name: var-log
@@ -112,13 +115,16 @@ data:
         name: etc-group
         readOnly: true
       - mountPath: /var/lib/rancher
-        name: rke2-root
+        name: var-rancher
         readOnly: true
       - mountPath: /etc/rancher
-        name: rke2-root-config
+        name: etc-rancher
         readOnly: true
       - mountPath: /etc/cni/net.d
-        name: rke2-cni
+        name: etc-cni
+        readOnly: true
+      - mountPath: /var/lib/cni
+        name: var-cni
         readOnly: true
       - mountPath: /var/log/
         name: var-log
