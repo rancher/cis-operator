@@ -1,35 +1,8 @@
----
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: default-clusterscanprofiles
-  namespace: cis-operator-system
-data:
-  default: "k3s-cis-1.23-profile-permissive"
----
-apiVersion: cis.cattle.io/v1
-kind: ClusterScanProfile
-metadata:
-  name: k3s-cis-1.23-profile-permissive
-  annotations:
-    clusterscanprofile.cis.cattle.io/builtin: "true"
-spec:
-  benchmarkVersion: k3s-cis-1.23-permissive
----
-apiVersion: cis.cattle.io/v1
-kind: ClusterScanBenchmark
-metadata:
-  name: k3s-cis-1.23-permissive
-spec:
-  clusterProvider: k3s
-  minKubernetesVersion: "1.22.0"
-  maxKubernetesVersion: "1.25.x"
----
 apiVersion: cis.cattle.io/v1
 kind: ClusterScan
 metadata:
   name: k3s-e2e-scan
   namespace: cis-operator-system
 spec:
-  scanProfileName: k3s-cis-1.23-profile-permissive
+  scanProfileName: k3s-cis-1.7-profile-permissive
   scoreWarning: pass
