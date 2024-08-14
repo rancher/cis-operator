@@ -1,5 +1,5 @@
 # renovate: datasource=github-release-attachments depName=golangci/golangci-lint
-GOLANGCI_VERSION ?= v1.59.1
+GOLANGCI_VERSION ?= v1.60.1
 # renovate: datasource=github-release-attachments depName=k3d-io/k3d
 K3D_VERSION ?= v5.7.3
 
