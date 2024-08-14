@@ -1,7 +1,0 @@
----
-apiVersion: cis.cattle.io/v1
-kind: ClusterScan
-metadata:
-  name: run-gke-scan
-spec:
-  scanProfileName: gke-profile
