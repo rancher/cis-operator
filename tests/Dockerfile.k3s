@@ -5,7 +5,7 @@ FROM rancher/k3s:v1.25.6-k3s1
 
 # Upstream does not have files /etc/passwd nor /etc/group
 # which causes cis-operator to fail when scheduling a
-# running that maps those files from the "host".
+# running container that maps those files from the "host".
 RUN echo "root:!:0:0::/:/bin/false" > /etc/passwd && \
     touch /etc/group
 

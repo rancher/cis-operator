@@ -49,11 +49,9 @@ push-image: buildx-machine ## build the container image targeting all platforms 
 		--build-arg VERSION=$(VERSION) --platform=$(TARGET_PLATFORMS) -t "$(IMAGE)" --push .
 	@echo "Pushed $(IMAGE)"
 
-e2e: $(K3D) $(KUBECTL) build-image ## Run E2E tests.
-	K3D=$(K3D) KUBECTL=$(KUBECTL) VERSION=$(VERSION) \
-	IMAGE=$(IMAGE) SECURITY_SCAN_VERSION=$(SECURITY_SCAN_VERSION) \
-	SONOBUOY_VERSION=$(SONOBUOY_VERSION) CORE_DNS_VERSION=$(CORE_DNS_VERSION) \
-	KLIPPER_HELM_VERSION=$(KLIPPER_HELM_VERSION) \
+e2e: $(K3D) $(KUBECTL) $(HELM) build-image ## Run E2E tests.
+	K3D=$(K3D) KUBECTL=$(KUBECTL) HELM=$(HELM) VERSION=$(VERSION) \
+	IMAGE=$(IMAGE) \
 		./hack/e2e
 
 generate: ## Run code generation logic.

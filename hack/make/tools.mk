@@ -21,6 +21,18 @@ $(KUBECTL):
 	echo "$(RESULT)  $(KUBECTL)" | sha256sum -c -
 	chmod u+x $(KUBECTL)
 
+HELM = $(TOOLS_BIN)/helm-$(HELM_VERSION)
+$(HELM):
+	rm -rf $(TOOLS_BIN)/helm*
+	mkdir -p $(TOOLS_BIN)/tmp-helm
+	curl --output $(TOOLS_BIN)/helm.tar.gz -sSfL "https://get.helm.sh/helm-$(HELM_VERSION)-linux-$(shell dpkg --print-architecture).tar.gz"
+	$(call indirect-value,HELM_SUM)
+	echo "$(RESULT)  $(TOOLS_BIN)/helm.tar.gz" | sha256sum -c -
+	tar -xf $(TOOLS_BIN)/helm.tar.gz --strip-components 1 -C $(TOOLS_BIN)/tmp-helm
+	mv $(TOOLS_BIN)/tmp-helm/helm $(HELM)
+	chmod u+x $(HELM)
+	rm -rf $(TOOLS_BIN)/helm.tar.gz $(TOOLS_BIN)/tmp-helm
+
 # indirect-value gets the value of a Makefile var from a var that contains its name.
 # This is equivalent to ${!var} in bash.
 define indirect-value
