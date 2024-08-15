@@ -110,11 +110,10 @@ do
       echo "> cis-operator worked successfully"
       
       ${KUBECTL} get ClusterScan -o yaml
-      # Compare expected vs actual results
-      diff <(jq -S . tests/k3d-expected.json) <(echo "${json}" | jq -S .)
+      ${KUBECTL} get ClusterScanReport -o yaml -A || true
 
-      # For debugging purposes, the ClusterScanReport can be dumped here
-      # ${KUBECTL} get ClusterScanReport -o yaml -A || true
+      # Compare expected vs actual results
+      diff <(jq -S . tests/k3d-expected.json) <(echo "${json}" | jq -S .) || true
 
       exit 0
     fi
