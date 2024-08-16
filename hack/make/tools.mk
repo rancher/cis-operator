@@ -1,4 +1,13 @@
 TOOLS_BIN := $(shell mkdir -p build/tools && realpath build/tools)
+OS_NAME = $(shell uname -s | tr A-Z a-z)
+OS_ARCH = $(shell uname -m)
+
+ifeq ($(OS_ARCH),x86_64)
+	OS_ARCH = amd64
+endif
+ifeq ($(OS_ARCH),aarch64)
+	OS_ARCH = arm64
+endif
 
 K3D = $(TOOLS_BIN)/k3d-$(K3D_VERSION)
 $(K3D):
@@ -16,7 +25,7 @@ $(GOLANGCI):
 KUBECTL = $(TOOLS_BIN)/kubectl-$(KUBECTL_VERSION)
 $(KUBECTL):
 	rm -f $(TOOLS_BIN)/kubectl*
-	curl --output $(KUBECTL) -sSfL "https://dl.k8s.io/release/v$(KUBECTL_VERSION)/bin/linux/$(shell dpkg --print-architecture)/kubectl"
+	curl --output $(KUBECTL) -sSfL "https://dl.k8s.io/release/v$(KUBECTL_VERSION)/bin/$(OS_NAME)/$(OS_ARCH)/kubectl"
 	$(call indirect-value,KUBECTL_SUM)
 	echo "$(RESULT)  $(KUBECTL)" | sha256sum -c -
 	chmod u+x $(KUBECTL)
@@ -25,7 +34,7 @@ HELM = $(TOOLS_BIN)/helm-$(HELM_VERSION)
 $(HELM):
 	rm -rf $(TOOLS_BIN)/helm*
 	mkdir -p $(TOOLS_BIN)/tmp-helm
-	curl --output $(TOOLS_BIN)/helm.tar.gz -sSfL "https://get.helm.sh/helm-$(HELM_VERSION)-linux-$(shell dpkg --print-architecture).tar.gz"
+	curl --output $(TOOLS_BIN)/helm.tar.gz -sSfL "https://get.helm.sh/helm-$(HELM_VERSION)-$(OS_NAME)-$(OS_ARCH).tar.gz"
 	$(call indirect-value,HELM_SUM)
 	echo "$(RESULT)  $(TOOLS_BIN)/helm.tar.gz" | sha256sum -c -
 	tar -xf $(TOOLS_BIN)/helm.tar.gz --strip-components 1 -C $(TOOLS_BIN)/tmp-helm
