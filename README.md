@@ -1,7 +1,7 @@
 # cis-operator
 
 The cis-operator enables running CIS benchmark security scans on a Kubernetes cluster and generate compliance reports that can be downloaded.
-Benchmarks tests and the execution logic lives on [rancher/security].
+Benchmarks tests and the execution logic lives on [rancher/security-scan].
 
 ## Building
 
@@ -51,4 +51,4 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-[rancher/security]: https://github.com/rancher/security-scan
+[rancher/security-scan]: https://github.com/rancher/security-scan
