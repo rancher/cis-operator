@@ -80,7 +80,7 @@ ${HELM} install --create-namespace --namespace cis-operator-system \
 echo "> Wait for cis-operator to be ready"
 # Can't kubectl wait before the deployment schedules the pod, so
 # wait 10 seconds for that to happen first.
-sleep 10s
+sleep 10
 ${KUBECTL} wait --for=condition=ready -n cis-operator-system pod -l cis.cattle.io/operator=cis-operator --timeout=30s
 
 echo "> Create ClusterScan"
@@ -125,5 +125,5 @@ do
   fi
 
   dump_logs
-  sleep 2s
+  sleep 2
 done
