@@ -1,67 +1,3 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: cis-operator-system
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: cis-operator
-  namespace: cis-operator-system
-  labels:
-    cis.cattle.io/operator: cis-operator
-spec:
-  selector:
-    matchLabels:
-      cis.cattle.io/operator: cis-operator
-  template:
-    metadata:
-      labels:
-        cis.cattle.io/operator: cis-operator
-    spec:
-      serviceAccountName: cis-operator-serviceaccount
-      containers:
-      - name: cis-operator
-        image: ${IMAGE}
-        imagePullPolicy: IfNotPresent
-        ports:
-        - name: cismetrics
-          containerPort: 8080
-        env:
-        - name: SECURITY_SCAN_IMAGE
-          value: 'rancher/security-scan'
-        - name: SECURITY_SCAN_IMAGE_TAG
-          value: '${SECURITY_SCAN_VERSION}'
-        - name: SONOBUOY_IMAGE
-          value: 'rancher/mirrored-sonobuoy-sonobuoy'
-        - name: SONOBUOY_IMAGE_TAG
-          value: '${SONOBUOY_VERSION}'
-        - name: CIS_ALERTS_METRICS_PORT
-          value: '8080'
-        - name: CIS_ALERTS_SEVERITY
-          value: warning
-        - name: CIS_ALERTS_ENABLED
-          value: 'false'
-        - name: CLUSTER_NAME
-          value: ''
-        - name: CIS_OPERATOR_DEBUG
-          value: 'true'
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  namespace: cis-operator-system
-  name: cis-operator-serviceaccount
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  namespace: cis-operator-system
-  labels:
-    app.kubernetes.io/name: rancher-cis-benchmark
-    app.kubernetes.io/instance: release-name
-  name: cis-serviceaccount
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -179,7 +115,7 @@ metadata:
   labels:
     app.kubernetes.io/name: rancher-cis-benchmark
     app.kubernetes.io/instance: release-name
-  namespace: cis-operator-system
+  namespace: {{ template "cis.namespace" . }}
 rules:
 - apiGroups:
   - ""
@@ -213,6 +149,12 @@ rules:
   - "daemonsets"
   verbs:
   - "*"
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - prometheusrules
+  verbs:
+  - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -228,7 +170,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: cis-operator-serviceaccount
-  namespace: cis-operator-system
+  namespace: {{ template "cis.namespace" . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -244,7 +186,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: cis-serviceaccount
-  namespace: cis-operator-system
+  namespace: {{ template "cis.namespace" . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -253,16 +195,15 @@ metadata:
     app.kubernetes.io/name: rancher-cis-benchmark
     app.kubernetes.io/instance: release-name
   name: cis-operator-rolebinding
-  namespace: cis-operator-system
+  namespace: {{ template "cis.namespace" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: cis-operator-role
 subjects:
 - kind: ServiceAccount
-  name: cis-serviceaccount  
-  namespace: cis-operator-system
+  name: cis-serviceaccount
+  namespace: {{ template "cis.namespace" . }}
 - kind: ServiceAccount
   name: cis-operator-serviceaccount
-  namespace: cis-operator-system
----
+  namespace: {{ template "cis.namespace" . }}

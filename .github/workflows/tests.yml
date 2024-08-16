@@ -43,11 +43,22 @@ jobs:
     - run: make test
 
   e2e:
+    strategy:
+      fail-fast: false
+      matrix:
+        # Works on macos-12, but takes a very long time to run so this
+        # is currently disabled.
+        platform: [ubuntu-latest]
   
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform }}
     needs: [ validate ]
 
     steps:
+    - name: Setup docker (MacOS only)
+      if: runner.os == 'macos'
+      run: |
+        brew install docker
+        colima start
     - name: Setup QEMU
       uses: docker/setup-qemu-action@v3
     - name: Setup Docker Buildx

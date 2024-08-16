@@ -5,15 +5,14 @@ set -eox pipefail
 # to exist within PATH.
 export RUNNER="${RUNNER:-docker}"
 export KUBECTL="${KUBECTL:-kubectl}"
+export HELM="${HELM:-helm}"
 export K3D="${K3D:-k3d}"
 
 export ARCH="${ARCH:-amd64}"
 export IMAGE="${IMAGE}"
 
-export SECURITY_SCAN_IMAGE="rancher/security-scan:${SECURITY_SCAN_VERSION}"
-export SONOBUOY_IMAGE="rancher/mirrored-sonobuoy-sonobuoy:${SONOBUOY_VERSION}"
-export COREDNS_IMAGE="rancher/mirrored-coredns-coredns:${CORE_DNS_VERSION}"
-export HELM_IMAGE="rancher/klipper-helm:${KLIPPER_HELM_VERSION}"
+export SECURITY_SCAN_IMAGE="$(yq .image.securityScan.repository < ./chart/values.yaml):$(yq .image.securityScan.tag < ./chart/values.yaml)"
+export SONOBUOY_IMAGE="$(yq .image.sonobuoy.repository < ./chart/values.yaml):$(yq .image.sonobuoy.tag < ./chart/values.yaml)"
 
 CLUSTER_NAME="cis-op-e2e-${RANDOM}"
 E2E_TIMEOUT_SECONDS=200
@@ -62,8 +61,6 @@ ${K3D} image import "${IMAGE}" -c "${CLUSTER_NAME}"
 
 pull_image "${SECURITY_SCAN_IMAGE}"
 pull_image "${SONOBUOY_IMAGE}"
-pull_image "${COREDNS_IMAGE}"
-pull_image "${HELM_IMAGE}"
 
 # cis-operator may have intermittent issues if key components
 # from the cluster aren't ready.
@@ -74,12 +71,16 @@ ${KUBECTL} wait --timeout=60s --for=condition=ready -n kube-system pod -l k8s-ap
 
 echo "> Deploying cis-operator"
 ${KUBECTL} apply -f ./crds
-envsubst < ./tests/deploy.yaml | ${KUBECTL} apply -f -
+
+${HELM} install --create-namespace --namespace cis-operator-system \
+  --set "image.cisoperator.repository=${IMAGE%%:*}" \
+  --set "image.cisoperator.tag=${IMAGE#*:}" \
+  cis-benchmark ./chart
 
 echo "> Wait for cis-operator to be ready"
 # Can't kubectl wait before the deployment schedules the pod, so
 # wait 10 seconds for that to happen first.
-sleep 10s
+sleep 10
 ${KUBECTL} wait --for=condition=ready -n cis-operator-system pod -l cis.cattle.io/operator=cis-operator --timeout=30s
 
 echo "> Create ClusterScan"
@@ -109,7 +110,10 @@ do
       echo "> cis-operator worked successfully"
       
       ${KUBECTL} get ClusterScan -o yaml
-      echo "${json}" | jq .
+      ${KUBECTL} get ClusterScanReport -o yaml -A || true
+
+      # Compare expected vs actual results
+      diff <(jq -S . tests/k3d-expected.json) <(echo "${json}" | jq -S .) || true
 
       exit 0
     fi
@@ -121,5 +125,5 @@ do
   fi
 
   dump_logs
-  sleep 2s
+  sleep 2
 done

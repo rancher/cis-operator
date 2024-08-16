@@ -57,7 +57,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					v1.ClusterScanConditionFailed.True(obj)
 					message := fmt.Sprintf("Error validating ClusterScanProfile %v, error: %v", obj.Spec.ScanProfileName, err)
 					v1.ClusterScanConditionFailed.Message(obj, message)
-					logrus.Errorf(message)
+					logrus.Error(message)
 					c.setClusterScanStatusDisplay(obj)
 					return objects, obj.Status, nil
 				}
@@ -66,7 +66,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					v1.ClusterScanConditionFailed.True(obj)
 					message := fmt.Sprintf("Error validating Schedule %v, error: %v", obj.Spec.ScheduledScanConfig.CronSchedule, err)
 					v1.ClusterScanConditionFailed.Message(obj, message)
-					logrus.Errorf(message)
+					logrus.Error(message)
 					c.setClusterScanStatusDisplay(obj)
 					return objects, obj.Status, nil
 				}
@@ -101,7 +101,7 @@ func (c *Controller) handleClusterScans(ctx context.Context) error {
 					v1.ClusterScanConditionFailed.True(obj)
 					message := fmt.Sprintf("Error when creating ConfigMaps: %v", err)
 					v1.ClusterScanConditionFailed.Message(obj, message)
-					logrus.Errorf(message)
+					logrus.Error(message)
 					c.setClusterScanStatusDisplay(obj)
 					return objects, obj.Status, nil
 				}
