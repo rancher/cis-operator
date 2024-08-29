@@ -10,7 +10,7 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.71.2
 	github.com/prometheus/client_golang v1.19.1
 	github.com/rancher/kubernetes-provider-detector v0.1.5
-	github.com/rancher/lasso v0.0.0-20240805175815-a40054127062
+	github.com/rancher/lasso v0.0.0-20240828170735-d79536cac289
 	github.com/rancher/security-scan v0.2.16
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.9.3
