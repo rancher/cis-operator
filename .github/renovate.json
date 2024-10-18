@@ -3,7 +3,59 @@
     "github>rancher/renovate-config#release"
   ],
   "baseBranches": [
-    "main"
+    "main", 
+    "release/v1.1", 
+    "release/v1.2", 
+    "release/v1.3"
   ],
-  "prHourlyLimit": 2
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "matchBaseBranches": [
+        "main",
+        "release/v1.3"
+      ],
+      "matchDepNames": [
+        "k8s.io/api",
+        "k8s.io/apiextensions-apiserver",
+        "k8s.io/apimachinery",
+        "k8s.io/client-go"
+      ],
+      "allowedVersions": "<1.32.0"
+    },
+    {
+      "matchBaseBranches": ["release/v1.2"],
+      "matchDepNames": [
+        "github.com/rancher/lasso"
+      ],
+      "allowedVersions": "<v0.0.0-20240924233157-8f384efc8813"
+    },
+    {
+      "matchBaseBranches": ["release/v1.2"],
+      "matchDepNames": [
+        "k8s.io/api",
+        "k8s.io/apiextensions-apiserver",
+        "k8s.io/apimachinery",
+        "k8s.io/client-go"
+      ],
+      "allowedVersions": "<1.31.0"
+    },
+    {
+      "matchBaseBranches": ["release/v1.1"],
+      "matchDepNames": [
+        "github.com/rancher/lasso"
+      ],
+      "allowedVersions": "<v0.0.0-20240705194423-b2a060d103c1"
+    },
+    {
+      "matchBaseBranches": ["release/v1.1"],
+      "matchDepNames": [
+        "k8s.io/api",
+        "k8s.io/apiextensions-apiserver",
+        "k8s.io/apimachinery",
+        "k8s.io/client-go"
+      ],
+      "allowedVersions": "<1.29.0"
+    }
+  ]
 }
