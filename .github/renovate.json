@@ -24,6 +24,15 @@
       "allowedVersions": "<1.32.0"
     },
     {
+      "matchBaseBranches": [
+        "release/v1.3"
+      ],
+      "matchDepNames": [
+        "github.com/rancher/security-scan"
+      ],
+      "allowedVersions": "<v0.6.0"
+    },
+    {
       "matchBaseBranches": ["release/v1.2"],
       "matchDepNames": [
         "github.com/rancher/lasso"
@@ -41,6 +50,13 @@
       "allowedVersions": "<1.31.0"
     },
     {
+      "matchBaseBranches": ["release/v1.2"],
+      "matchDepNames": [
+        "github.com/rancher/security-scan"
+      ],
+      "allowedVersions": "<v0.5.0"
+    },
+    {
       "matchBaseBranches": ["release/v1.1"],
       "matchDepNames": [
         "github.com/rancher/lasso"
@@ -56,6 +72,13 @@
         "k8s.io/client-go"
       ],
       "allowedVersions": "<1.29.0"
+    },
+    {
+      "matchBaseBranches": ["release/v1.1"],
+      "matchDepNames": [
+        "github.com/rancher/security-scan"
+      ],
+      "allowedVersions": "<v0.4.0"
     }
   ]
 }
