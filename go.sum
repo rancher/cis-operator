@@ -220,8 +220,8 @@ github.com/rancher/lasso v0.0.0-20240828170735-d79536cac289 h1:gbV7qLOcEgyTgep2o
 github.com/rancher/lasso v0.0.0-20240828170735-d79536cac289/go.mod h1:Efx/+BbH3ivmnTPLu5cA3Gc9wT5oyGS0LBcqEuYTx+A=
 github.com/rancher/security-scan v0.2.18 h1:iFoMyGDL+1e40Wyd1HBWwTpJv+grqdRHyn65A4/sY6I=
 github.com/rancher/security-scan v0.2.18/go.mod h1:XqQB/DV0kOd2DD5UKH9bbwpww6LbjIE+X1GvD1ap+xI=
-github.com/rancher/wrangler v1.1.1 h1:wmqUwqc2M7ADfXnBCJTFkTB5ZREWpD78rnZMzmxwMvM=
-github.com/rancher/wrangler v1.1.1/go.mod h1:ioVbKupzcBOdzsl55MvEDN0R1wdGggj8iNCYGFI5JvM=
+github.com/rancher/wrangler v1.1.2 h1:oXbXo9k7y/H4drUpb4RM1c++vT9O3rpoNEfyusGykiU=
+github.com/rancher/wrangler v1.1.2/go.mod h1:2k9MyhlBdjcutcBGoOJSUAz0HgDAXnMjv81d3n/AaQc=
 github.com/robfig/cron v1.2.0 h1:ZjScXvvxeQ63Dbyxy76Fj3AT3Ut0aKsyd2/tl3DTMuQ=
 github.com/robfig/cron v1.2.0/go.mod h1:JGuDeoQd7Z6yL4zQhZ3OPEVHB7fL6Ka6skscFHfmt2k=
 github.com/rogpeppe/go-internal v1.11.0 h1:cWPaGQEPrBb5/AsnsZesgZZ9yb1OQ+GOISoDNXVBh4M=
