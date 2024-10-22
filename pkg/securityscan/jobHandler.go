@@ -13,13 +13,13 @@ import (
 
 	"github.com/rancher/security-scan/pkg/kb-summarizer/report"
 	reportLibrary "github.com/rancher/security-scan/pkg/kb-summarizer/report"
-	batchctlv1 "github.com/rancher/wrangler/pkg/generated/controllers/batch/v1"
+	batchctlv1 "github.com/rancher/wrangler/v3/pkg/generated/controllers/batch/v1"
 
 	"time"
 
 	cisoperatorapi "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io"
 	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
-	"github.com/rancher/wrangler/pkg/name"
+	"github.com/rancher/wrangler/v3/pkg/name"
 )
 
 var sonobuoyWorkerLabel = map[string]string{"sonobuoy-plugin": "rancher-kube-bench"}
