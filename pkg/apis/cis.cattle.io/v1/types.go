@@ -2,7 +2,7 @@ package v1
 
 import (
 	condition "github.com/rancher/cis-operator/pkg/condition"
-	"github.com/rancher/wrangler/pkg/genericcondition"
+	"github.com/rancher/wrangler/v3/pkg/genericcondition"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
