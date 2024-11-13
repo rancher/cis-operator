@@ -8,7 +8,10 @@
     "release/v1.2", 
     "release/v1.3"
   ],
-  "prHourlyLimit": 2,
+  "ignoreDeps":[
+    "github.com/rancher/lasso"
+  ],
+  "prHourlyLimit": 4,
   "packageRules": [
     {
       "matchBaseBranches": [
