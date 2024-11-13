@@ -21,7 +21,7 @@
         "k8s.io/apimachinery",
         "k8s.io/client-go"
       ],
-      "allowedVersions": "<1.32.0"
+      "allowedVersions": "<0.32.0"
     },
     {
       "matchBaseBranches": [
@@ -47,7 +47,7 @@
         "k8s.io/apimachinery",
         "k8s.io/client-go"
       ],
-      "allowedVersions": "<1.31.0"
+      "allowedVersions": "<0.31.0"
     },
     {
       "matchBaseBranches": ["release/v1.2"],
@@ -71,7 +71,7 @@
         "k8s.io/apimachinery",
         "k8s.io/client-go"
       ],
-      "allowedVersions": "<1.29.0"
+      "allowedVersions": "<0.31.0"
     },
     {
       "matchBaseBranches": ["release/v1.1"],
