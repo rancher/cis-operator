@@ -12,7 +12,7 @@ import (
 	k8Yaml "k8s.io/apimachinery/pkg/util/yaml"
 
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
-	"github.com/rancher/wrangler/pkg/name"
+	"github.com/rancher/wrangler/v3/pkg/name"
 )
 
 //go:embed templates/prometheusrule.template

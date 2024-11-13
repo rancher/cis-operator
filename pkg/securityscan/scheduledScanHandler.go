@@ -8,8 +8,8 @@ import (
 	"time"
 
 	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
-	"github.com/rancher/wrangler/pkg/genericcondition"
-	"github.com/rancher/wrangler/pkg/name"
+	"github.com/rancher/wrangler/v3/pkg/genericcondition"
+	"github.com/rancher/wrangler/v3/pkg/name"
 	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

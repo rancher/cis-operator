@@ -14,8 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/rancher/wrangler/pkg/generic"
-	"github.com/rancher/wrangler/pkg/genericcondition"
+	"github.com/rancher/wrangler/v3/pkg/generic"
+	"github.com/rancher/wrangler/v3/pkg/genericcondition"
 
 	cisoperatorapi "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io"
 	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
