@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	controllergen "github.com/rancher/wrangler/pkg/controller-gen"
-	"github.com/rancher/wrangler/pkg/controller-gen/args"
+	controllergen "github.com/rancher/wrangler/v3/pkg/controller-gen"
+	"github.com/rancher/wrangler/v3/pkg/controller-gen/args"
 
 	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 	"github.com/rancher/cis-operator/pkg/crds"
