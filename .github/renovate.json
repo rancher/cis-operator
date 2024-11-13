@@ -79,6 +79,23 @@
         "github.com/rancher/security-scan"
       ],
       "allowedVersions": "<v0.4.0"
+    },
+    {
+      "matchBaseBranches": ["release/v1.3"],
+      "matchDepNames": [
+        "github.com/prometheus-operator/prometheus-operator"
+      ],
+      "allowedVersions": "<v0.79.0"
+    },
+    {
+      "matchBaseBranches": [
+        "release/v1.1",
+        "release/v1.2"
+      ],
+      "matchDepNames": [
+        "github.com/prometheus-operator/prometheus-operator"
+      ],
+      "allowedVersions": "<v0.75.0"
     }
   ]
 }
