@@ -4,6 +4,12 @@ go 1.23
 
 toolchain go1.23.3
 
+replace (
+	// sigs.k8s.io/structured-merge-diff/v4 v4.4.2 breaks make gen.	
+	// https://github.com/kubernetes-sigs/structured-merge-diff/issues/268
+ 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
+)
+
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.78.1
