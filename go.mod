@@ -7,7 +7,7 @@ toolchain go1.23.3
 replace (
 	// sigs.k8s.io/structured-merge-diff/v4 v4.4.2 breaks make gen.	
 	// https://github.com/kubernetes-sigs/structured-merge-diff/issues/268
- 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
+ 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.3
 )
 
 require (
