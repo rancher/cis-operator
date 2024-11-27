@@ -56,6 +56,12 @@ data:
       - hostPath:
           path: /run/log
         name: run-log
+      - hostPath:
+          path: /etc/kubernetes/kubelet
+        name: etc-kubelet
+      - hostPath:
+          path: /var/lib/kubelet
+        name: var-kubelet
       {{- if .isCustomBenchmark }}
       - configMap:
           defaultMode: 420
@@ -131,6 +137,12 @@ data:
         readOnly: true
       - mountPath: /run/log/
         name: run-log
+        readOnly: true
+      - mountPath: /etc/kubernetes/kubelet
+        name: etc-kubelet
+        readOnly: true
+      - mountPath: /var/lib/kubelet
+        name: var-kubelet
         readOnly: true
       {{- if .isCustomBenchmark }}
       - mountPath: /etc/kbs/custombenchmark/cfg
