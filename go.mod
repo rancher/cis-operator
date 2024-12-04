@@ -4,6 +4,13 @@ go 1.22.0
 
 toolchain go1.22.10
 
+// pinned these to keep deps at v0.30.x only, kube-bench bump is causing these to get updated
+replace (
+	k8s.io/api => k8s.io/api v0.30.7
+	k8s.io/apimachinery => k8s.io/apimachinery v0.30.7
+	k8s.io/client-go => k8s.io/client-go v0.30.7
+)
+
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.76.2
@@ -11,23 +18,23 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/rancher/kubernetes-provider-detector v0.1.5
 	github.com/rancher/lasso v0.0.0-20240828170735-d79536cac289
-	github.com/rancher/security-scan v0.3.0
+	github.com/rancher/security-scan v0.3.1
 	github.com/rancher/wrangler/v3 v3.0.0
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli v1.22.16
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20231030152948-74c2ba9521f1
-	k8s.io/api v0.30.7
+	k8s.io/api v0.31.2
 	k8s.io/apiextensions-apiserver v0.30.7
-	k8s.io/apimachinery v0.30.7
-	k8s.io/client-go v0.30.7
+	k8s.io/apimachinery v0.31.2
+	k8s.io/client-go v0.31.2
 )
 
 require (
-	github.com/aquasecurity/kube-bench v0.9.1 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.31.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/securityhub v1.53.3 // indirect
-	github.com/aws/smithy-go v1.21.0 // indirect
+	github.com/aquasecurity/kube-bench v0.9.2 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.32.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/securityhub v1.54.6 // indirect
+	github.com/aws/smithy-go v1.22.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
@@ -41,7 +48,7 @@ require (
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/glog v1.2.2 // indirect
+	github.com/golang/glog v1.2.3 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -79,7 +86,7 @@ require (
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/term v0.23.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
