@@ -2,7 +2,7 @@ module github.com/rancher/cis-operator
 
 go 1.22.0
 
-toolchain go1.22.9
+toolchain go1.22.10
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
