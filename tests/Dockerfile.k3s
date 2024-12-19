@@ -1,7 +1,7 @@
 # This image is solely used for testing purposes
 # and aims to wrap around k3s, making any needed
 # changes for the cis-operator tests to work.
-FROM rancher/k3s:v1.31.2-k3s1
+FROM rancher/k3s:v1.31.4-k3s1
 
 # Upstream does not have files /etc/passwd nor /etc/group
 # which causes cis-operator to fail when scheduling a
