@@ -16,6 +16,7 @@ Benchmarks tests and the execution logic lives on [rancher/security-scan].
 
 
 ## Branches and Releases
+### General information
 The current branch strategy for `rancher/cis-operator` is laid out below:
 
 | Branch                | Tag      |Security-Scan          | Rancher                   |
@@ -36,6 +37,11 @@ bug fixes and security-related dependency bumps.
 
 Refer to the [Support Compatibility Matrix](https://www.suse.com/suse-rancher/support-matrix/)
 for official compatibility information.
+
+### How future release branches should be generated
+Follow these guidelines when releasing new branches:
+1. Name convention to be used: `release/v1.x.x`.
+2. Update the [Branch and Releases](https://github.com/rancher/cis-operator#branches-and-releases) table with the new branches and remove the no longer needed branches.
 
 ## License
 Copyright (c) 2019 [Rancher Labs, Inc.](http://rancher.com)
