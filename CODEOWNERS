@@ -5,5 +5,9 @@ hack                @rancher/infracloud-team
 package/Dockerfile  @rancher/infracloud-team
 tests               @rancher/infracloud-team
 
+# rancher-cis-benchmark chart Ownership
+chart               @rancher/infracloud-team
+crds                @rancher/infracloud-team
+
 # Default Code Ownership
 *                   @rancher/rancher-security
