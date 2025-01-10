@@ -1,0 +1,75 @@
+name: Check latest images for CVEs
+on:
+  schedule:
+    - cron: 0 9 10,20,30 * *
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  check-released-images:
+    strategy:
+      matrix:
+        include:
+          - branch: release/v1.3
+
+    name: Scanning ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ github.token }}
+          sparse-checkout: |
+            .github
+
+      - name: Fetch current image
+        run: |
+          IMAGE=rancher/cis-operator
+
+          wget -O chart-values.yaml https://raw.githubusercontent.com/rancher/cis-operator/refs/heads/${{ matrix.branch }}/chart/values.yaml
+          IMAGE_VERSION=$(grep -A1 "${IMAGE}" chart-values.yaml | grep "tag:" | awk '{print $2}')
+          echo "LATEST_OPERATOR_IMG=${IMAGE}:${IMAGE_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Scanning ${{ env.LATEST_OPERATOR_IMG }}
+        id: vuln-scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.LATEST_OPERATOR_IMG }}
+          scan-type: image
+          scanners: vuln
+          format: table
+          output: cve-report.txt
+          exit-code: 1
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: LOW,MEDIUM,CRITICAL,HIGH
+        continue-on-error: true
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db
+          TRIVY_DISABLE_VEX_NOTICE: true
+
+      - name: Create issue for ${{ matrix.branch }}
+        if: steps.vuln-scanner.outcome == 'failure'
+        run: |
+          if [ ! -s cve-report.txt ]
+          then 
+            echo "report file not found: exiting early"
+            exit 1
+          fi
+
+          echo "A new release is needed to mitigate CVEs in ${{ env.LATEST_OPERATOR_IMG }}:" > issue.txt
+          echo '' >> issue.txt
+          echo '```' >> issue.txt
+          cat cve-report.txt | head -c65000 >> issue.txt
+          echo '```' >> issue.txt
+
+          gh issue create \
+            --title "${{ env.ISSUE_TITLE }}" \
+            --body-file issue.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_TITLE: Patch release for ${{ matrix.branch }}
