@@ -6,9 +6,9 @@ toolchain go1.22.10
 
 // pinned these to keep deps at v0.30.x only, kube-bench bump is causing these to get updated
 replace (
-	k8s.io/api => k8s.io/api v0.30.8
-	k8s.io/apimachinery => k8s.io/apimachinery v0.30.8
-	k8s.io/client-go => k8s.io/client-go v0.30.8
+	k8s.io/api => k8s.io/api v0.30.9
+	k8s.io/apimachinery => k8s.io/apimachinery v0.30.9
+	k8s.io/client-go => k8s.io/client-go v0.30.9
 )
 
 require (
@@ -25,7 +25,7 @@ require (
 	github.com/urfave/cli v1.22.16
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20231030152948-74c2ba9521f1
 	k8s.io/api v0.31.2
-	k8s.io/apiextensions-apiserver v0.30.8
+	k8s.io/apiextensions-apiserver v0.30.9
 	k8s.io/apimachinery v0.31.2
 	k8s.io/client-go v0.31.2
 )
@@ -96,7 +96,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/code-generator v0.30.8 // indirect
+	k8s.io/code-generator v0.30.9 // indirect
 	k8s.io/gengo v0.0.0-20240228010128-51d4e06bde70 // indirect
 	k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
