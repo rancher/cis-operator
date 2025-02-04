@@ -1,6 +1,6 @@
 module github.com/rancher/cis-operator
 
-go 1.23
+go 1.23.4
 
 toolchain go1.23.5
 
@@ -11,22 +11,22 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/rancher/kubernetes-provider-detector v0.1.5
 	github.com/rancher/lasso v0.0.0-20240924233157-8f384efc8813
-	github.com/rancher/security-scan v0.5.3
+	github.com/rancher/security-scan v0.5.4-rc.1
 	github.com/rancher/wrangler/v3 v3.1.0
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli v1.22.16
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20241107225453-6018723c7405
-	k8s.io/api v0.31.5
+	k8s.io/api v0.32.0
 	k8s.io/apiextensions-apiserver v0.31.5
-	k8s.io/apimachinery v0.31.5
-	k8s.io/client-go v0.31.5
+	k8s.io/apimachinery v0.32.0
+	k8s.io/client-go v0.32.0
 )
 
 require (
-	github.com/aquasecurity/kube-bench v0.9.4 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.32.6 // indirect
-	github.com/aws/aws-sdk-go-v2/service/securityhub v1.55.0 // indirect
+	github.com/aquasecurity/kube-bench v0.10.0 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.32.8 // indirect
+	github.com/aws/aws-sdk-go-v2/service/securityhub v1.55.3 // indirect
 	github.com/aws/smithy-go v1.22.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -49,7 +49,6 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
