@@ -2,7 +2,7 @@ module github.com/rancher/cis-operator
 
 go 1.22.0
 
-toolchain go1.22.10
+toolchain go1.23.6
 
 // pinned these to keep deps at v0.30.x only, kube-bench bump is causing these to get updated
 replace (
