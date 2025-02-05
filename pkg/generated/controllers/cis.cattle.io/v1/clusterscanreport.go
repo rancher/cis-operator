@@ -1,5 +1,5 @@
 /*
-Copyright 2024 Rancher Labs, Inc.
+Copyright 2025 Rancher Labs, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,238 +19,21 @@ limitations under the License.
 package v1
 
 import (
-	"context"
-	"time"
-
 	v1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
-	"github.com/rancher/lasso/pkg/client"
-	"github.com/rancher/lasso/pkg/controller"
 	"github.com/rancher/wrangler/v3/pkg/generic"
-	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/tools/cache"
 )
 
-type ClusterScanReportHandler func(string, *v1.ClusterScanReport) (*v1.ClusterScanReport, error)
-
+// ClusterScanReportController interface for managing ClusterScanReport resources.
 type ClusterScanReportController interface {
-	generic.ControllerMeta
-	ClusterScanReportClient
-
-	OnChange(ctx context.Context, name string, sync ClusterScanReportHandler)
-	OnRemove(ctx context.Context, name string, sync ClusterScanReportHandler)
-	Enqueue(name string)
-	EnqueueAfter(name string, duration time.Duration)
-
-	Cache() ClusterScanReportCache
+	generic.NonNamespacedControllerInterface[*v1.ClusterScanReport, *v1.ClusterScanReportList]
 }
 
+// ClusterScanReportClient interface for managing ClusterScanReport resources in Kubernetes.
 type ClusterScanReportClient interface {
-	Create(*v1.ClusterScanReport) (*v1.ClusterScanReport, error)
-	Update(*v1.ClusterScanReport) (*v1.ClusterScanReport, error)
-
-	Delete(name string, options *metav1.DeleteOptions) error
-	Get(name string, options metav1.GetOptions) (*v1.ClusterScanReport, error)
-	List(opts metav1.ListOptions) (*v1.ClusterScanReportList, error)
-	Watch(opts metav1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.ClusterScanReport, err error)
+	generic.NonNamespacedClientInterface[*v1.ClusterScanReport, *v1.ClusterScanReportList]
 }
 
+// ClusterScanReportCache interface for retrieving ClusterScanReport resources in memory.
 type ClusterScanReportCache interface {
-	Get(name string) (*v1.ClusterScanReport, error)
-	List(selector labels.Selector) ([]*v1.ClusterScanReport, error)
-
-	AddIndexer(indexName string, indexer ClusterScanReportIndexer)
-	GetByIndex(indexName, key string) ([]*v1.ClusterScanReport, error)
-}
-
-type ClusterScanReportIndexer func(obj *v1.ClusterScanReport) ([]string, error)
-
-type clusterScanReportController struct {
-	controller    controller.SharedController
-	client        *client.Client
-	gvk           schema.GroupVersionKind
-	groupResource schema.GroupResource
-}
-
-func NewClusterScanReportController(gvk schema.GroupVersionKind, resource string, namespaced bool, controller controller.SharedControllerFactory) ClusterScanReportController {
-	c := controller.ForResourceKind(gvk.GroupVersion().WithResource(resource), gvk.Kind, namespaced)
-	return &clusterScanReportController{
-		controller: c,
-		client:     c.Client(),
-		gvk:        gvk,
-		groupResource: schema.GroupResource{
-			Group:    gvk.Group,
-			Resource: resource,
-		},
-	}
-}
-
-func FromClusterScanReportHandlerToHandler(sync ClusterScanReportHandler) generic.Handler {
-	return func(key string, obj runtime.Object) (ret runtime.Object, err error) {
-		var v *v1.ClusterScanReport
-		if obj == nil {
-			v, err = sync(key, nil)
-		} else {
-			v, err = sync(key, obj.(*v1.ClusterScanReport))
-		}
-		if v == nil {
-			return nil, err
-		}
-		return v, err
-	}
-}
-
-func (c *clusterScanReportController) Updater() generic.Updater {
-	return func(obj runtime.Object) (runtime.Object, error) {
-		newObj, err := c.Update(obj.(*v1.ClusterScanReport))
-		if newObj == nil {
-			return nil, err
-		}
-		return newObj, err
-	}
-}
-
-func UpdateClusterScanReportDeepCopyOnChange(client ClusterScanReportClient, obj *v1.ClusterScanReport, handler func(obj *v1.ClusterScanReport) (*v1.ClusterScanReport, error)) (*v1.ClusterScanReport, error) {
-	if obj == nil {
-		return obj, nil
-	}
-
-	copyObj := obj.DeepCopy()
-	newObj, err := handler(copyObj)
-	if newObj != nil {
-		copyObj = newObj
-	}
-	if obj.ResourceVersion == copyObj.ResourceVersion && !equality.Semantic.DeepEqual(obj, copyObj) {
-		return client.Update(copyObj)
-	}
-
-	return copyObj, err
-}
-
-func (c *clusterScanReportController) AddGenericHandler(ctx context.Context, name string, handler generic.Handler) {
-	c.controller.RegisterHandler(ctx, name, controller.SharedControllerHandlerFunc(handler))
-}
-
-func (c *clusterScanReportController) AddGenericRemoveHandler(ctx context.Context, name string, handler generic.Handler) {
-	c.AddGenericHandler(ctx, name, generic.NewRemoveHandler(name, c.Updater(), handler))
-}
-
-func (c *clusterScanReportController) OnChange(ctx context.Context, name string, sync ClusterScanReportHandler) {
-	c.AddGenericHandler(ctx, name, FromClusterScanReportHandlerToHandler(sync))
-}
-
-func (c *clusterScanReportController) OnRemove(ctx context.Context, name string, sync ClusterScanReportHandler) {
-	c.AddGenericHandler(ctx, name, generic.NewRemoveHandler(name, c.Updater(), FromClusterScanReportHandlerToHandler(sync)))
-}
-
-func (c *clusterScanReportController) Enqueue(name string) {
-	c.controller.Enqueue("", name)
-}
-
-func (c *clusterScanReportController) EnqueueAfter(name string, duration time.Duration) {
-	c.controller.EnqueueAfter("", name, duration)
-}
-
-func (c *clusterScanReportController) Informer() cache.SharedIndexInformer {
-	return c.controller.Informer()
-}
-
-func (c *clusterScanReportController) GroupVersionKind() schema.GroupVersionKind {
-	return c.gvk
-}
-
-func (c *clusterScanReportController) Cache() ClusterScanReportCache {
-	return &clusterScanReportCache{
-		indexer:  c.Informer().GetIndexer(),
-		resource: c.groupResource,
-	}
-}
-
-func (c *clusterScanReportController) Create(obj *v1.ClusterScanReport) (*v1.ClusterScanReport, error) {
-	result := &v1.ClusterScanReport{}
-	return result, c.client.Create(context.TODO(), "", obj, result, metav1.CreateOptions{})
-}
-
-func (c *clusterScanReportController) Update(obj *v1.ClusterScanReport) (*v1.ClusterScanReport, error) {
-	result := &v1.ClusterScanReport{}
-	return result, c.client.Update(context.TODO(), "", obj, result, metav1.UpdateOptions{})
-}
-
-func (c *clusterScanReportController) Delete(name string, options *metav1.DeleteOptions) error {
-	if options == nil {
-		options = &metav1.DeleteOptions{}
-	}
-	return c.client.Delete(context.TODO(), "", name, *options)
-}
-
-func (c *clusterScanReportController) Get(name string, options metav1.GetOptions) (*v1.ClusterScanReport, error) {
-	result := &v1.ClusterScanReport{}
-	return result, c.client.Get(context.TODO(), "", name, result, options)
-}
-
-func (c *clusterScanReportController) List(opts metav1.ListOptions) (*v1.ClusterScanReportList, error) {
-	result := &v1.ClusterScanReportList{}
-	return result, c.client.List(context.TODO(), "", result, opts)
-}
-
-func (c *clusterScanReportController) Watch(opts metav1.ListOptions) (watch.Interface, error) {
-	return c.client.Watch(context.TODO(), "", opts)
-}
-
-func (c *clusterScanReportController) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (*v1.ClusterScanReport, error) {
-	result := &v1.ClusterScanReport{}
-	return result, c.client.Patch(context.TODO(), "", name, pt, data, result, metav1.PatchOptions{}, subresources...)
-}
-
-type clusterScanReportCache struct {
-	indexer  cache.Indexer
-	resource schema.GroupResource
-}
-
-func (c *clusterScanReportCache) Get(name string) (*v1.ClusterScanReport, error) {
-	obj, exists, err := c.indexer.GetByKey(name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(c.resource, name)
-	}
-	return obj.(*v1.ClusterScanReport), nil
-}
-
-func (c *clusterScanReportCache) List(selector labels.Selector) (ret []*v1.ClusterScanReport, err error) {
-
-	err = cache.ListAll(c.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1.ClusterScanReport))
-	})
-
-	return ret, err
-}
-
-func (c *clusterScanReportCache) AddIndexer(indexName string, indexer ClusterScanReportIndexer) {
-	utilruntime.Must(c.indexer.AddIndexers(map[string]cache.IndexFunc{
-		indexName: func(obj interface{}) (strings []string, e error) {
-			return indexer(obj.(*v1.ClusterScanReport))
-		},
-	}))
-}
-
-func (c *clusterScanReportCache) GetByIndex(indexName, key string) (result []*v1.ClusterScanReport, err error) {
-	objs, err := c.indexer.ByIndex(indexName, key)
-	if err != nil {
-		return nil, err
-	}
-	result = make([]*v1.ClusterScanReport, 0, len(objs))
-	for _, obj := range objs {
-		result = append(result, obj.(*v1.ClusterScanReport))
-	}
-	return result, nil
+	generic.NonNamespacedCacheInterface[*v1.ClusterScanReport]
 }
