@@ -11,7 +11,7 @@ replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.31.5
 	k8s.io/client-go => k8s.io/client-go v0.31.5
 	k8s.io/gengo/v2 => k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240808142205-8e686545bdb8
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 )
 
@@ -36,7 +36,7 @@ require (
 
 require (
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/google/gnostic-models v0.6.8 // indirect
+	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
