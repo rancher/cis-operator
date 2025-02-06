@@ -9,7 +9,7 @@ replace (
 	k8s.io/api => k8s.io/api v0.30.9
 	k8s.io/apimachinery => k8s.io/apimachinery v0.30.9
 	k8s.io/client-go => k8s.io/client-go v0.30.9
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240322212309-b815d8309940
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 )
 
@@ -56,7 +56,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v1.2.4 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/gnostic-models v0.6.8 // indirect
+	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
