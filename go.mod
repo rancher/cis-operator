@@ -10,7 +10,7 @@ replace (
 	k8s.io/api => k8s.io/api v0.31.5
 	k8s.io/apimachinery => k8s.io/apimachinery v0.31.5
 	k8s.io/client-go => k8s.io/client-go v0.31.5
-	k8s.io/gengo/v2 => k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70
+	k8s.io/gengo/v2 => k8s.io/gengo/v2 v2.0.0-20250207200755-1244d31929d7
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240808142205-8e686545bdb8
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 )
