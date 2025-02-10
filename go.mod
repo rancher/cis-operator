@@ -2,7 +2,7 @@ module github.com/rancher/cis-operator
 
 go 1.23.4
 
-toolchain go1.23.5
+toolchain go1.23.6
 
 // pinned these to keep deps in sync with rancher
 replace (
