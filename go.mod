@@ -1,6 +1,6 @@
 module github.com/rancher/cis-operator
 
-go 1.23.4
+go 1.23.5
 
 toolchain go1.23.6
 
@@ -9,7 +9,7 @@ replace (
 	k8s.io/api => k8s.io/api v0.30.9
 	k8s.io/apimachinery => k8s.io/apimachinery v0.30.9
 	k8s.io/client-go => k8s.io/client-go v0.30.9
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240322212309-b815d8309940
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 )
 
@@ -20,15 +20,15 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/rancher/kubernetes-provider-detector v0.1.5
 	github.com/rancher/lasso v0.0.0-20240828170735-d79536cac289
-	github.com/rancher/security-scan v0.4.3-rc.1
+	github.com/rancher/security-scan v0.4.3-rc.2
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli v1.22.16
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20231030152948-74c2ba9521f1
-	k8s.io/api v0.32.0
+	k8s.io/api v0.32.1
 	k8s.io/apiextensions-apiserver v0.30.9
-	k8s.io/apimachinery v0.32.0
-	k8s.io/client-go v0.32.0
+	k8s.io/apimachinery v0.32.1
+	k8s.io/client-go v0.32.1
 )
 
 require (
@@ -37,10 +37,10 @@ require (
 )
 
 require (
-	github.com/aquasecurity/kube-bench v0.10.0 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.32.8 // indirect
-	github.com/aws/aws-sdk-go-v2/service/securityhub v1.55.3 // indirect
-	github.com/aws/smithy-go v1.22.1 // indirect
+	github.com/aquasecurity/kube-bench v0.10.1 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.36.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/securityhub v1.55.8 // indirect
+	github.com/aws/smithy-go v1.22.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
