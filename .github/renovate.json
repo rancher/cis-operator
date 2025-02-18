@@ -6,7 +6,8 @@
     "main", 
     "release/v1.1", 
     "release/v1.2", 
-    "release/v1.3"
+    "release/v1.3",
+    "release/v1.4"
   ],
   "ignoreDeps":[
     "github.com/rancher/lasso"
@@ -16,6 +17,18 @@
     {
       "matchBaseBranches": [
         "main",
+        "release/v1.4"
+      ],
+      "matchDepNames": [
+        "k8s.io/api",
+        "k8s.io/apiextensions-apiserver",
+        "k8s.io/apimachinery",
+        "k8s.io/client-go"
+      ],
+      "allowedVersions": "<0.33.0"
+    },
+    {
+      "matchBaseBranches": [
         "release/v1.3"
       ],
       "matchDepNames": [
@@ -25,6 +38,15 @@
         "k8s.io/client-go"
       ],
       "allowedVersions": "<0.32.0"
+    },
+    {
+      "matchBaseBranches": [
+        "release/v1.4"
+      ],
+      "matchDepNames": [
+        "github.com/rancher/security-scan"
+      ],
+      "allowedVersions": "<v0.7.0"
     },
     {
       "matchBaseBranches": [
@@ -72,7 +94,8 @@
     {
       "matchBaseBranches": ["release/v1.3"],
       "matchDepNames": [
-        "github.com/prometheus-operator/prometheus-operator"
+        "github.com/prometheus-operator/prometheus-operator/pkg/client",
+        "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
       ],
       "allowedVersions": "<v0.79.0"
     },
@@ -82,7 +105,8 @@
         "release/v1.2"
       ],
       "matchDepNames": [
-        "github.com/prometheus-operator/prometheus-operator"
+        "github.com/prometheus-operator/prometheus-operator/pkg/client",
+        "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
       ],
       "allowedVersions": "<v0.75.0"
     },
