@@ -60,7 +60,7 @@ generate: ## Run code generation logic.
 validate: validate-lint generate validate-dirty ## Run validation checks.
 
 validate-lint: $(GOLANGCI)
-	$(GOLANGCI) run
+	$(GOLANGCI) run --timeout=2m
 
 validate-dirty:
 ifdef DIRTY
