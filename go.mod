@@ -2,7 +2,7 @@ module github.com/rancher/cis-operator
 
 go 1.23.5
 
-toolchain go1.23.6
+toolchain go1.24.0
 
 // to keep dependencies in sync with rancher
 // k8s deps bumped due to kube bench bump in security-scan
