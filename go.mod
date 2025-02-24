@@ -6,10 +6,10 @@ toolchain go1.23.6
 
 // pinned these to keep deps in sync with rancher
 replace (
-	k8s.io/api => k8s.io/api v0.30.9
-	k8s.io/apimachinery => k8s.io/apimachinery v0.30.9
-	k8s.io/client-go => k8s.io/client-go v0.30.9
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340
+	k8s.io/api => k8s.io/api v0.30.10
+	k8s.io/apimachinery => k8s.io/apimachinery v0.30.10
+	k8s.io/client-go => k8s.io/client-go v0.30.10
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 )
 
@@ -26,7 +26,7 @@ require (
 	github.com/urfave/cli v1.22.16
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20231030152948-74c2ba9521f1
 	k8s.io/api v0.32.1
-	k8s.io/apiextensions-apiserver v0.30.9
+	k8s.io/apiextensions-apiserver v0.30.10
 	k8s.io/apimachinery v0.32.1
 	k8s.io/client-go v0.32.1
 )
@@ -56,7 +56,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v1.2.4 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/gnostic-models v0.6.8 // indirect
+	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -102,7 +102,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/code-generator v0.30.9 // indirect
+	k8s.io/code-generator v0.30.10 // indirect
 	k8s.io/gengo v0.0.0-20240228010128-51d4e06bde70 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f // indirect
