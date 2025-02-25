@@ -11,7 +11,7 @@ image:
     tag: v0.6.0-rc.2
   sonobuoy:
     repository: rancher/mirrored-sonobuoy-sonobuoy
-    tag: v0.57.2
+    tag: v0.57.3
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
