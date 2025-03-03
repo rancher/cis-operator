@@ -1,4 +1,4 @@
-# cis-operator
+# cis-operator [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/rancher/cis-operator/badge)](https://scorecard.dev/viewer/?uri=github.com/rancher/cis-operator)
 
 The cis-operator enables running CIS benchmark security scans on a Kubernetes cluster and generate compliance reports that can be downloaded.
 Benchmarks tests and the execution logic lives on [rancher/security-scan].
