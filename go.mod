@@ -1,8 +1,6 @@
 module github.com/rancher/cis-operator
 
-go 1.23.5
-
-toolchain go1.23.6
+go 1.23.6
 
 // pinned these to keep deps in sync with rancher
 replace (
@@ -20,7 +18,7 @@ require (
 	github.com/prometheus/client_golang v1.21.0
 	github.com/rancher/kubernetes-provider-detector v0.1.5
 	github.com/rancher/lasso v0.0.0-20240828170735-d79536cac289
-	github.com/rancher/security-scan v0.4.3
+	github.com/rancher/security-scan v0.4.4-rc.1
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli v1.22.16
@@ -37,7 +35,7 @@ require (
 )
 
 require (
-	github.com/aquasecurity/kube-bench v0.10.1 // indirect
+	github.com/aquasecurity/kube-bench v0.10.2 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.36.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/securityhub v1.55.8 // indirect
 	github.com/aws/smithy-go v1.22.2 // indirect

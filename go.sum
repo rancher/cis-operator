@@ -614,8 +614,8 @@ github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230305170008-8188dc5388df/g
 github.com/apache/arrow/go/v10 v10.0.1/go.mod h1:YvhnlEePVnBS4+0z3fhPfUy7W1Ikj0Ih0vcRo/gZ1M0=
 github.com/apache/arrow/go/v11 v11.0.0/go.mod h1:Eg5OsL5H+e299f7u5ssuXsuHQVEGC4xei5aX110hRiI=
 github.com/apache/thrift v0.16.0/go.mod h1:PHK3hniurgQaNMZYaCLEqXKsYK8upmhPbmdP2FXSqgU=
-github.com/aquasecurity/kube-bench v0.10.1 h1:SLnScd5qnlSOETodhX4iyW4beu0Ue4au1MqJ3fUDnw0=
-github.com/aquasecurity/kube-bench v0.10.1/go.mod h1:9S67UPnASLor5+11UeikBoiG//tel5BDsei0Bo8g2Pw=
+github.com/aquasecurity/kube-bench v0.10.2 h1:wVU6K/g3LJD/BAlDrphLYxs9f5PNRcon+ozZ6S/fMVU=
+github.com/aquasecurity/kube-bench v0.10.2/go.mod h1:TYImH07Qr2XA09VCBUiQDs6vilbTyourr0B+qq/AtN8=
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5/go.mod h1:wHh0iHkYZB8zMSxRWpUBQtwG5a7fFgvEO+odwuTv2gs=
 github.com/aws/aws-sdk-go-v2 v1.36.0 h1:b1wM5CcE65Ujwn565qcwgtOTT1aT4ADOHHgglKjG7fk=
 github.com/aws/aws-sdk-go-v2 v1.36.0/go.mod h1:5PMILGVKiW32oDzjj6RU52yrNrDPUHcbZQYr1sM7qmM=
@@ -1037,8 +1037,8 @@ github.com/rancher/kubernetes-provider-detector v0.1.5 h1:hWRAsWuJOemzGjz/XrbTlM
 github.com/rancher/kubernetes-provider-detector v0.1.5/go.mod h1:ypuJS7kP7rUiAn330xG46mj+Nhvym05GM8NqMVekpH0=
 github.com/rancher/lasso v0.0.0-20240828170735-d79536cac289 h1:gbV7qLOcEgyTgep2ocl8FFhfGOUMQuvfV5OIIENHWT4=
 github.com/rancher/lasso v0.0.0-20240828170735-d79536cac289/go.mod h1:Efx/+BbH3ivmnTPLu5cA3Gc9wT5oyGS0LBcqEuYTx+A=
-github.com/rancher/security-scan v0.4.3 h1:m6OQlM2+sVgbKdnU++m1VWoNpPsVg5vaQSN3hNtPyFY=
-github.com/rancher/security-scan v0.4.3/go.mod h1:LS57VSm7BMu+KMB2l/KvVfLD+uuXzgHO76WvAHorQIo=
+github.com/rancher/security-scan v0.4.4-rc.1 h1:WOHm3+uOw0AMFqaTTz9jpuyLefAMqsEO8I3THpA/xX8=
+github.com/rancher/security-scan v0.4.4-rc.1/go.mod h1:1Q3NK94YVfW0/83+wmi/YsC6z0R7guWBq78Cd3B/f1c=
 github.com/rancher/wrangler/v3 v3.0.0 h1:IHHCA+vrghJDPxjtLk4fmeSCFhNe9fFzLFj3m2B0YpA=
 github.com/rancher/wrangler/v3 v3.0.0/go.mod h1:Dfckuuq7MJk2JWVBDywRlZXMxEyPxHy4XqGrPEzu5Eg=
 github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0/go.mod h1:qqbHyh8v60DhA7CoWK5oRCqLrMHRGoxYCSS9EjAz6Eo=
