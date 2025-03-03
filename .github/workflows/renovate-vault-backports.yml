@@ -13,8 +13,9 @@ on:
         default: "false"
         type: string
   schedule:
-    # Run renovate fortnightly for backport branches.
-    - cron: '30 8,10 1,15 * *'
+    # For backport/release branches, runs twice every other day in
+    # the last third of the month.
+    - cron: '30 4,6 21-31/2 * 2-4'
 
 permissions:
   contents: read
