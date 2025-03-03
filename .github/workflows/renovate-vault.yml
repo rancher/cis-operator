@@ -12,9 +12,8 @@ on:
         required: false
         default: "false"
         type: string
-  # Run twice in the early morning (UTC) for initial and follow up steps (create pull request and merge)
   schedule:
-    - cron: '30 4,6 * * *'
+    - cron: '30 4,6 * * 1-5'
 
 permissions:
   contents: read
