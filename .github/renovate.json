@@ -3,17 +3,13 @@
     "github>rancher/renovate-config#release"
   ],
   "baseBranches": [
-    "main", 
-    "release/v1.1", 
-    "release/v1.2", 
-    "release/v1.3"
+    "main"
   ],
   "prHourlyLimit": 2,
   "packageRules": [
     {
       "matchBaseBranches": [
-        "main",
-        "release/v1.3"
+        "main"
       ],
       "matchDepNames": [
         "k8s.io/api",
@@ -21,64 +17,20 @@
         "k8s.io/apimachinery",
         "k8s.io/client-go"
       ],
-      "allowedVersions": "<1.32.0"
+      "allowedVersions": "<0.33.0"
     },
     {
+      "enabled": false,
       "matchBaseBranches": [
-        "release/v1.3"
-      ],
-      "matchDepNames": [
-        "github.com/rancher/security-scan"
-      ],
-      "allowedVersions": "<v0.6.0"
-    },
-    {
-      "matchBaseBranches": ["release/v1.2"],
-      "matchDepNames": [
-        "github.com/rancher/lasso"
-      ],
-      "allowedVersions": "<v0.0.0-20240924233157-8f384efc8813"
-    },
-    {
-      "matchBaseBranches": ["release/v1.2"],
-      "matchDepNames": [
-        "k8s.io/api",
-        "k8s.io/apiextensions-apiserver",
-        "k8s.io/apimachinery",
-        "k8s.io/client-go"
-      ],
-      "allowedVersions": "<1.31.0"
-    },
-    {
-      "matchBaseBranches": ["release/v1.2"],
-      "matchDepNames": [
-        "github.com/rancher/security-scan"
-      ],
-      "allowedVersions": "<v0.5.0"
-    },
-    {
-      "matchBaseBranches": ["release/v1.1"],
-      "matchDepNames": [
-        "github.com/rancher/lasso"
-      ],
-      "allowedVersions": "<v0.0.0-20240705194423-b2a060d103c1"
-    },
-    {
-      "matchBaseBranches": ["release/v1.1"],
-      "matchDepNames": [
-        "k8s.io/api",
-        "k8s.io/apiextensions-apiserver",
-        "k8s.io/apimachinery",
-        "k8s.io/client-go"
-      ],
-      "allowedVersions": "<1.29.0"
-    },
-    {
-      "matchBaseBranches": ["release/v1.1"],
-      "matchDepNames": [
-        "github.com/rancher/security-scan"
-      ],
-      "allowedVersions": "<v0.4.0"
+        "release/v1.1", 
+        "release/v1.2", 
+        "release/v1.3",
+        "release/v1.4"
+      ]
     }
-  ]
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true
 }
