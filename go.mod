@@ -5,9 +5,9 @@ go 1.23.6
 // to keep dependencies in sync with rancher
 // k8s deps bumped due to kube bench bump in security-scan
 replace (
-	k8s.io/api => k8s.io/api v0.31.5
-	k8s.io/apimachinery => k8s.io/apimachinery v0.31.5
-	k8s.io/client-go => k8s.io/client-go v0.31.5
+	k8s.io/api => k8s.io/api v0.31.6
+	k8s.io/apimachinery => k8s.io/apimachinery v0.31.6
+	k8s.io/client-go => k8s.io/client-go v0.31.6
 	k8s.io/gengo/v2 => k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
@@ -27,7 +27,7 @@ require (
 	github.com/urfave/cli v1.22.16
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20250228200319-bbc689cf5cfb
 	k8s.io/api v0.32.1
-	k8s.io/apiextensions-apiserver v0.31.5
+	k8s.io/apiextensions-apiserver v0.31.6
 	k8s.io/apimachinery v0.32.1
 	k8s.io/client-go v0.32.1
 )
@@ -105,7 +105,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/code-generator v0.31.5 // indirect
+	k8s.io/code-generator v0.31.6 // indirect
 	k8s.io/gengo v0.0.0-20240826214909-a7b603a56eb7 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f // indirect
