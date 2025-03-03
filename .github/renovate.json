@@ -5,5 +5,32 @@
   "baseBranches": [
     "main"
   ],
-  "prHourlyLimit": 2
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "matchBaseBranches": [
+        "main"
+      ],
+      "matchDepNames": [
+        "k8s.io/api",
+        "k8s.io/apiextensions-apiserver",
+        "k8s.io/apimachinery",
+        "k8s.io/client-go"
+      ],
+      "allowedVersions": "<0.33.0"
+    },
+    {
+      "enabled": false,
+      "matchBaseBranches": [
+        "release/v1.1", 
+        "release/v1.2", 
+        "release/v1.3",
+        "release/v1.4"
+      ]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true
 }
