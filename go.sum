@@ -215,8 +215,8 @@ github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.80.1 h
 github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.80.1/go.mod h1:6x4x0t9BP35g4XcjkHE9EB3RxhyfxpdpmZKd/Qyk8+M=
 github.com/prometheus-operator/prometheus-operator/pkg/client v0.80.1 h1:7/TPlTy7tkMXC1KwS2WdUdU8J220DszlSQ1+KHjXwHc=
 github.com/prometheus-operator/prometheus-operator/pkg/client v0.80.1/go.mod h1:0lW4yp2XE7AKohpGB2UGdomjP08rbr4f8JwAN6sUDWU=
-github.com/prometheus/client_golang v1.21.0 h1:DIsaGmiaBkSangBgMtWdNfxbMNdku5IK6iNhrEqWvdA=
-github.com/prometheus/client_golang v1.21.0/go.mod h1:U9NM32ykUErtVBxdvD3zfi+EuFkkaBvMb09mIfe0Zgg=
+github.com/prometheus/client_golang v1.21.1 h1:DOvXXTqVzvkIewV/CDPFdejpMCGeMcbGCQ8YOmu+Ibk=
+github.com/prometheus/client_golang v1.21.1/go.mod h1:U9NM32ykUErtVBxdvD3zfi+EuFkkaBvMb09mIfe0Zgg=
 github.com/prometheus/client_model v0.6.1 h1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=
 github.com/prometheus/client_model v0.6.1/go.mod h1:OrxVMOVHjw3lKMa8+x6HeMGkHMQyHDk9E3jmP2AmGiY=
 github.com/prometheus/common v0.62.0 h1:xasJaQlnWAeyHdUBeGjXmutelfJHWMRr+Fg4QszZ2Io=
