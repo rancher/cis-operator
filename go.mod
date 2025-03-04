@@ -1,8 +1,8 @@
 module github.com/rancher/cis-operator
 
-go 1.22.0
+go 1.23.0
 
-toolchain go1.22.10
+toolchain go1.24.0
 
 // pinned these to keep deps at v0.30.x only, kube-bench bump is causing these to get updated
 replace (
@@ -23,7 +23,7 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli v1.22.16
-	golang.org/x/crypto/x509roots/fallback v0.0.0-20250116161740-71d3a4cfdb03
+	golang.org/x/crypto/x509roots/fallback v0.0.0-20250303191637-24852b6b3fe8
 	k8s.io/api v0.31.2
 	k8s.io/apiextensions-apiserver v0.30.10
 	k8s.io/apimachinery v0.31.2
