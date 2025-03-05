@@ -8,7 +8,7 @@ replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.30.10
 	k8s.io/client-go => k8s.io/client-go v0.30.10
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7
-	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
+	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.6.0
 )
 
 require (
