@@ -13,9 +13,8 @@ on:
         default: "false"
         type: string
   schedule:
-    # For main branche, runs twice every other day in the first two
-    # thirds of the month.
-    - cron: '30 4,6 1-20/2 * 2-4'
+    # Runs twice on Tuesdays to Thursdays.
+    - cron: '30 4,6 * * 2-4'
 
 permissions:
   contents: read
@@ -23,7 +22,7 @@ permissions:
 
 jobs:
   call-workflow:
-    uses: rancher/renovate-config/.github/workflows/renovate-vault.yml@custom-config
+    uses: rancher/renovate-config/.github/workflows/renovate-vault.yml@release
     with:
       logLevel: ${{ inputs.logLevel || 'info' }}
       overrideSchedule: ${{ github.event.inputs.overrideSchedule == 'true' && '{''schedule'':null}' || '' }}
