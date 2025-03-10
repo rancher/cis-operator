@@ -12,10 +12,6 @@ on:
         required: false
         default: "false"
         type: string
-  schedule:
-    # For backport/release branches, runs twice every other day in
-    # the last third of the month.
-    - cron: '30 4,6 21-31/2 * 2-4'
 
 permissions:
   contents: read
