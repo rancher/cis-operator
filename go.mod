@@ -21,7 +21,7 @@ require (
 	github.com/rancher/security-scan v0.4.4
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.9.3
-	github.com/urfave/cli v1.22.16
+	github.com/urfave/cli/v2 v2.27.6
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20250306185146-6b853fbea37a
 	k8s.io/api v0.32.1
 	k8s.io/apiextensions-apiserver v0.30.10
@@ -84,6 +84,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb // indirect
 	golang.org/x/mod v0.20.0 // indirect
