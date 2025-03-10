@@ -11,6 +11,7 @@
   "prHourlyLimit": 4,
   "packageRules": [
     {
+      "description": "Constraint k8s versions",
       "matchBaseBranches": [
         "main"
       ],
@@ -23,12 +24,30 @@
       "allowedVersions": "<0.33.0"
     },
     {
+      "description": "Disable non-security bumps for backporting branches",
       "enabled": false,
       "matchBaseBranches": [
         "release/v1.1", 
         "release/v1.2", 
         "release/v1.3",
         "release/v1.4"
+      ]
+    },
+    {
+      "description": "Ensure CA bumps are enabled for backporting branches",
+      "enabled": true,
+      "matchBaseBranches": [
+        "release/v1.1", 
+        "release/v1.2", 
+        "release/v1.3",
+        "release/v1.4"
+      ],
+      "matchPackageNames": [
+        "golang.org/x/crypto/x509roots/fallback"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "digest"
       ]
     }
   ],
