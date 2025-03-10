@@ -12,9 +12,6 @@ on:
         required: false
         default: "false"
         type: string
-  schedule:
-    # Runs twice on Tuesdays to Thursdays.
-    - cron: '30 4,6 * * 2-4'
 
 permissions:
   contents: read
