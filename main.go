@@ -15,7 +15,7 @@ import (
 	"github.com/rancher/wrangler/v3/pkg/kubeconfig"
 	"github.com/rancher/wrangler/v3/pkg/signals"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	"log"
 	"net/http"
@@ -60,79 +60,79 @@ func main() {
 	app.Version = fmt.Sprintf("%s (%s)", Version, GitCommit)
 	app.Usage = "cis-operator needs help!"
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "kubeconfig",
-			EnvVar:      "KUBECONFIG",
+			EnvVars:     []string{"KUBECONFIG"},
 			Destination: &kubeConfig,
 		},
-		cli.IntFlag{
+		&cli.IntFlag{
 			Name:        "threads",
-			EnvVar:      "CIS_OPERATOR_THREADS",
+			EnvVars:     []string{"CIS_OPERATOR_THREADS"},
 			Value:       2,
 			Destination: &threads,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "name",
-			EnvVar:      "CIS_OPERATOR_NAME",
+			EnvVars:     []string{"CIS_OPERATOR_NAME"},
 			Value:       "cis-operator",
 			Destination: &name,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "security-scan-image",
-			EnvVar:      "SECURITY_SCAN_IMAGE",
+			EnvVars:     []string{"SECURITY_SCAN_IMAGE"},
 			Value:       "rancher/security-scan",
 			Destination: &securityScanImage,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "security-scan-image-tag",
-			EnvVar:      "SECURITY_SCAN_IMAGE_TAG",
+			EnvVars:     []string{"SECURITY_SCAN_IMAGE_TAG"},
 			Value:       "latest",
 			Destination: &securityScanImageTag,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "sonobuoy-image",
-			EnvVar:      "SONOBUOY_IMAGE",
+			EnvVars:     []string{"SONOBUOY_IMAGE"},
 			Value:       "rancher/sonobuoy-sonobuoy",
 			Destination: &sonobuoyImage,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "sonobuoy-image-tag",
-			EnvVar:      "SONOBUOY_IMAGE_TAG",
+			EnvVars:     []string{"SONOBUOY_IMAGE_TAG"},
 			Value:       "latest",
 			Destination: &sonobuoyImageTag,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "cis_metrics_port",
-			EnvVar:      "CIS_METRICS_PORT",
+			EnvVars:     []string{"CIS_METRICS_PORT"},
 			Value:       "8080",
 			Destination: &metricsPort,
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "debug",
-			EnvVar:      "CIS_OPERATOR_DEBUG",
+			EnvVars:     []string{"CIS_OPERATOR_DEBUG"},
 			Destination: &debug,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "alertSeverity",
-			EnvVar:      "CIS_ALERTS_SEVERITY",
+			EnvVars:     []string{"CIS_ALERTS_SEVERITY"},
 			Value:       "warning",
 			Destination: &alertSeverity,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "clusterName",
-			EnvVar:      "CLUSTER_NAME",
+			EnvVars:     []string{"CLUSTER_NAME"},
 			Value:       "",
 			Destination: &clusterName,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "security-scan-job-tolerations",
-			EnvVar:      "SECURITY_SCAN_JOB_TOLERATIONS",
+			EnvVars:     []string{"SECURITY_SCAN_JOB_TOLERATIONS"},
 			Value:       "",
 			Destination: &securityScanJobTolerationsVal,
 		},
-		cli.BoolFlag{
-			Name:   "alertEnabled",
-			EnvVar: "CIS_ALERTS_ENABLED",
+		&cli.BoolFlag{
+			Name:    "alertEnabled",
+			EnvVars: []string{"CIS_ALERTS_ENABLED"},
 		},
 	}
 	app.Action = run
@@ -142,7 +142,7 @@ func main() {
 	}
 }
 
-func run(c *cli.Context) {
+func run(c *cli.Context) error {
 	logrus.Info("Starting CIS-Operator")
 
 	ctx := context.Background()
@@ -212,6 +212,7 @@ func run(c *cli.Context) {
 	<-handler
 	ctx.Done()
 	logrus.Info("Registered CIS controller")
+	return nil
 }
 
 func validateConfig(imgConfig *cisoperatorapiv1.ScanImageConfig) error {
