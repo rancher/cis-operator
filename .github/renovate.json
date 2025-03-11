@@ -3,11 +3,7 @@
     "github>rancher/renovate-config#release"
   ],
   "baseBranches": [
-    "main", 
-    "release/v1.1", 
-    "release/v1.2", 
-    "release/v1.3",
-    "release/v1.4"
+    "main"
   ],
   "ignoreDeps":[
     "github.com/rancher/lasso"
@@ -15,9 +11,9 @@
   "prHourlyLimit": 4,
   "packageRules": [
     {
+      "description": "Constraint k8s versions",
       "matchBaseBranches": [
-        "main",
-        "release/v1.4"
+        "main"
       ],
       "matchDepNames": [
         "k8s.io/api",
@@ -28,108 +24,35 @@
       "allowedVersions": "<0.33.0"
     },
     {
+      "description": "Disable non-security bumps for backporting branches",
+      "enabled": false,
       "matchBaseBranches": [
-        "release/v1.3"
-      ],
-      "matchDepNames": [
-        "k8s.io/api",
-        "k8s.io/apiextensions-apiserver",
-        "k8s.io/apimachinery",
-        "k8s.io/client-go"
-      ],
-      "allowedVersions": "<0.32.0"
+        "release/v1.1", 
+        "release/v1.2", 
+        "release/v1.3",
+        "release/v1.4"
+      ]
     },
     {
+      "description": "Ensure CA bumps are enabled for backporting branches",
+      "enabled": true,
       "matchBaseBranches": [
+        "release/v1.1", 
+        "release/v1.2", 
+        "release/v1.3",
         "release/v1.4"
       ],
-      "matchDepNames": [
-        "github.com/rancher/security-scan"
+      "matchPackageNames": [
+        "golang.org/x/crypto/x509roots/fallback"
       ],
-      "allowedVersions": "<v0.7.0"
-    },
-    {
-      "matchBaseBranches": [
-        "release/v1.3"
-      ],
-      "matchDepNames": [
-        "github.com/rancher/security-scan"
-      ],
-      "allowedVersions": "<v0.6.0"
-    },
-    {
-      "matchBaseBranches": ["release/v1.2"],
-      "matchDepNames": [
-        "k8s.io/api",
-        "k8s.io/apiextensions-apiserver",
-        "k8s.io/apimachinery",
-        "k8s.io/client-go"
-      ],
-      "allowedVersions": "<0.31.0"
-    },
-    {
-      "matchBaseBranches": ["release/v1.2"],
-      "matchDepNames": [
-        "github.com/rancher/security-scan"
-      ],
-      "allowedVersions": "<v0.5.0"
-    },
-    {
-      "matchBaseBranches": ["release/v1.1"],
-      "matchDepNames": [
-        "k8s.io/api",
-        "k8s.io/apiextensions-apiserver",
-        "k8s.io/apimachinery",
-        "k8s.io/client-go"
-      ],
-      "allowedVersions": "<0.31.0"
-    },
-    {
-      "matchBaseBranches": ["release/v1.1"],
-      "matchDepNames": [
-        "github.com/rancher/security-scan"
-      ],
-      "allowedVersions": "<v0.4.0"
-    },
-    {
-      "matchBaseBranches": ["release/v1.3"],
-      "matchDepNames": [
-        "github.com/prometheus-operator/prometheus-operator/pkg/client",
-        "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
-      ],
-      "allowedVersions": "<v0.79.0"
-    },
-    {
-      "matchBaseBranches": [
-        "release/v1.1",
-        "release/v1.2"
-      ],
-      "matchDepNames": [
-        "github.com/prometheus-operator/prometheus-operator/pkg/client",
-        "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
-      ],
-      "allowedVersions": "<v0.75.0"
-    },
-    {
-      "matchBaseBranches": [
-        "release/v1.1",
-        "release/v1.2",
-        "release/v1.3"
-      ],
-      "matchDepNames": [
-        "github.com/urfave/cli"
-      ],
-      "allowedVersions": "<v2.0.0"
-    },
-    {
-      "matchBaseBranches": [
-        "release/v1.1",
-        "release/v1.2"
-      ],
-      "matchDepNames": [
-        "github.com/rancher/wrangler"
-      ],
-      "allowedVersions": "<v3.0.1"
+      "matchUpdateTypes": [
+        "patch",
+        "digest"
+      ]
     }
-  ]
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true
 }
