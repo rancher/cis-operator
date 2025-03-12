@@ -49,6 +49,19 @@
         "patch",
         "digest"
       ]
+    },
+    {
+      "description": "Enable patch bumps for security-scan",
+      "enabled": true,
+      "matchBaseBranches": [
+        "/^release/v.*/"
+      ],
+      "matchPackageNames": [
+        "github.com/rancher/security-scan"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ]
     }
   ],
   "vulnerabilityAlerts": {
