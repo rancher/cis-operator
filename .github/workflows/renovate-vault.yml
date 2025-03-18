@@ -26,5 +26,5 @@ jobs:
     with:
       logLevel: ${{ inputs.logLevel || 'info' }}
       overrideSchedule: ${{ github.event.inputs.overrideSchedule == 'true' && '{''schedule'':null}' || '' }}
-      renovateConfig: .github/renovate-backports.json
+      renovateConfig: .github/renovate.json
     secrets: inherit
