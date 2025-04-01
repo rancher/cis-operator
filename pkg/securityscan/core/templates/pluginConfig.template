@@ -29,30 +29,11 @@ data:
         key: CriticalAddonsOnly
         operator: Exists
       volumes:
+      {{- range .hostPathVolumes }}
       - hostPath:
-          path: /var/lib/rancher
-        name: var-rancher
-      - hostPath:
-          path: /etc/rancher
-        name: etc-rancher
-      - hostPath:
-          path: /etc/cni/net.d
-        name: etc-cni
-      - hostPath:
-          path: /var/lib/cni
-        name: var-cni
-      - hostPath:
-          path: /var/log
-        name: var-log
-      - hostPath:
-          path: /run/log
-        name: run-log
-      - hostPath:
-          path: /etc/kubernetes/kubelet
-        name: etc-kubelet
-      - hostPath:
-          path: /var/lib/kubelet
-        name: var-kubelet
+          path: {{ .VolumeSource.HostPath.Path }}
+        name: {{ .Name }}
+      {{- end }}
       {{- if .isCustomBenchmark }}
       - configMap:
           defaultMode: 420
@@ -102,30 +83,11 @@ data:
       - mountPath: /tmp/results
         name: results
         readOnly: false
-      - mountPath: /var/lib/rancher
-        name: var-rancher
-        readOnly: true
-      - mountPath: /etc/rancher
-        name: etc-rancher
-        readOnly: true
-      - mountPath: /etc/cni/net.d
-        name: etc-cni
-        readOnly: true
-      - mountPath: /var/lib/cni
-        name: var-cni
-        readOnly: true
-      - mountPath: /var/log/
-        name: var-log
-        readOnly: true
-      - mountPath: /run/log/
-        name: run-log
-        readOnly: true
-      - mountPath: /etc/kubernetes/kubelet
-        name: etc-kubelet
-        readOnly: true
-      - mountPath: /var/lib/kubelet
-        name: var-kubelet
-        readOnly: true
+      {{- range .hostPathVolumeMounts }}
+      - mountPath: {{ .MountPath }}
+        name: {{ .Name }}
+        readOnly: {{ .ReadOnly }}
+      {{- end }}
       {{- if .isCustomBenchmark }}
       - mountPath: /etc/kbs/custombenchmark/cfg
         name: custom-benchmark-volume

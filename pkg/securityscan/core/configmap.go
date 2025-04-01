@@ -4,6 +4,8 @@ import (
 	"bytes"
 	_ "embed" // nolint
 	"encoding/json"
+	"fmt"
+	"strings"
 	"text/template"
 
 	corev1 "k8s.io/api/core/v1"
@@ -15,6 +17,17 @@ import (
 
 	cisoperatorapiv1 "github.com/rancher/cis-operator/pkg/apis/cis.cattle.io/v1"
 )
+
+var requiredPaths = map[string]string{
+	"var-rancher": "/var/lib/rancher",
+	"etc-rancher": "/etc/rancher",
+	"etc-cni":     "/etc/cni/net.d",
+	"var-cni":     "/var/lib/cni",
+	"var-log":     "/var/log",
+	"run-log":     "/run/log",
+	"etc-kubelet": "/etc/kubernetes/kubelet",
+	"var-kubelet": "/var/lib/kubelet",
+}
 
 //go:embed templates/pluginConfig.template
 var pluginConfigTemplate string
@@ -31,7 +44,8 @@ const (
 	ConfigFileName      = "config.json"
 )
 
-func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, clusterscanbenchmark *cisoperatorapiv1.ClusterScanBenchmark, _ string, imageConfig *cisoperatorapiv1.ScanImageConfig, configmapsClient wcorev1.ConfigMapController) (cmMap map[string]*corev1.ConfigMap, err error) {
+func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile *cisoperatorapiv1.ClusterScanProfile, clusterscanbenchmark *cisoperatorapiv1.ClusterScanBenchmark, _ string, imageConfig *cisoperatorapiv1.ScanImageConfig,
+	configmapsClient wcorev1.ConfigMapController, customScanHostPaths []string) (cmMap map[string]*corev1.ConfigMap, err error) {
 	cmMap = make(map[string]*corev1.ConfigMap)
 
 	configdata := map[string]interface{}{
@@ -62,6 +76,8 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		customBenchmarkConfigMapName = customcm.Name
 	}
 
+	hostPathVolumes, hostPathVolumeMounts := pluginConfigHostPathVolumesData(customScanHostPaths)
+
 	plugindata := map[string]interface{}{
 		"namespace":                    cisoperatorapiv1.ClusterScanNS,
 		"name":                         name.SafeConcatName(cisoperatorapiv1.ClusterScanPluginsConfigMap, clusterscan.Name),
@@ -74,6 +90,8 @@ func NewConfigMaps(clusterscan *cisoperatorapiv1.ClusterScan, clusterscanprofile
 		"configDir":                    cisoperatorapiv1.CustomBenchmarkBaseDir,
 		"customBenchmarkConfigMapName": customBenchmarkConfigMapName,
 		"customBenchmarkConfigMapData": customBenchmarkConfigMapData,
+		"hostPathVolumes":              hostPathVolumes,
+		"hostPathVolumeMounts":         hostPathVolumeMounts,
 	}
 	plugincm, err := generateConfigMap(clusterscan, "pluginConfig.template", pluginConfigTemplate, plugindata)
 	if err != nil {
@@ -175,4 +193,41 @@ func getCustomBenchmarkConfigMap(benchmark *cisoperatorapiv1.ClusterScanBenchmar
 		Data: userConfigmap.Data,
 	}
 	return configmapsClient.Create(&configmapCopy)
+}
+
+func pluginConfigHostPathVolumesData(customScanHostPaths []string) ([]*corev1.Volume, []*corev1.VolumeMount) {
+	volumes := make([]*corev1.Volume, 0, len(requiredPaths)+len(customScanHostPaths))
+	volumeMounts := make([]*corev1.VolumeMount, 0, len(requiredPaths)+len(customScanHostPaths))
+	hostPaths := make(map[string]bool, len(requiredPaths))
+
+	// Add required volumes
+	for name, path := range requiredPaths {
+		path = strings.TrimSuffix(path, "/")
+		volumes = append(volumes, &corev1.Volume{
+			Name: name,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{Path: path},
+			},
+		})
+		volumeMounts = append(volumeMounts, &corev1.VolumeMount{Name: name, MountPath: path, ReadOnly: true})
+		hostPaths[path] = true
+	}
+
+	// Add custom volumes if they are not already included
+	for idx, path := range customScanHostPaths {
+		if !hostPaths[path] {
+			path = strings.TrimSuffix(path, "/")
+			name := fmt.Sprintf("custom-volume-%d", idx)
+			volumes = append(volumes, &corev1.Volume{
+				Name: name,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{Path: path},
+				},
+			})
+			volumeMounts = append(volumeMounts, &corev1.VolumeMount{Name: name, MountPath: path, ReadOnly: true})
+			hostPaths[path] = true
+		}
+	}
+
+	return volumes, volumeMounts
 }
