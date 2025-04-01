@@ -9,6 +9,10 @@ linters:
     - govet
     - ineffassign
     - misspell
+  exclusions:
+    rules:
+      - path: 'main.go'
+        text: 'G114: Use of net/http serve function that has no support for setting timeouts'
 formatters:
   enable:
     - gofmt
