@@ -1,0 +1,15 @@
+version: "2"
+linters:
+  default: none
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+formatters:
+  enable:
+    - gofmt
+    - goimports
