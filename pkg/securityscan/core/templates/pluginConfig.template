@@ -30,15 +30,6 @@ data:
         operator: Exists
       volumes:
       - hostPath:
-          path: /
-        name: root
-      - hostPath:
-          path: /etc/passwd
-        name: etc-passwd
-      - hostPath:
-          path: /etc/group
-        name: etc-group
-      - hostPath:
           path: /var/lib/rancher
         name: var-rancher
       - hostPath:
@@ -106,20 +97,11 @@ data:
       {{- end }}
       imagePullPolicy: IfNotPresent
       securityContext:
-        privileged: true
+        privileged: false
       volumeMounts:
       - mountPath: /tmp/results
         name: results
         readOnly: false
-      - mountPath: /node
-        name: root
-        readOnly: true
-      - mountPath: /etc/passwd
-        name: etc-passwd
-        readOnly: true
-      - mountPath: /etc/group
-        name: etc-group
-        readOnly: true
       - mountPath: /var/lib/rancher
         name: var-rancher
         readOnly: true
