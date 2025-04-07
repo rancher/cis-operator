@@ -5,7 +5,7 @@
 image:
   cisoperator:
     repository: rancher/cis-operator
-    tag: v1.3.7
+    tag: v1.3.8-rc.1
   securityScan:
     repository: rancher/security-scan
     tag: v0.5.6-rc.1
