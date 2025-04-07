@@ -67,4 +67,4 @@ COPY --from=builder /final/ /
 USER 65534:65534
 ENV PATH=/usr/bin
 
-CMD ["cis-operator"]
+CMD ["/usr/bin/cis-operator"]
