@@ -37,7 +37,7 @@ func WriteCRD() error {
 		}
 
 		filename := fmt.Sprintf("./crds/%s.yaml", strings.ToLower(crd.Spec.Names.Kind))
-		err = os.WriteFile(filename, yamlBytes, 0o644)
+		err = os.WriteFile(filename, yamlBytes, 0o600)
 		if err != nil {
 			return err
 		}

@@ -243,6 +243,9 @@ func getValue(obj interface{}, name ...string) reflect.Value {
 }
 
 func getFieldValue(v reflect.Value, name ...string) reflect.Value {
+	if len(name) == 0 {
+		return reflect.Value{}
+	}
 	field := v.FieldByName(name[0])
 	if len(name) == 1 {
 		return field
