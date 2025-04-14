@@ -69,8 +69,14 @@ func (c *Controller) handleJobs(ctx context.Context) error {
 			c.setClusterScanStatusDisplay(scan)
 
 			if scan.Spec.ScheduledScanConfig != nil && scan.Spec.ScheduledScanConfig.CronSchedule != "" {
-				c.rescheduleScan(scan)
-				c.purgeOldClusterScanReports(scan)
+				err := c.rescheduleScan(scan)
+				if err != nil {
+					return obj, fmt.Errorf("error rescheduling scan: %w", err)
+				}
+				err = c.purgeOldClusterScanReports(scan)
+				if err != nil {
+					return obj, fmt.Errorf("error purging old ClusterScanReports: %w", err)
+				}
 			}
 			err := c.deleteJob(jobs, obj, metav1.DeletePropagationBackground)
 			if err != nil {
