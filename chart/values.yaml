@@ -39,6 +39,11 @@ securityScanJob:
 
 affinity: {}
 
+## host paths which needs to be mounted in security-scan daemonset pods to run scan successfully
+## paths must be absolute and must not override the protected dirs.
+## protected dirs are: /bin, /boot, /dev, /etc, /lib, /lib64, /proc, /root, /run, /sbin, /selinux, /sys, /tmp, /usr, /var
+customScanHostPaths: []
+
 global:
   cattle:
     systemDefaultRegistry: ""
