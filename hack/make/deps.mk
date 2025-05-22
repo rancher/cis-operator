@@ -5,4 +5,4 @@ K3D_VERSION = v5.8.3
 
 KUBECTL_VERSION = 1.31.8
 # renovate: datasource=github-release-attachments depName=helm/helm
-HELM_VERSION = v3.17.3
+HELM_VERSION = v3.18.0
