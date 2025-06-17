@@ -10,6 +10,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/rancher/wrangler/v3/pkg/kubeconfig"
@@ -52,6 +54,7 @@ var (
 	sonobuoyImageTag              string
 	clusterName                   string
 	securityScanJobTolerationsVal string
+	customScanHostPathsVal        string
 )
 
 func main() {
@@ -134,6 +137,12 @@ func main() {
 			Name:    "alertEnabled",
 			EnvVars: []string{"CIS_ALERTS_ENABLED"},
 		},
+		&cli.StringFlag{
+			Name:        "custom-scan-host-paths",
+			EnvVars:     []string{"CUSTOM_SCAN_HOST_PATHS"},
+			Value:       "",
+			Destination: &customScanHostPathsVal,
+		},
 	}
 	app.Action = run
 
@@ -176,6 +185,22 @@ func run(c *cli.Context) error {
 		}
 	}
 
+	customHostPaths := []string{}
+	customScanHostPathsVal = c.String("custom-scan-host-paths")
+
+	if customScanHostPathsVal != "" {
+
+		err := json.Unmarshal([]byte(customScanHostPathsVal), &customHostPaths)
+		if err != nil {
+			logrus.Fatalf("invalid value received for custom-scan-host-paths flag:%s", err.Error())
+		}
+
+		err = validateCustomScanHostPaths(customHostPaths)
+		if err != nil {
+			logrus.Fatalf("validation failed for custom-scan-host-paths:%s", err.Error())
+		}
+	}
+
 	kubeConfig, err := kubeconfig.GetNonInteractiveClientConfig(kubeConfig).ClientConfig()
 	if err != nil {
 		logrus.Fatalf("failed to find kubeconfig: %v", err)
@@ -195,7 +220,7 @@ func run(c *cli.Context) error {
 		logrus.Fatalf("Error starting CIS-Operator: %v", err)
 	}
 
-	ctl, err := cisoperator.NewController(ctx, kubeConfig, cisoperatorapiv1.ClusterScanNS, name, imgConfig, securityScanJobTolerations)
+	ctl, err := cisoperator.NewController(ctx, kubeConfig, cisoperatorapiv1.ClusterScanNS, name, imgConfig, securityScanJobTolerations, customHostPaths)
 	if err != nil {
 		logrus.Fatalf("Error building controller: %s", err.Error())
 	}
@@ -222,5 +247,34 @@ func validateConfig(imgConfig *cisoperatorapiv1.ScanImageConfig) error {
 	if imgConfig.SonobuoyImage == "" {
 		return errors.New("No Sonobuoy tool Image specified")
 	}
+	return nil
+}
+
+func validateCustomScanHostPaths(hostPaths []string) error {
+	protectedDirs := []string{"/bin", "/boot", "/dev", "/etc", "/lib", "/lib64", "/proc", "/root", "/run", "/sbin", "/selinux", "/sys", "/tmp", "/usr", "/var"}
+
+	hostPathSet := make(map[string]bool)
+
+	for _, path := range hostPaths {
+		if !filepath.IsAbs(path) {
+			return fmt.Errorf("path must be absolute: %s", path)
+		}
+
+		if path == "/" {
+			return fmt.Errorf("root path '/' is not allowed")
+		}
+
+		for _, protected := range protectedDirs {
+			if path == protected || strings.HasPrefix(path, protected+"/") {
+				return fmt.Errorf("path %s is not allowed as it affects protected directory %s", path, protected)
+			}
+		}
+
+		if _, exists := hostPathSet[path]; exists {
+			return fmt.Errorf("duplicate path detected: %s", path)
+		}
+		hostPathSet[path] = true
+	}
+
 	return nil
 }
