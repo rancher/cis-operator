@@ -8,7 +8,7 @@ image:
     tag: v1.3.8
   securityScan:
     repository: rancher/security-scan
-    tag: v0.5.x
+    tag: v0.5.6
   sonobuoy:
     repository: rancher/mirrored-sonobuoy-sonobuoy
     tag: v0.57.3
