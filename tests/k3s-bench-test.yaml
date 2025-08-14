@@ -4,5 +4,5 @@ metadata:
   name: k3s-e2e-scan
   namespace: cis-operator-system
 spec:
-  scanProfileName: k3s-cis-1.9-profile
+  scanProfileName: k3s-cis-1.10-profile
   scoreWarning: pass
