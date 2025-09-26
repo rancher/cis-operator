@@ -3,7 +3,7 @@
 
 This chart enables security scanning of the cluster using [CIS (Center for Internet Security) benchmarks](https://www.cisecurity.org/benchmark/kubernetes/).
 
-For more information on how to use the feature, refer to our [docs](https://ranchermanager.docs.rancher.com/how-to-guides/advanced-user-guides/cis-scan-guides).
+For more information on how to use the feature, refer to our [docs](https://ranchermanager.docs.rancher.com/v2.11/how-to-guides/advanced-user-guides/cis-scan-guides).
 
 This chart installs the following components:
 
