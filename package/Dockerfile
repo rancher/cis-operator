@@ -38,7 +38,7 @@ WORKDIR /src
 COPY go.sum \
      go.mod \
      Makefile \
-     /src
+     /src/
 RUN go mod download
 
 COPY pkg /src/pkg
