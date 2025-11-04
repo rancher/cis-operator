@@ -1,8 +1,6 @@
 module github.com/rancher/cis-operator
 
-go 1.24.4
-
-toolchain go1.24.6
+go 1.24.9
 
 // to keep dependencies in sync with rancher
 // k8s deps bumped due to kube bench bump in security-scan
@@ -22,7 +20,7 @@ require (
 	github.com/prometheus/client_golang v1.21.1
 	github.com/rancher/kubernetes-provider-detector v0.1.5
 	github.com/rancher/lasso v0.0.0-20240924233157-8f384efc8813
-	github.com/rancher/security-scan v0.5.8
+	github.com/rancher/security-scan v0.5.9-rc.1
 	github.com/rancher/wrangler/v3 v3.1.0
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.9.3
