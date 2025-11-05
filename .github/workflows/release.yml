@@ -71,6 +71,17 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+    - name: Create GitHub Release
+      run: |
+        if ! gh release view "${{ github.ref_name }}" > /dev/null 2>&1; then
+          echo "Creating release ${{ github.ref_name }}"
+          gh release create "${{ github.ref_name }}" --title "${{ github.ref_name }}" --notes "Release ${{ github.ref_name }}"
+        else
+          echo "Release ${{ github.ref_name }} already exists"
+        fi
+      env:
+        GH_TOKEN: ${{ github.token }}
   
     - run: make upload
       env:
