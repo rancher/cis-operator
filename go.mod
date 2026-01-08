@@ -2,6 +2,8 @@ module github.com/rancher/cis-operator
 
 go 1.24.11
 
+replace golang.org/x/tools => golang.org/x/tools v0.37.0
+
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.81.0
