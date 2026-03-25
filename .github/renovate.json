@@ -11,6 +11,11 @@
   ],
   "packageRules": [
     {
+      "matchBaseBranches": ["main"],
+      "matchUpdateTypes": ["major", "minor", "patch", "digest", "pin", "pinDigest"],
+      "enabled": false
+    },
+    {
       "matchBaseBranches": ["release/v1.4"],
       "extends": ["github>rancher/renovate-config//rancher-2.11#release"]
     },
