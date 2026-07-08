@@ -5,13 +5,13 @@
 image:
   cisoperator:
     repository: rancher/cis-operator
-    tag: v1.4.8
+    tag: v1.4.9-rc.1
   securityScan:
     repository: rancher/security-scan
-    tag: v0.6.8
+    tag: v0.6.9-rc.1
   sonobuoy:
     repository: rancher/mirrored-sonobuoy-sonobuoy
-    tag: v0.57.3
+    tag: v0.57.5
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
