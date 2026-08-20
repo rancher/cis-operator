@@ -206,8 +206,8 @@ github.com/rancher/kubernetes-provider-detector v0.1.5 h1:hWRAsWuJOemzGjz/XrbTlM
 github.com/rancher/kubernetes-provider-detector v0.1.5/go.mod h1:ypuJS7kP7rUiAn330xG46mj+Nhvym05GM8NqMVekpH0=
 github.com/rancher/lasso v0.2.7 h1:N56Pm8KJSk7gRVYILSGb35QBfjcDDeGFMfwUCivsbeg=
 github.com/rancher/lasso v0.2.7/go.mod h1:L3ol8PdO21KoMhNa3RWjpR3ZBnE70JCAod1nJuOvT1E=
-github.com/rancher/security-scan v0.6.10-rc.1 h1:afYcUpjTn0nCTAza2AuaT3rSb8LV7dMTLP0T8Z93Njc=
-github.com/rancher/security-scan v0.6.10-rc.1/go.mod h1:SRdzmg2KmiP/oXx3SIayR4hSL9SMuMqaOAkTS0ZLtmg=
+github.com/rancher/security-scan v0.6.10 h1:EWgwiwVwtdZFvxg66g4VVjw3TJm854Y0Qqoeexpmz2I=
+github.com/rancher/security-scan v0.6.10/go.mod h1:SRdzmg2KmiP/oXx3SIayR4hSL9SMuMqaOAkTS0ZLtmg=
 github.com/rancher/wrangler/v3 v3.5.0 h1:Us8RcMBpjrhV/HRfIq0a0uJmLEhfWcGUgNE39y7BQ7A=
 github.com/rancher/wrangler/v3 v3.5.0/go.mod h1:bRcdkdwRTwoXVSWVGtJdSBNXkKbInlo+PVkCtkUCi4s=
 github.com/robfig/cron v1.2.0 h1:ZjScXvvxeQ63Dbyxy76Fj3AT3Ut0aKsyd2/tl3DTMuQ=
