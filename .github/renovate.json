@@ -1,12 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "github>rancher/renovate-config//rancher-main#release"
-  ],
-  "baseBranches": [
-    "main"
-  ],
-  "ignoreDeps":[
+  "extends": ["github>rancher/renovate-config//default#release", "github>rancher/renovate-config//rancher-main#release"],
+  "baseBranchPatterns": ["main"],
+  "ignoreDeps": [
     "github.com/rancher/lasso"
   ],
   "packageRules": [
@@ -14,18 +10,6 @@
       "matchBaseBranches": ["main"],
       "matchUpdateTypes": ["major", "minor", "patch", "digest", "pin", "pinDigest"],
       "enabled": false
-    },
-    {
-      "matchBaseBranches": ["release/v1.4"],
-      "extends": ["github>rancher/renovate-config//rancher-2.11#release"]
-    },
-    {
-      "matchBaseBranches": ["release/v1.3"],
-      "extends": ["github>rancher/renovate-config//rancher-2.10#release"]
-    },
-    {
-      "matchBaseBranches": ["release/v1.2"],
-      "extends": ["github>rancher/renovate-config//rancher-2.9#release"]
     }
   ],
   "vulnerabilityAlerts": {
